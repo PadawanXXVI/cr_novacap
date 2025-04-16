@@ -40,6 +40,9 @@ pip install -r requirements.txt
 cp .env.example .env
 
 # Editar .env com sua SECRET_KEY e URL do banco de dados
+```
+
+---
 
 ## 🔑 Exemplo de .env:
 
@@ -47,6 +50,8 @@ FLASK_APP=run.py
 FLASK_ENV=development
 SECRET_KEY=sua_chave_secreta_aqui
 DATABASE_URL=sqlite:///cr_novacap.db
+
+---
 
 ## ▶️ Para rodar a aplicação:
 
@@ -71,6 +76,7 @@ Integrar com canais como e-mail e WhatsApp futuramente
 ---
 
 ## 🧩 Módulos do sistema
+
 📁 Processos administrativos
 Registro, tramitação e histórico de processos internos da CR
 
@@ -89,6 +95,7 @@ Exportação para CSV, Excel, PDF, DOCX e JSON (em desenvolvimento)
 ---
 
 ## 🎯 Funcionalidades
+
 Autenticação de usuários com controle de acesso
 
 Cadastro e atualização de processos
@@ -106,6 +113,7 @@ Integração futura com canais externos (WhatsApp, e-mail)
 ---
 
 ## 📦 Exportações suportadas
+
 Em desenvolvimento:
 
 📄 CSV
