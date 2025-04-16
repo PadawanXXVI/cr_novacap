@@ -2,13 +2,15 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app import app
+from app.__init__ import create_app
 from app.models.modelos import db, Status, TipoDemanda, RegiaoAdministrativa, Demanda
+
+app = create_app()
 
 with app.app_context():
     db.drop_all()
     db.create_all()
-
+    
     # ------------------
     # TIPOS DE DEMANDA
     # ------------------
