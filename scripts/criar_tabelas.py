@@ -1,5 +1,5 @@
 from app import app
-from models.modelos import db, Status, TipoDemanda, RegiaoAdministrativa, Demanda
+from app.models.modelos import db, Status, TipoDemanda, RegiaoAdministrativa, Demanda
 
 with app.app_context():
     db.drop_all()
