@@ -3,7 +3,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.__init__ import create_app
-from app.models.modelos import db, Status, TipoDemanda, RegiaoAdministrativa, Demanda
+from app import db
+from app.models.modelos import Status, TipoDemanda, RegiaoAdministrativa, Demanda
 
 app = create_app()
 
