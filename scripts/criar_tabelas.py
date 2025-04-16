@@ -2,11 +2,13 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# Cria o app primeiro
 from app.__init__ import create_app
+app = create_app()
+
+# Agora importa o db e os modelos, depois do app estar criado
 from app import db
 from app.models.modelos import Status, TipoDemanda, RegiaoAdministrativa, Demanda
-
-app = create_app()
 
 with app.app_context():
     db.drop_all()
@@ -41,40 +43,18 @@ with app.app_context():
     # REGIÕES ADMINISTRATIVAS
     # ------------------
     regioes = [
-        ("RA I", "Plano Piloto"),
-        ("RA II", "Gama"),
-        ("RA III", "Taguatinga"),
-        ("RA IV", "Brazlândia"),
-        ("RA V", "Sobradinho"),
-        ("RA VI", "Planaltina"),
-        ("RA VII", "Paranoá"),
-        ("RA VIII", "Núcleo Bandeirante"),
-        ("RA IX", "Ceilândia"),
-        ("RA X", "Guará"),
-        ("RA XI", "Cruzeiro"),
-        ("RA XII", "Samambaia"),
-        ("RA XIII", "Santa Maria"),
-        ("RA XIV", "São Sebastião"),
-        ("RA XV", "Recanto das Emas"),
-        ("RA XVI", "Lago Sul"),
-        ("RA XVII", "Riacho Fundo"),
-        ("RA XVIII", "Lago Norte"),
-        ("RA XIX", "Candangolândia"),
-        ("RA XX", "Águas Claras"),
-        ("RA XXI", "Riacho Fundo II"),
-        ("RA XXII", "Sudoeste/Octogonal"),
-        ("RA XXIII", "Varjão"),
-        ("RA XXIV", "Park Way"),
-        ("RA XXV", "SCIA – Estrutural"),
-        ("RA XXVI", "Sobradinho II"),
-        ("RA XXVII", "Jardim Botânico"),
-        ("RA XXVIII", "Itapoã"),
-        ("RA XXIX", "SIA"),
-        ("RA XXX", "Vicente Pires"),
-        ("RA XXXI", "Fercal"),
-        ("RA XXXII", "Sol Nascente/Pôr do Sol"),
-        ("RA XXXIII", "Arniqueira"),
-        ("RA XXXIV", "Pôr do Sol/Sol Nascente"),
+        ("RA I", "Plano Piloto"), ("RA II", "Gama"), ("RA III", "Taguatinga"),
+        ("RA IV", "Brazlândia"), ("RA V", "Sobradinho"), ("RA VI", "Planaltina"),
+        ("RA VII", "Paranoá"), ("RA VIII", "Núcleo Bandeirante"), ("RA IX", "Ceilândia"),
+        ("RA X", "Guará"), ("RA XI", "Cruzeiro"), ("RA XII", "Samambaia"),
+        ("RA XIII", "Santa Maria"), ("RA XIV", "São Sebastião"), ("RA XV", "Recanto das Emas"),
+        ("RA XVI", "Lago Sul"), ("RA XVII", "Riacho Fundo"), ("RA XVIII", "Lago Norte"),
+        ("RA XIX", "Candangolândia"), ("RA XX", "Águas Claras"), ("RA XXI", "Riacho Fundo II"),
+        ("RA XXII", "Sudoeste/Octogonal"), ("RA XXIII", "Varjão"), ("RA XXIV", "Park Way"),
+        ("RA XXV", "SCIA – Estrutural"), ("RA XXVI", "Sobradinho II"), ("RA XXVII", "Jardim Botânico"),
+        ("RA XXVIII", "Itapoã"), ("RA XXIX", "SIA"), ("RA XXX", "Vicente Pires"),
+        ("RA XXXI", "Fercal"), ("RA XXXII", "Sol Nascente/Pôr do Sol"),
+        ("RA XXXIII", "Arniqueira"), ("RA XXXIV", "Pôr do Sol/Sol Nascente"),
         ("RA XXXV", "Águas Claras Norte")
     ]
     for codigo, nome in regioes:
