@@ -203,5 +203,4 @@ git add README.md
 git commit -m "Atualiza README.md com todas as seções: módulos, funcionalidades, segurança e estrutura do projeto CR"
 git push origin main
 ```
-
 ---
