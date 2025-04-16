@@ -1,8 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
+from app import db
 from datetime import datetime
-
-# Inicializa o SQLAlchemy (assumindo que será importado em __init__.py)
-db = SQLAlchemy()
 
 # ----------------------------
 # USUÁRIOS DO SISTEMA
