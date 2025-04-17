@@ -22,7 +22,7 @@
       background-color: #f0f0f0;
     }
 
-    form {
+    form.filtros {
       margin-bottom: 1rem;
       display: flex;
       gap: 1rem;
@@ -34,6 +34,10 @@
       padding: 0.5rem;
       min-width: 200px;
     }
+
+    .exportar {
+      margin: 1rem 0;
+    }
   </style>
 </head>
 <body>
@@ -41,7 +45,7 @@
     <h1 style="text-align: center;">Lista de Processos</h1>
 
     <!-- Filtros -->
-    <form method="GET" action="{{ url_for('listar_processos') }}">
+    <form method="GET" action="{{ url_for('listar_processos') }}" class="filtros">
       <input type="text" name="numero" placeholder="Buscar por número do processo"
              value="{{ request.args.get('numero', '') }}">
 
@@ -55,6 +59,13 @@
       </select>
 
       <button type="submit" class="btn-primary">Filtrar</button>
+    </form>
+
+    <!-- Exportar CSV -->
+    <form method="GET" action="{{ url_for('exportar_processos_csv') }}" class="exportar">
+      <input type="hidden" name="numero" value="{{ request.args.get('numero', '') }}">
+      <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
+      <button type="submit" class="btn-primary">Exportar CSV</button>
     </form>
 
     <!-- Tabela -->
@@ -100,6 +111,7 @@
       <p style="margin-top: 2rem;">Nenhum processo encontrado com os critérios informados.</p>
     {% endif %}
 
+    <!-- Navegação -->
     <div style="text-align: center; margin-top: 2rem;">
       <a href="{{ url_for('dashboard_processos') }}">
         <button class="btn-secondary">Voltar ao Dashboard</button>

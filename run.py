@@ -375,6 +375,50 @@ def relatorios_gerenciais():
         total_tramitacoes=total_tramitacoes
     )
 
+# =====================================
+# ROTA 16: Exportar Processos para CSV
+# =====================================
+import pandas as pd
+from flask import make_response
+
+@app.route('/exportar-processos-csv')
+def exportar_processos_csv():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    numero = request.args.get('numero')
+    status_filtro = request.args.get('status')
+
+    query = Processo.query.join(EntradaProcesso)
+
+    if numero:
+        query = query.filter(Processo.numero_processo.ilike(f"%{numero}%"))
+    if status_filtro:
+        query = query.filter(Processo.status_atual == status_filtro)
+
+    processos = query.all()
+
+    dados = []
+    for p in processos:
+        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
+        tipo = TipoDemanda.query.get(entrada.id_tipo) if entrada else None
+
+        dados.append({
+            "Número do Processo": p.numero_processo,
+            "Status Atual": p.status_atual,
+            "RA de Origem": entrada.ra_origem if entrada else '',
+            "Tipo de Demanda": tipo.descricao if tipo else '',
+            "Data de Entrada": entrada.data_entrada_novacap.strftime('%d/%m/%Y') if entrada else '',
+        })
+
+    df = pd.DataFrame(dados)
+    csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig')
+
+    response = make_response(csv)
+    response.headers["Content-Disposition"] = "attachment; filename=processos_exportados.csv"
+    response.headers["Content-Type"] = "text/csv"
+    return response
+
 # ================================
 # Execução do servidor
 # ================================
