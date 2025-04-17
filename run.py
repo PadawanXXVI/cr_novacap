@@ -1,13 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import create_app
 from app.ext import db
-from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa, Status, Usuario
+from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa, Status, Usuario, Movimentacao
 from datetime import datetime
 import pandas as pd
-from flask import make_response, send_file
 from io import BytesIO
-
 
 app = create_app()
 
@@ -379,12 +377,9 @@ def relatorios_gerenciais():
         total_tramitacoes=total_tramitacoes
     )
 
-# =====================================
-# ROTA 16: Exportar Processos para CSV
-# =====================================
-import pandas as pd
-from flask import make_response
-
+# ==========================================
+# ROTA 16: Exportação de Processos para CSV
+# ==========================================
 @app.route('/exportar-processos-csv')
 def exportar_processos_csv():
     if not session.get('usuario'):
@@ -423,9 +418,9 @@ def exportar_processos_csv():
     response.headers["Content-Type"] = "text/csv"
     return response
 
-# =======================================
-# ROTA 17: Exportar Processos para Excel
-# =======================================
+# =============================================
+# ROTA 17: Exportação de Processos para Excel
+# =============================================
 @app.route('/exportar-processos-excel')
 def exportar_processos_excel():
     if not session.get('usuario'):
@@ -471,7 +466,7 @@ def exportar_processos_excel():
                      as_attachment=True)
 
 # ================================
-# ROTA 18: Exportar Tramitações
+# EXPORTAÇÃO DE TRAMITAÇÕES
 # ================================
 @app.route('/exportar-tramitacoes')
 def exportar_tramitacoes():
@@ -491,13 +486,10 @@ def exportar_tramitacoes():
 
     if ra:
         query = query.filter(EntradaProcesso.ra_origem == ra)
-
     if usuario:
         query = query.filter(Usuario.usuario == usuario)
-
     if status:
         query = query.filter(Movimentacao.novo_status == status)
-
     if inicio and fim:
         query = query.filter(Movimentacao.data.between(inicio, fim))
 
