@@ -3,17 +3,17 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Cria o app primeiro
-from app.__init__ import create_app
+from app import create_app
 app = create_app()
 
 # Agora importa o db e os modelos, depois do app estar criado
-from app import db
+from app.ext import db
 from app.models.modelos import Status, TipoDemanda, RegiaoAdministrativa, Demanda
 
 with app.app_context():
     db.drop_all()
     db.create_all()
-    
+
     # ------------------
     # TIPOS DE DEMANDA
     # ------------------
