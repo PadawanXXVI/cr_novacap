@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatórios Gerenciais</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  <style>
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    .card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: #444;
+    }
+
+    .card p {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .btn-group {
+      text-align: center;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 style="text-align: center;">Relatórios Gerenciais</h1>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3>Total de Processos Cadastrados</h3>
+        <p>{{ total_processos }}</p>
+      </div>
+      <div class="card">
+        <h3>Total de Tramitações Realizadas</h3>
+        <p>{{ total_tramitacoes }}</p>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <a href="{{ url_for('dashboard_processos') }}">
+        <button class="btn-secondary">Voltar ao Dashboard</button>
+      </a>
+      <a href="{{ url_for('logout') }}">
+        <button class="btn-danger">Sair do Sistema</button>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
