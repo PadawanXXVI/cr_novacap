@@ -96,7 +96,7 @@
     <!-- Botões -->
     <div class="button-group">
       <a href="{{ url_for('cadastro_processo') }}"><button class="btn-primary">Cadastrar Novo Processo</button></a>
-      <a href="/visualizar-processo"><button class="btn-secondary">Visualizar Processo</button></a>
+      <a href="{{ url_for('listar_processos') }}"><button class="btn-secondary">Visualizar Processo</button></a>
       <a href="{{ url_for('logout') }}"><button class="btn-danger">Sair</button></a>
     </div>
   </div>
