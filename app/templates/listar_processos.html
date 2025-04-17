@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Processos</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1.5rem;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    form {
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    form input, form select {
+      padding: 0.5rem;
+      min-width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 style="text-align: center;">Lista de Processos</h1>
+
+    <!-- Filtros -->
+    <form method="GET" action="{{ url_for('listar_processos') }}">
+      <input type="text" name="numero" placeholder="Buscar por número do processo" value="{{ request.args.get('numero', '') }}">
+      
+      <select name="status">
+        <option value="">-- Filtrar por status --</option>
+        {% for s in todos_status %}
+          <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>
+            {{ s.descricao }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn-primary">Filtrar</button>
+    </form>
+
+    <!-- Tabela -->
+    {% if processos %}
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Status Atual</th>
+            <th>RA de Origem</th>
+            <th>Tipo</th>
+            <th>Última Movimentação</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in processos %}
+            <tr>
+              <td>{{ p.numero_processo }}</td>
+              <td>{{ p.status_atual }}</td>
+              <td>{{ p.entrada.ra_origem if p.entrada else '---' }}</td>
+              <td>{{ p.entrada.tipo.descricao if p.entrada else '---' }}</td>
+              <td>
+                {% if p.entrada and p.entrada.movimentacoes %}
+                  {{ p.entrada.movimentacoes[-1].data.strftime('%d/%m/%Y %H:%M') }}
+                {% else %}
+                  ---
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('visualizar_processo', id_processo=p.id_processo) }}">
+                  <button class="btn-secondary">Visualizar</button>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p style="margin-top: 2rem;">Nenhum processo encontrado com os critérios informados.</p>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="{{ url_for('dashboard_processos') }}">
+        <button class="btn-secondary">Voltar ao Dashboard</button>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

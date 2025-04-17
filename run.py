@@ -272,6 +272,36 @@ def visualizar_processo(id_processo):
         movimentacoes=movimentacoes,
         ultima_observacao=ultima_observacao
     )
+# ================================
+# ROTA 13: Listar Processos
+# ================================
+@app.route('/listar-processos')
+def listar_processos():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    numero = request.args.get('numero')
+    status_filtro = request.args.get('status')
+
+    query = Processo.query
+
+    if numero:
+        query = query.filter(Processo.numero_processo.ilike(f"%{numero}%"))
+    if status_filtro:
+        query = query.filter_by(status_atual=status_filtro)
+
+    processos = query.order_by(Processo.id_processo.desc()).all()
+
+    # Enriquecer com entrada, tipo, movimentações
+    for p in processos:
+        p.entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
+        if p.entrada:
+            p.entrada.tipo = TipoDemanda.query.get(p.entrada.id_tipo)
+            p.entrada.movimentacoes = Movimentacao.query.filter_by(id_entrada=p.entrada.id_entrada).order_by(Movimentacao.data).all()
+
+    todos_status = Status.query.order_by(Status.ordem_exibicao).all()
+
+    return render_template("listar_processos.html", processos=processos, todos_status=todos_status)
 
 # ================================
 # Execução do servidor
