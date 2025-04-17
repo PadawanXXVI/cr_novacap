@@ -211,6 +211,34 @@ def cadastro_processo():
     return render_template('cadastro_processo.html', regioes=regioes, tipos=tipos, demandas=demandas, status=status)
 
 # ================================
+# ROTA 11: Cadastro de Demanda
+# ================================
+@app.route('/dashboard-processos')
+def dashboard_processos():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    # Aqui entrariam as consultas reais ao banco
+    total_processos = Processo.query.count()
+    processos_atendidos = Processo.query.filter(Processo.status_atual == 'Atendido').count()
+    processos_secre = EntradaProcesso.query.filter_by(tramite_inicial='SECRE').count()
+    processos_cr = EntradaProcesso.query.filter_by(tramite_inicial='CR').count()
+    processos_dc = Processo.query.filter(Processo.status_atual.ilike('%Diretoria das Cidades%')).count()
+    processos_do = Processo.query.filter(Processo.status_atual.ilike('%Diretoria de Obras%')).count()
+    devolvidos_ra = Processo.query.filter(Processo.status_atual.ilike('%Devolvido à RA%')).count()
+    processos_sgia = Processo.query.filter(Processo.status_atual.ilike('%SGIA%')).count()
+
+    return render_template('dashboard_processos.html',
+                           total_processos=total_processos,
+                           processos_atendidos=processos_atendidos,
+                           processos_secre=processos_secre,
+                           processos_cr=processos_cr,
+                           processos_dc=processos_dc,
+                           processos_do=processos_do,
+                           devolvidos_ra=devolvidos_ra,
+                           processos_sgia=processos_sgia)
+
+# ================================
 # Execução do servidor
 # ================================
 if __name__ == '__main__':
