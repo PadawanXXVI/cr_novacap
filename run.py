@@ -304,6 +304,61 @@ def listar_processos():
     return render_template("listar_processos.html", processos=processos, todos_status=todos_status)
 
 # ================================
+# ROTA 14: Alterar Processo
+# ================================
+@app.route('/alterar-processo/<int:id_processo>', methods=['GET', 'POST'])
+def alterar_processo(id_processo):
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    processo = Processo.query.get_or_404(id_processo)
+
+    if request.method == 'POST':
+        novo_status = request.form.get('novo_status')
+        observacao = request.form.get('observacao')
+        data_movimentacao = request.form.get('data_movimentacao')
+        usuario_nome = request.form.get('responsavel_tecnico')
+
+        # Validação dos campos obrigatórios
+        if not (novo_status and observacao and data_movimentacao and usuario_nome):
+            return "Erro: Todos os campos são obrigatórios.", 400
+
+        # Busca do responsável
+        responsavel = Usuario.query.filter_by(usuario=usuario_nome).first()
+        if not responsavel:
+            return "Erro: responsável técnico não encontrado.", 404
+
+        # Busca da entrada do processo
+        entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
+        if not entrada:
+            return "Erro: entrada do processo não encontrada.", 404
+
+        # Criação da movimentação
+        nova_mov = Movimentacao(
+            id_entrada=entrada.id_entrada,
+            id_usuario=responsavel.id_usuario,
+            novo_status=novo_status,
+            observacao=observacao,
+            data=datetime.strptime(data_movimentacao, "%Y-%m-%d")
+        )
+        db.session.add(nova_mov)
+
+        # Atualiza o status atual do processo
+        processo.status_atual = novo_status
+        db.session.commit()
+
+        return redirect(url_for('dashboard_processos'))
+
+    # GET – carrega lista de usuários e status
+    status = Status.query.order_by(Status.ordem_exibicao).all()
+    usuarios = Usuario.query.order_by(Usuario.usuario).all()
+
+    return render_template("alterar_processo.html",
+                           processo=processo,
+                           status=status,
+                           usuarios=usuarios)
+
+# ================================
 # Execução do servidor
 # ================================
 if __name__ == '__main__':
