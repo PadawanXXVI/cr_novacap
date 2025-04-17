@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import create_app
 from app.ext import db
-from app.models.modelos import Usuario
+from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa, Status, Usuario
+from datetime import datetime
 
 app = create_app()
 
@@ -158,6 +159,56 @@ def dashboard_protocolo():
 def logout():
     session.clear()
     return redirect(url_for('index'))
+
+
+# ================================
+# ROTA 10: Cadastro de Processo
+# ================================
+@app.route('/cadastro-processo', methods=['GET', 'POST'])
+def cadastro_processo():
+    if request.method == 'POST':
+        numero = request.form.get('numero_processo')
+
+        if Processo.query.filter_by(numero_processo=numero).first():
+            return "Erro: número de processo já cadastrado.", 400
+
+        # Cria o processo principal
+        novo_processo = Processo(
+            numero_processo=numero,
+            status_atual=request.form.get('status_inicial'),
+            observacoes=request.form.get('observacoes')
+        )
+        db.session.add(novo_processo)
+        db.session.flush()  # Garante que o ID do processo fique disponível
+
+        entrada = EntradaProcesso(
+            id_processo=novo_processo.id_processo,
+            data_criacao_ra=request.form.get('data_criacao_ra'),
+            data_entrada_novacap=request.form.get('data_entrada_novacap'),
+            data_documento=request.form.get('data_documento'),
+            tramite_inicial=request.form.get('tramite_inicial'),
+            ra_origem=request.form.get('ra_origem'),
+            id_tipo=int(request.form.get('id_tipo')),
+            id_demanda=int(request.form.get('id_demanda')),
+            usuario_responsavel=session.get('usuario'),
+            status_inicial=request.form.get('status_inicial'),
+            possui_vistoria='possui_vistoria' in request.form,
+            oficio_assinado='oficio_assinado' in request.form,
+            encerrado_pela_ra='encerrado_pela_ra' in request.form,
+            data_encerramento_pela_ra=request.form.get('data_encerramento_pela_ra') or None
+        )
+        db.session.add(entrada)
+        db.session.commit()
+
+        return "✅ Processo cadastrado com sucesso!", 200
+
+    # GET: busca dados para preencher selects
+    regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
+    tipos = TipoDemanda.query.order_by(TipoDemanda.descricao).all()
+    demandas = Demanda.query.order_by(Demanda.descricao).all()
+    status = Status.query.order_by(Status.ordem_exibicao).all()
+
+    return render_template('cadastro_processo.html', regioes=regioes, tipos=tipos, demandas=demandas, status=status)
 
 # ================================
 # Execução do servidor
