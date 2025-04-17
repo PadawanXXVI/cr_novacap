@@ -245,6 +245,35 @@ def dashboard_processos():
                            processos_sgia=processos_sgia)
 
 # ================================
+# ROTA 12: Visualizar Processo
+# ================================
+@app.route('/visualizar-processo/<int:id_processo>')
+def visualizar_processo(id_processo):
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    processo = Processo.query.get_or_404(id_processo)
+    entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
+
+    # Join com usuário para mostrar no histórico
+    movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
+        Movimentacao.id_entrada == entrada.id_entrada if entrada else None
+    ).order_by(Movimentacao.data.asc()).all()
+
+    ultima_observacao = (
+        movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao
+        else processo.observacoes
+    )
+
+    return render_template(
+        'visualizar_processo.html',
+        processo=processo,
+        entrada=entrada,
+        movimentacoes=movimentacoes,
+        ultima_observacao=ultima_observacao
+    )
+
+# ================================
 # Execução do servidor
 # ================================
 if __name__ == '__main__':
