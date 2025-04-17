@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Central de Relacionamento</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <div class="container" style="text-align: center;">
+        <h1>Central de Relacionamento</h1>
+        <h2>Login</h2>
+
+        <form method="POST" action="/login">
+            <div style="text-align: left;">
+                <label for="username">Nome de Usuário</label>
+                <input type="text" id="username" name="username" required placeholder="ex: nome.sobrenome">
+
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" required>
+
+                <label for="sistema">Escolha o sistema:</label>
+                <select name="sistema" id="sistema" required>
+                    <option value="">Selecione</option>
+                    <option value="tramite">Tramitação de Processos</option>
+                    <option value="protocolo">Protocolo de Atendimento</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-primary" style="margin-top: 1rem;">Entrar no Sistema</button>
+        </form>
+
+        <div style="margin-top: 2rem;">
+            <a href="/cadastro" class="btn-secondary" style="margin-right: 1rem;">Solicitar Cadastro</a>
+            <a href="/trocar-senha" class="btn-secondary">Redefinir Senha</a>
+        </div>
+    </div>
+
+</body>
+</html>
