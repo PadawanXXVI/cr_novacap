@@ -11,6 +11,11 @@
     <div class="container" style="text-align: center;">
         <h1>Central de Relacionamento</h1>
         <h2>Painel de Aprovação de Usuários</h2>
+        <div style="text-align: right; margin-bottom: 1rem;">
+            <a href="{{ url_for('logout') }}">
+              <button class="btn-danger">Sair do Sistema</button>
+            </a>
+          </div>          
 
         {% if usuarios %}
             <table style="width: 100%; margin-top: 2rem; text-align: left;">
