@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lista de Processos</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
   <style>
     table {
       width: 100%;
@@ -42,8 +42,9 @@
 
     <!-- Filtros -->
     <form method="GET" action="{{ url_for('listar_processos') }}">
-      <input type="text" name="numero" placeholder="Buscar por número do processo" value="{{ request.args.get('numero', '') }}">
-      
+      <input type="text" name="numero" placeholder="Buscar por número do processo"
+             value="{{ request.args.get('numero', '') }}">
+
       <select name="status">
         <option value="">-- Filtrar por status --</option>
         {% for s in todos_status %}
@@ -66,7 +67,7 @@
             <th>RA de Origem</th>
             <th>Tipo</th>
             <th>Última Movimentação</th>
-            <th>Ação</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -83,9 +84,12 @@
                   ---
                 {% endif %}
               </td>
-              <td>
+              <td style="white-space: nowrap;">
                 <a href="{{ url_for('visualizar_processo', id_processo=p.id_processo) }}">
                   <button class="btn-secondary">Visualizar</button>
+                </a>
+                <a href="{{ url_for('alterar_processo', id_processo=p.id_processo) }}">
+                  <button class="btn-primary">Alterar</button>
                 </a>
               </td>
             </tr>
@@ -102,7 +106,7 @@
       </a>
       <a href="{{ url_for('logout') }}">
         <button class="btn-danger">Sair do Sistema</button>
-      </a>      
+      </a>
     </div>
   </div>
 </body>
