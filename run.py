@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
-from werkzeug.security import generate_password_hash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from werkzeug.security import generate_password_hash, check_password_hash
 from app import create_app
 from app.ext import db
 from app.models.modelos import Usuario
@@ -14,16 +14,35 @@ def index():
     return render_template('index.html')
 
 # ================================
-# ROTA 2: Login (ainda sem autenticação real)
+# ROTA 2: Login com autenticação
 # ================================
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
+        senha = request.form.get('password')
         sistema = request.form.get('sistema')
 
-        # Aqui será feita a lógica de autenticação real (em etapa futura)
+        usuario = Usuario.query.filter_by(usuario=username).first()
 
+        if not usuario:
+            return "Erro: usuário não encontrado.", 404
+
+        if not check_password_hash(usuario.senha_hash, senha):
+            return "Erro: senha incorreta.", 401
+
+        if not usuario.aprovado:
+            return "Erro: acesso ainda não autorizado pelo administrador.", 403
+
+        if usuario.bloqueado:
+            return "Erro: usuário bloqueado.", 403
+
+        # Armazena dados na sessão
+        session['usuario'] = usuario.usuario
+        session['is_admin'] = usuario.is_admin
+        session['id_usuario'] = usuario.id_usuario
+
+        # Redireciona conforme sistema escolhido
         if sistema == 'tramite':
             return redirect(url_for('dashboard_processos'))
         elif sistema == 'protocolo':
@@ -53,7 +72,7 @@ def cadastro():
             email=email,
             usuario=usuario,
             senha_hash=generate_password_hash(senha),
-            aprovado=False,  # será aprovado via painel-admin
+            aprovado=False,
             bloqueado=False,
             is_admin=False
         )
@@ -85,7 +104,7 @@ def trocar_senha():
             db.session.commit()
             return "Senha atualizada com sucesso!", 200
         else:
-            return "Erro: dados não encontrados. Verifique as informações e tente novamente.", 404
+            return "Erro: dados não encontrados.", 404
 
     return render_template('trocar_senha.html')
 
@@ -94,14 +113,20 @@ def trocar_senha():
 # ================================
 @app.route('/painel-admin')
 def painel_admin():
+    if not session.get('is_admin'):
+        return "Acesso restrito ao administrador.", 403
+
     usuarios = Usuario.query.filter_by(aprovado=False).all()
     return render_template('painel-admin.html', usuarios=usuarios)
 
 # ================================
-# ROTA 6: Aprovar Usuário (POST)
+# ROTA 6: Aprovar Usuário
 # ================================
 @app.route('/aprovar-usuario/<int:id_usuario>', methods=['POST'])
 def aprovar_usuario(id_usuario):
+    if not session.get('is_admin'):
+        return "Acesso restrito ao administrador.", 403
+
     usuario = Usuario.query.get_or_404(id_usuario)
     usuario.aprovado = True
     db.session.commit()
@@ -113,6 +138,8 @@ def aprovar_usuario(id_usuario):
 # ================================
 @app.route('/dashboard-processos')
 def dashboard_processos():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
     return "<h2>Bem-vindo ao Sistema de Tramitação de Processos</h2>"
 
 # ================================
@@ -120,10 +147,20 @@ def dashboard_processos():
 # ================================
 @app.route('/dashboard-protocolo')
 def dashboard_protocolo():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
     return "<h2>Bem-vindo ao Sistema de Protocolo de Atendimento</h2>"
 
 # ================================
-# ROTA FINAL: Executar o servidor
+# ROTA 9: Logout
+# ================================
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
+# ================================
+# Execução do servidor
 # ================================
 if __name__ == '__main__':
     app.run(debug=True)
