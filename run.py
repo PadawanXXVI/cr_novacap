@@ -426,7 +426,6 @@ def exportar_processos_csv():
 # =======================================
 # ROTA 17: Exportar Processos para Excel
 # =======================================
-
 @app.route('/exportar-processos-excel')
 def exportar_processos_excel():
     if not session.get('usuario'):
@@ -470,6 +469,58 @@ def exportar_processos_excel():
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                      download_name='processos_exportados.xlsx',
                      as_attachment=True)
+
+# ================================
+# ROTA 18: Exportar Tramitações
+# ================================
+@app.route('/exportar-tramitacoes')
+def exportar_tramitacoes():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    ra = request.args.get('ra')
+    usuario = request.args.get('usuario')
+    status = request.args.get('status')
+    inicio = request.args.get('inicio')
+    fim = request.args.get('fim')
+
+    query = db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo) \
+        .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario) \
+        .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada) \
+        .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
+
+    if ra:
+        query = query.filter(EntradaProcesso.ra_origem == ra)
+
+    if usuario:
+        query = query.filter(Usuario.usuario == usuario)
+
+    if status:
+        query = query.filter(Movimentacao.novo_status == status)
+
+    if inicio and fim:
+        query = query.filter(Movimentacao.data.between(inicio, fim))
+
+    resultados = query.order_by(Movimentacao.data.desc()).all()
+
+    dados = []
+    for mov, user, entrada, processo in resultados:
+        dados.append({
+            "Número do Processo": processo.numero_processo,
+            "RA de Origem": entrada.ra_origem,
+            "Status da Tramitação": mov.novo_status,
+            "Data da Tramitação": mov.data.strftime('%d/%m/%Y %H:%M'),
+            "Responsável Técnico": user.usuario,
+            "Observação": mov.observacao or ''
+        })
+
+    df = pd.DataFrame(dados)
+    csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig')
+
+    response = make_response(csv)
+    response.headers["Content-Disposition"] = "attachment; filename=tramitacoes_filtradas.csv"
+    response.headers["Content-Type"] = "text/csv"
+    return response
 
 # ================================
 # Execução do servidor
