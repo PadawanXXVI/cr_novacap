@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alterar Processo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  <style>
+    form {
+      max-width: 700px;
+      margin: 2rem auto;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
+    }
+
+    .btn-group {
+      text-align: center;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 style="text-align: center;">Alterar Processo</h1>
+
+    <form method="POST" action="{{ url_for('alterar_processo', id_processo=processo.id_processo) }}">
+      
+      <!-- Número do Processo -->
+      <label for="numero_processo">Número do Processo</label>
+      <input type="text" id="numero_processo" name="numero_processo"
+             value="{{ processo.numero_processo }}" readonly placeholder="00000-00000000/0000-00" />
+
+      <!-- Status Atual -->
+      <label for="status_atual">Status Atual</label>
+      <input type="text" id="status_atual" name="status_atual"
+             value="{{ processo.status_atual or '---' }}" readonly />
+
+      <!-- Novo Status -->
+      <label for="novo_status">Novo Status</label>
+      <select name="novo_status" required>
+        <option value="">Selecione</option>
+        {% for s in status %}
+          <option value="{{ s.descricao }}">{{ s.descricao }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Observação -->
+      <label for="observacao">Observação</label>
+      <textarea name="observacao" rows="4" required></textarea>
+
+      <!-- Data da Movimentação -->
+      <label for="data_movimentacao">Data da Movimentação</label>
+      <input type="date" name="data_movimentacao" required />
+
+      <!-- Responsável Técnico -->
+      <label for="responsavel_tecnico">Responsável Técnico (nome.sobrenome)</label>
+      <select name="responsavel_tecnico" required>
+        <option value="">Selecione</option>
+        {% for u in usuarios %}
+          <option value="{{ u.usuario }}">{{ u.usuario }}</option>
+        {% endfor %}
+      </select>
+
+      <div class="btn-group">
+        <button type="submit" class="btn-primary">Salvar Alteração</button>
+        <a href="{{ url_for('dashboard_processos') }}"><button type="button" class="btn-secondary">Voltar</button></a>
+        <a href="{{ url_for('logout') }}"><button type="button" class="btn-danger">Sair do Sistema</button></a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
