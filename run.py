@@ -359,6 +359,23 @@ def alterar_processo(id_processo):
                            usuarios=usuarios)
 
 # ================================
+# ROTA 15: Relatórios Gerenciais
+# ================================
+@app.route('/relatorios-gerenciais')
+def relatorios_gerenciais():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    total_processos = Processo.query.count()
+    total_tramitacoes = Movimentacao.query.count()
+
+    return render_template(
+        'relatorios_gerenciais.html',
+        total_processos=total_processos,
+        total_tramitacoes=total_tramitacoes
+    )
+
+# ================================
 # Execução do servidor
 # ================================
 if __name__ == '__main__':
