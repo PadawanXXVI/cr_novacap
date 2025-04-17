@@ -4,6 +4,10 @@ from app import create_app
 from app.ext import db
 from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa, Status, Usuario
 from datetime import datetime
+import pandas as pd
+from flask import make_response, send_file
+from io import BytesIO
+
 
 app = create_app()
 
@@ -418,6 +422,54 @@ def exportar_processos_csv():
     response.headers["Content-Disposition"] = "attachment; filename=processos_exportados.csv"
     response.headers["Content-Type"] = "text/csv"
     return response
+
+# =======================================
+# ROTA 17: Exportar Processos para Excel
+# =======================================
+
+@app.route('/exportar-processos-excel')
+def exportar_processos_excel():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    numero = request.args.get('numero')
+    status_filtro = request.args.get('status')
+
+    query = Processo.query.join(EntradaProcesso)
+
+    if numero:
+        query = query.filter(Processo.numero_processo.ilike(f"%{numero}%"))
+    if status_filtro:
+        query = query.filter(Processo.status_atual == status_filtro)
+
+    processos = query.all()
+
+    dados = []
+    for p in processos:
+        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
+        tipo = TipoDemanda.query.get(entrada.id_tipo) if entrada else None
+
+        dados.append({
+            "Número do Processo": p.numero_processo,
+            "Status Atual": p.status_atual,
+            "RA de Origem": entrada.ra_origem if entrada else '',
+            "Tipo de Demanda": tipo.descricao if tipo else '',
+            "Data de Entrada": entrada.data_entrada_novacap.strftime('%d/%m/%Y') if entrada else '',
+        })
+
+    df = pd.DataFrame(dados)
+
+    from io import BytesIO
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Processos')
+
+    output.seek(0)
+    from flask import send_file
+    return send_file(output,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                     download_name='processos_exportados.xlsx',
+                     as_attachment=True)
 
 # ================================
 # Execução do servidor
