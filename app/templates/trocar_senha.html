@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir Senha - Central de Relacionamento</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <div class="container" style="text-align: center;">
+        <h1>Central de Relacionamento</h1>
+        <h2>Redefinir Senha</h2>
+
+        <form method="POST" action="/trocar-senha">
+            <div style="text-align: left;">
+                <label for="nome_completo">Nome Completo</label>
+                <input type="text" id="nome_completo" name="nome_completo" required placeholder="ex: Anderson de Matos Guimarães">
+
+                <label for="email">E-mail Institucional</label>
+                <input type="email" id="email" name="email" required placeholder="ex: nome.sobrenome@novacap.df.gov.br">
+
+                <label for="nova_senha">Nova Senha</label>
+                <input type="password" id="nova_senha" name="nova_senha" required>
+
+                <label for="confirmar_senha">Confirmar Nova Senha</label>
+                <input type="password" id="confirmar_senha" name="confirmar_senha" required>
+            </div>
+
+            <button type="submit" class="btn-primary" style="margin-top: 1rem;">Atualizar Senha</button>
+        </form>
+
+        <p style="margin-top: 2rem; font-size: 0.95rem; color: #555;">
+            ⚠️ Para redefinir sua senha, os dados informados devem coincidir exatamente com os dados cadastrados. 
+            Caso tenha dúvidas, entre em contato com o administrador do sistema.
+        </p>
+    </div>
+
+</body>
+</html>
