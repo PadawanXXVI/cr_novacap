@@ -6,3 +6,13 @@ __pycache__/
 *.sqlite3
 .DS_Store
 instance/
+
+# Arquivos temporários de editor
+*.swp
+*.swo
+
+# Arquivos VS Code
+.vscode/
+
+# Arquivos de backup
+*~
