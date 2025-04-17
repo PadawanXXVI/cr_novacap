@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Relacionamento - NOVACAP</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Central de Relacionamento</h1>
+        <h2>NOVACAP</h2>
+        <p>Bem-vindo ao sistema interno da Central de Relacionamento da NOVACAP.</p>
+        <p>Utilize o botão abaixo para acessar o sistema com suas credenciais.</p>
+
+        <a href="{{ url_for('login') }}">
+            <button class="btn-primary">Acessar o Sistema</button>
+        </a>
+    </div>
+
+</body>
+</html>
