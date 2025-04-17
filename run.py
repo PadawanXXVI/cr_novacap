@@ -225,7 +225,13 @@ def dashboard_processos():
     processos_cr = EntradaProcesso.query.filter_by(tramite_inicial='CR').count()
     processos_dc = Processo.query.filter(Processo.status_atual.ilike('%Diretoria das Cidades%')).count()
     processos_do = Processo.query.filter(Processo.status_atual.ilike('%Diretoria de Obras%')).count()
-    devolvidos_ra = Processo.query.filter(Processo.status_atual.ilike('%Devolvido à RA%')).count()
+    devolvidos_ra = Processo.query.filter(
+    Processo.status_atual.in_([
+        "Devolvido à RA de origem – adequação de requisitos",
+        "Devolvido à RA de origem – parecer técnico de outro órgão",
+        "Devolvido à RA de origem – serviço com contrato de natureza continuada pela DC/DO"
+    ])
+).count()
     processos_sgia = Processo.query.filter(Processo.status_atual.ilike('%SGIA%')).count()
 
     return render_template('dashboard_processos.html',
