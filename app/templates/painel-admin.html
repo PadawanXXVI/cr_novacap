@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Aprovação de Usuários</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <div class="container" style="text-align: center;">
+        <h1>Central de Relacionamento</h1>
+        <h2>Painel de Aprovação de Usuários</h2>
+
+        {% if usuarios %}
+            <table style="width: 100%; margin-top: 2rem; text-align: left;">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Usuário</th>
+                        <th>E-mail</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                        <tr>
+                            <td>{{ u.nome }}</td>
+                            <td>{{ u.usuario }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('aprovar_usuario', id_usuario=u.id_usuario) }}">
+                                    <button type="submit" class="btn-success">Aprovar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="margin-top: 2rem;">Nenhum usuário pendente de aprovação.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>
