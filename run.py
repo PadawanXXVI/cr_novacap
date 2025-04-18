@@ -147,20 +147,44 @@ def dashboard_processos():
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
+    # 1. Total de processos
     total_processos = Processo.query.count()
+
+    # 2. Processos com status "Atendido"
     processos_atendidos = Processo.query.filter_by(status_atual='Atendido').count()
+
+    # 3. Processos iniciados pela SECRE
     processos_secre = EntradaProcesso.query.filter_by(tramite_inicial='SECRE').count()
+
+    # 4. Processos iniciados pela CR
     processos_cr = EntradaProcesso.query.filter_by(tramite_inicial='CR').count()
-    processos_dc = Processo.query.filter(Processo.status_atual.ilike('%Diretoria das Cidades%')).count()
-    processos_do = Processo.query.filter(Processo.status_atual.ilike('%Diretoria de Obras%')).count()
+
+    # 5. Diretoria das Cidades – status atual
+    processos_dc = Processo.query.filter_by(status_atual='Enviado à Diretoria das Cidades').count()
+
+    # 6. Diretoria de Obras – status atual
+    processos_do = Processo.query.filter_by(status_atual='Enviado à Diretoria de Obras').count()
+
+    # 7. Total em atendimento (status atual em uma das diretorias)
+    total_em_atendimento = processos_dc + processos_do
+
+    # 8. Processos SGIA
+    processos_sgia = Processo.query.filter_by(status_atual='Improcedente – tramitação via SGIA').count()
+
+    # 9. Improcedentes – que tramitam por outro órgão
+    processos_improcedentes = Processo.query.filter_by(
+        status_atual='Improcedente – tramita por órgão diferente da NOVACAP'
+    ).count()
+
+    # 10. Devolvidos à RA (exceto improcedente)
     devolvidos_ra = Processo.query.filter(
         Processo.status_atual.in_([
             "Devolvido à RA de origem – adequação de requisitos",
             "Devolvido à RA de origem – parecer técnico de outro órgão",
-            "Devolvido à RA de origem – serviço com contrato de natureza continuada pela DC/DO"
+            "Devolvido à RA de origem – serviço com contrato de natureza continuada pela DC/DO",
+            "Devolvido à RA de origem – implantação"
         ])
     ).count()
-    processos_sgia = Processo.query.filter(Processo.status_atual.ilike('%SGIA%')).count()
 
     return render_template('dashboard_processos.html',
                            total_processos=total_processos,
@@ -169,9 +193,10 @@ def dashboard_processos():
                            processos_cr=processos_cr,
                            processos_dc=processos_dc,
                            processos_do=processos_do,
-                           devolvidos_ra=devolvidos_ra,
-                           processos_sgia=processos_sgia)
-
+                           total_em_atendimento=total_em_atendimento,
+                           processos_sgia=processos_sgia,
+                           processos_improcedentes=processos_improcedentes,
+                           devolvidos_ra=devolvidos_ra)
 
 # ================================
 # ROTA 8: Dashboard de Protocolo
