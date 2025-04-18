@@ -20,31 +20,33 @@
     {% endwith %}
 
     <form method="POST" action="{{ url_for('login') }}">
-      <div>
-        <label for="username">Nome de Usuário</label><br />
-        <input type="text" id="username" name="username" placeholder="ex: nome.sobrenome" required style="width: 100%; max-width: 400px;" />
-      </div><br />
+      <div style="max-width: 400px; margin: 0 auto;">
+        <label for="username">Nome de Usuário</label>
+        <input type="text" id="username" name="username" placeholder="ex: nome.sobrenome" required />
+      </div>
 
-      <div>
-        <label for="password">Senha</label><br />
-        <input type="password" id="password" name="password" required style="width: 100%; max-width: 400px;" />
-      </div><br />
+      <div style="max-width: 400px; margin: 0 auto;">
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" required />
+      </div>
 
-      <div>
-        <label for="sistema">Escolha o sistema:</label><br />
-        <select id="sistema" name="sistema" required style="width: 100%; max-width: 400px;">
+      <div style="max-width: 400px; margin: 0 auto;">
+        <label for="sistema">Escolha o sistema:</label>
+        <select id="sistema" name="sistema" required>
           <option value="">Selecione</option>
           <option value="tramite">Tramitação de Processos</option>
           <option value="protocolo">Protocolo de Atendimento</option>
         </select>
-      </div><br />
+      </div>
 
-      <button type="submit" class="btn-primary">Entrar no Sistema</button>
+      <div style="margin-top: 1.5rem;">
+        <button type="submit" class="btn-primary">Entrar no Sistema</button>
+      </div>
     </form>
 
     <div style="margin-top: 1rem;">
       <a href="{{ url_for('cadastro') }}">
-        <button class="btn-secondary" style="margin-right: 10px;">Solicitar Cadastro</button>
+        <button class="btn-secondary">Solicitar Cadastro</button>
       </a>
       <a href="{{ url_for('trocar_senha') }}">
         <button class="btn-secondary">Redefinir Senha</button>
