@@ -10,7 +10,7 @@
   <div class="container">
     <h1>Cadastro de Processo</h1>
 
-    <!-- Mensagem flash -->
+    <!-- Mensagens flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -21,16 +21,16 @@
 
     <form method="POST" action="{{ url_for('cadastro_processo') }}">
       
-      <!-- Número do processo -->
+      <!-- Número do Processo -->
       <label for="numero_processo">Número do Processo</label>
       <input type="text" id="numero_processo" name="numero_processo" placeholder="00000-00000000/0000-00" required />
 
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-col">
           <label for="data_criacao_ra">Data de Criação na RA</label>
           <input type="date" id="data_criacao_ra" name="data_criacao_ra" required />
         </div>
-        <div class="form-group">
+        <div class="form-col">
           <label for="ra_origem">Região Administrativa</label>
           <select id="ra_origem" name="ra_origem" required>
             <option value="">Selecione</option>
@@ -42,11 +42,11 @@
       </div>
 
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-col">
           <label for="data_entrada_novacap">Data de Entrada na NOVACAP</label>
           <input type="date" id="data_entrada_novacap" name="data_entrada_novacap" required />
         </div>
-        <div class="form-group">
+        <div class="form-col">
           <label for="tramite_inicial">Tramitação Inicial</label>
           <select id="tramite_inicial" name="tramite_inicial" required>
             <option value="">Selecione</option>
@@ -57,7 +57,7 @@
       </div>
 
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-col">
           <label for="id_demanda">Demanda</label>
           <select id="id_demanda" name="id_demanda" required>
             <option value="">Selecione</option>
@@ -66,7 +66,7 @@
             {% endfor %}
           </select>
         </div>
-        <div class="form-group">
+        <div class="form-col">
           <label for="id_tipo">Tipo de Demanda</label>
           <select id="id_tipo" name="id_tipo" required>
             <option value="">Selecione</option>
@@ -78,11 +78,11 @@
       </div>
 
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-col">
           <label for="data_documento">Data do Documento</label>
           <input type="date" id="data_documento" name="data_documento" required />
         </div>
-        <div class="form-group">
+        <div class="form-col">
           <label for="usuario_responsavel">Usuário Responsável</label>
           <select id="usuario_responsavel" name="usuario_responsavel" required>
             <option value="">Selecione</option>
@@ -105,13 +105,13 @@
       <textarea id="observacoes" name="observacoes" rows="3" placeholder="Observações relevantes (opcional)..."></textarea>
 
       <!-- Botões -->
-      <div style="margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+      <div class="button-group">
         <button type="submit" class="btn-primary">Salvar Processo</button>
         <a href="{{ url_for('dashboard_processos') }}">
-          <button type="button" class="btn-outline-blue">Tela de Totais de Processos</button>
+          <button type="button" class="btn-secondary">Tela de Totais</button>
         </a>
         <a href="{{ url_for('listar_processos') }}">
-          <button type="button" class="btn-outline-blue">Visualizar Processos</button>
+          <button type="button" class="btn-secondary">Visualizar Processos</button>
         </a>
         <a href="{{ url_for('logout') }}">
           <button type="button" class="btn-danger">Sair do Sistema</button>
