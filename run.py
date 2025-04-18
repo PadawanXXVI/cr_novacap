@@ -143,7 +143,32 @@ def aprovar_usuario(id_usuario):
 def dashboard_processos():
     if not session.get('usuario'):
         return redirect(url_for('login'))
-    return "<h2>Bem-vindo ao Sistema de Tramitação de Processos</h2>"
+
+    total_processos = Processo.query.count()
+    processos_atendidos = Processo.query.filter_by(status_atual='Atendido').count()
+    processos_secre = EntradaProcesso.query.filter_by(tramite_inicial='SECRE').count()
+    processos_cr = EntradaProcesso.query.filter_by(tramite_inicial='CR').count()
+    processos_dc = Processo.query.filter(Processo.status_atual.ilike('%Diretoria das Cidades%')).count()
+    processos_do = Processo.query.filter(Processo.status_atual.ilike('%Diretoria de Obras%')).count()
+    devolvidos_ra = Processo.query.filter(
+        Processo.status_atual.in_([
+            "Devolvido à RA de origem – adequação de requisitos",
+            "Devolvido à RA de origem – parecer técnico de outro órgão",
+            "Devolvido à RA de origem – serviço com contrato de natureza continuada pela DC/DO"
+        ])
+    ).count()
+    processos_sgia = Processo.query.filter(Processo.status_atual.ilike('%SGIA%')).count()
+
+    return render_template('dashboard_processos.html',
+                           total_processos=total_processos,
+                           processos_atendidos=processos_atendidos,
+                           processos_secre=processos_secre,
+                           processos_cr=processos_cr,
+                           processos_dc=processos_dc,
+                           processos_do=processos_do,
+                           devolvidos_ra=devolvidos_ra,
+                           processos_sgia=processos_sgia)
+
 
 # ================================
 # ROTA 8: Dashboard de Protocolo
@@ -213,41 +238,7 @@ def cadastro_processo():
     return render_template('cadastro_processo.html', regioes=regioes, tipos=tipos, demandas=demandas, status=status)
 
 # ================================
-# ROTA 11: Cadastro de Demanda
-# ================================
-@app.route('/dashboard-processos')
-def dashboard_processos():
-    if not session.get('usuario'):
-        return redirect(url_for('login'))
-
-    # Aqui entrariam as consultas reais ao banco
-    total_processos = Processo.query.count()
-    processos_atendidos = Processo.query.filter(Processo.status_atual == 'Atendido').count()
-    processos_secre = EntradaProcesso.query.filter_by(tramite_inicial='SECRE').count()
-    processos_cr = EntradaProcesso.query.filter_by(tramite_inicial='CR').count()
-    processos_dc = Processo.query.filter(Processo.status_atual.ilike('%Diretoria das Cidades%')).count()
-    processos_do = Processo.query.filter(Processo.status_atual.ilike('%Diretoria de Obras%')).count()
-    devolvidos_ra = Processo.query.filter(
-    Processo.status_atual.in_([
-        "Devolvido à RA de origem – adequação de requisitos",
-        "Devolvido à RA de origem – parecer técnico de outro órgão",
-        "Devolvido à RA de origem – serviço com contrato de natureza continuada pela DC/DO"
-    ])
-).count()
-    processos_sgia = Processo.query.filter(Processo.status_atual.ilike('%SGIA%')).count()
-
-    return render_template('dashboard_processos.html',
-                           total_processos=total_processos,
-                           processos_atendidos=processos_atendidos,
-                           processos_secre=processos_secre,
-                           processos_cr=processos_cr,
-                           processos_dc=processos_dc,
-                           processos_do=processos_do,
-                           devolvidos_ra=devolvidos_ra,
-                           processos_sgia=processos_sgia)
-
-# ================================
-# ROTA 12: Visualizar Processo
+# ROTA 11: Visualizar Processo
 # ================================
 @app.route('/visualizar-processo/<int:id_processo>')
 def visualizar_processo(id_processo):
@@ -275,7 +266,7 @@ def visualizar_processo(id_processo):
         ultima_observacao=ultima_observacao
     )
 # ================================
-# ROTA 13: Listar Processos
+# ROTA 12: Listar Processos
 # ================================
 @app.route('/listar-processos')
 def listar_processos():
@@ -306,7 +297,7 @@ def listar_processos():
     return render_template("listar_processos.html", processos=processos, todos_status=todos_status)
 
 # ================================
-# ROTA 14: Alterar Processo
+# ROTA 13: Alterar Processo
 # ================================
 @app.route('/alterar-processo/<int:id_processo>', methods=['GET', 'POST'])
 def alterar_processo(id_processo):
@@ -361,7 +352,7 @@ def alterar_processo(id_processo):
                            usuarios=usuarios)
 
 # ================================
-# ROTA 15: Relatórios Gerenciais
+# ROTA 14: Relatórios Gerenciais
 # ================================
 @app.route('/relatorios-gerenciais')
 def relatorios_gerenciais():
@@ -378,7 +369,7 @@ def relatorios_gerenciais():
     )
 
 # ===================================
-# ROTA 16: Exportação de Tramitações
+# ROTA 15: Exportação de Tramitações
 # ===================================
 @app.route('/exportar-tramitacoes')
 def exportar_tramitacoes():
