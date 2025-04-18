@@ -12,15 +12,15 @@
 
     <form method="POST" action="{{ url_for('cadastro_processo') }}">
       
-      <!-- Número do processo -->
+      <!-- 1. Número do processo -->
       <label for="numero_processo">Número do Processo</label>
       <input type="text" id="numero_processo" name="numero_processo" placeholder="00000-00000000/0000-00" required />
 
-      <!-- Data de Criação da RA -->
+      <!-- 2. Data de Criação da RA -->
       <label for="data_criacao_ra">Data de Criação na RA</label>
       <input type="date" id="data_criacao_ra" name="data_criacao_ra" required />
 
-      <!-- Região Administrativa -->
+      <!-- 3. Região Administrativa -->
       <label for="ra_origem">Região Administrativa</label>
       <select id="ra_origem" name="ra_origem" required>
         <option value="">Selecione</option>
@@ -29,11 +29,11 @@
         {% endfor %}
       </select>
 
-      <!-- Data de Entrada na NOVACAP -->
+      <!-- 4. Data de Entrada na NOVACAP -->
       <label for="data_entrada_novacap">Data de Entrada na NOVACAP</label>
       <input type="date" id="data_entrada_novacap" name="data_entrada_novacap" required />
 
-      <!-- Tramitação Inicial -->
+      <!-- 5. Tramitação Inicial -->
       <label for="tramite_inicial">Tramitação Inicial</label>
       <select id="tramite_inicial" name="tramite_inicial" required>
         <option value="">Selecione</option>
@@ -41,16 +41,7 @@
         <option value="CR">CR</option>
       </select>
 
-      <!-- Tipo de Demanda -->
-      <label for="id_tipo">Tipo de Demanda</label>
-      <select id="id_tipo" name="id_tipo" required>
-        <option value="">Selecione</option>
-        {% for tipo in tipos %}
-        <option value="{{ tipo.id_tipo }}">{{ tipo.descricao }}</option>
-        {% endfor %}
-      </select>
-
-      <!-- Demanda -->
+      <!-- 6. Demanda -->
       <label for="id_demanda">Demanda</label>
       <select id="id_demanda" name="id_demanda" required>
         <option value="">Selecione</option>
@@ -59,31 +50,40 @@
         {% endfor %}
       </select>
 
-      <!-- Status Inicial -->
-      <label for="status_inicial">Status Inicial</label>
-      <select id="status_inicial" name="status_inicial" required>
+      <!-- 7. Tipo de Demanda -->
+      <label for="id_tipo">Tipo de Demanda</label>
+      <select id="id_tipo" name="id_tipo" required>
         <option value="">Selecione</option>
-        {% for s in status %}
-        <option value="{{ s.descricao }}">{{ s.descricao }}</option>
+        {% for tipo in tipos %}
+        <option value="{{ tipo.id_tipo }}">{{ tipo.descricao }}</option>
         {% endfor %}
       </select>
 
-      <!-- Checkboxes -->
+      <!-- 8. Checkboxes -->
       <div>
         <label><input type="checkbox" name="possui_vistoria" /> Possui Vistoria / Imagem</label><br />
         <label><input type="checkbox" name="oficio_assinado" /> Ofício Devidamente Assinado</label>
       </div>
 
-      <!-- Data do Documento -->
+      <!-- 9. Data do Documento -->
       <label for="data_documento">Data do Documento</label>
       <input type="date" id="data_documento" name="data_documento" required />
 
-      <!-- Usuário Responsável -->
+      <!-- 10. Usuário Responsável -->
       <label for="usuario_responsavel">Usuário Responsável</label>
       <select id="usuario_responsavel" name="usuario_responsavel" required>
         <option value="">Selecione</option>
         {% for u in usuarios %}
         <option value="{{ u.usuario }}">{{ u.usuario }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- 11. Status Inicial -->
+      <label for="status_inicial">Status Inicial</label>
+      <select id="status_inicial" name="status_inicial" required>
+        <option value="">Selecione</option>
+        {% for s in status %}
+        <option value="{{ s.descricao }}">{{ s.descricao }}</option>
         {% endfor %}
       </select>
 
