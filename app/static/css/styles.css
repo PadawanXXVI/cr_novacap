@@ -209,3 +209,16 @@ td form {
     background-color: #6c757d;
     color: white;
 }
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  
+  .form-col {
+    flex: 1 1 48%;
+    min-width: 240px;
+  }
+  
