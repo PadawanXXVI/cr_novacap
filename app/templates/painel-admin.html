@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - Aprovação de Usuários</title>
+    <title>Painel Administrativo - Gerenciamento de Usuários</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
 
     <div class="container" style="text-align: center;">
         <h1>Central de Relacionamento</h1>
-        <h2>Painel de Aprovação de Usuários</h2>
+        <h2>Painel de Gerenciamento de Usuários</h2>
         <div style="text-align: right; margin-bottom: 1rem;">
             <a href="{{ url_for('logout') }}">
-              <button class="btn-danger">Sair do Sistema</button>
+                <button class="btn-danger">Sair do Sistema</button>
             </a>
-          </div>          
+        </div>          
 
         {% if usuarios %}
             <table style="width: 100%; margin-top: 2rem; text-align: left;">
@@ -24,6 +24,8 @@
                         <th>Nome</th>
                         <th>Usuário</th>
                         <th>E-mail</th>
+                        <th>Admin?</th>
+                        <th>Bloqueado?</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -33,9 +35,17 @@
                             <td>{{ u.nome }}</td>
                             <td>{{ u.usuario }}</td>
                             <td>{{ u.email }}</td>
-                            <td>
+                            <td>{{ "Sim" if u.is_admin else "Não" }}</td>
+                            <td>{{ "Sim" if u.bloqueado else "Não" }}</td>
+                            <td style="display: flex; gap: 0.5rem;">
                                 <form method="POST" action="{{ url_for('aprovar_usuario', id_usuario=u.id_usuario) }}">
                                     <button type="submit" class="btn-success">Aprovar</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('atribuir_admin', id_usuario=u.id_usuario) }}">
+                                    <button type="submit" class="btn-warning">Tornar Admin</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('bloquear_usuario', id_usuario=u.id_usuario) }}">
+                                    <button type="submit" class="btn-danger">Bloquear</button>
                                 </form>
                             </td>
                         </tr>
