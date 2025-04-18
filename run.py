@@ -220,12 +220,10 @@ def cadastro_processo():
             ra_origem=request.form.get('ra_origem'),
             id_tipo=int(request.form.get('id_tipo')),
             id_demanda=int(request.form.get('id_demanda')),
-            usuario_responsavel=session.get('usuario'),
+            usuario_responsavel=request.form.get('usuario_responsavel'),
             status_inicial=request.form.get('status_inicial'),
             possui_vistoria='possui_vistoria' in request.form,
-            oficio_assinado='oficio_assinado' in request.form,
-            encerrado_pela_ra='encerrado_pela_ra' in request.form,
-            data_encerramento_pela_ra=request.form.get('data_encerramento_pela_ra') or None
+            oficio_assinado='oficio_assinado' in request.form
         )
         db.session.add(entrada)
         db.session.commit()
@@ -237,8 +235,16 @@ def cadastro_processo():
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao).all()
     demandas = Demanda.query.order_by(Demanda.descricao).all()
     status = Status.query.order_by(Status.ordem_exibicao).all()
+    usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario).all()
 
-    return render_template('cadastro_processo.html', regioes=regioes, tipos=tipos, demandas=demandas, status=status)
+    return render_template(
+        'cadastro_processo.html',
+        regioes=regioes,
+        tipos=tipos,
+        demandas=demandas,
+        status=status,
+        usuarios=usuarios
+    )
 
 # ================================
 # ROTA 11: Visualizar Processo
