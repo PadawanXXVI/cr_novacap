@@ -1,88 +1,104 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Processo</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastro de Processo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1 style="text-align: center;">Cadastro de Processo</h1>
+  <div class="container">
+    <h1>Cadastro de Processo</h1>
 
-        <form method="POST" action="/cadastro-processo">
-            <label for="numero_processo">Número do Processo</label>
-            <input type="text" name="numero_processo" required>
+    <form method="POST" action="{{ url_for('cadastro_processo') }}">
+      
+      <!-- Número do processo -->
+      <label for="numero_processo">Número do Processo</label>
+      <input type="text" id="numero_processo" name="numero_processo" placeholder="00000-00000000/0000-00" required />
 
-            <label for="data_criacao_ra">Data de Criação na RA</label>
-            <input type="date" name="data_criacao_ra" required>
+      <!-- Data de Criação da RA -->
+      <label for="data_criacao_ra">Data de Criação na RA</label>
+      <input type="date" id="data_criacao_ra" name="data_criacao_ra" required />
 
-            <label for="data_entrada_novacap">Data de Entrada na NOVACAP</label>
-            <input type="date" name="data_entrada_novacap" required>
+      <!-- Região Administrativa -->
+      <label for="ra_origem">Região Administrativa</label>
+      <select id="ra_origem" name="ra_origem" required>
+        <option value="">Selecione</option>
+        {% for r in regioes %}
+        <option value="{{ r.descricao_ra }}">{{ r.descricao_ra }}</option>
+        {% endfor %}
+      </select>
 
-            <label for="data_documento">Data do Documento</label>
-            <input type="date" name="data_documento" required>
+      <!-- Data de Entrada na NOVACAP -->
+      <label for="data_entrada_novacap">Data de Entrada na NOVACAP</label>
+      <input type="date" id="data_entrada_novacap" name="data_entrada_novacap" required />
 
-            <label for="tramite_inicial">Tramitação Inicial</label>
-            <select name="tramite_inicial" required>
-                <option value="">Selecione</option>
-                <option value="CR">CR</option>
-                <option value="SECRE">SECRE</option>
-            </select>
+      <!-- Tramitação Inicial -->
+      <label for="tramite_inicial">Tramitação Inicial</label>
+      <select id="tramite_inicial" name="tramite_inicial" required>
+        <option value="">Selecione</option>
+        <option value="SECRE">SECRE</option>
+        <option value="CR">CR</option>
+      </select>
 
-            <label for="ra_origem">Região Administrativa</label>
-            <select name="ra_origem" required>
-                {% for ra in regioes %}
-                    <option value="{{ ra.descricao_ra }}">{{ ra.descricao_ra }}</option>
-                {% endfor %}
-            </select>
+      <!-- Tipo de Demanda -->
+      <label for="id_tipo">Tipo de Demanda</label>
+      <select id="id_tipo" name="id_tipo" required>
+        <option value="">Selecione</option>
+        {% for tipo in tipos %}
+        <option value="{{ tipo.id_tipo }}">{{ tipo.descricao }}</option>
+        {% endfor %}
+      </select>
 
-            <label for="id_tipo">Tipo de Demanda</label>
-            <select name="id_tipo" required>
-                {% for tipo in tipos %}
-                    <option value="{{ tipo.id_tipo }}">{{ tipo.descricao }}</option>
-                {% endfor %}
-            </select>
+      <!-- Demanda -->
+      <label for="id_demanda">Demanda</label>
+      <select id="id_demanda" name="id_demanda" required>
+        <option value="">Selecione</option>
+        {% for demanda in demandas %}
+        <option value="{{ demanda.id_demanda }}">{{ demanda.descricao }}</option>
+        {% endfor %}
+      </select>
 
-            <label for="id_demanda">Demanda</label>
-            <select name="id_demanda" required>
-                {% for d in demandas %}
-                    <option value="{{ d.id_demanda }}">{{ d.descricao }}</option>
-                {% endfor %}
-            </select>
+      <!-- Status Inicial -->
+      <label for="status_inicial">Status Inicial</label>
+      <select id="status_inicial" name="status_inicial" required>
+        <option value="">Selecione</option>
+        {% for s in status %}
+        <option value="{{ s.descricao }}">{{ s.descricao }}</option>
+        {% endfor %}
+      </select>
 
-            <label for="status_inicial">Status Inicial</label>
-            <select name="status_inicial" required>
-                {% for s in status %}
-                    <option value="{{ s.descricao }}">{{ s.descricao }}</option>
-                {% endfor %}
-            </select>
+      <!-- Checkboxes -->
+      <div>
+        <label><input type="checkbox" name="possui_vistoria" /> Possui Vistoria / Imagem</label><br />
+        <label><input type="checkbox" name="oficio_assinado" /> Ofício Devidamente Assinado</label>
+      </div>
 
-            <label>
-                <input type="checkbox" name="possui_vistoria"> Possui Vistoria
-            </label>
+      <!-- Data do Documento -->
+      <label for="data_documento">Data do Documento</label>
+      <input type="date" id="data_documento" name="data_documento" required />
 
-            <label>
-                <input type="checkbox" name="oficio_assinado"> Ofício Assinado
-            </label>
+      <!-- Usuário Responsável -->
+      <label for="usuario_responsavel">Usuário Responsável</label>
+      <select id="usuario_responsavel" name="usuario_responsavel" required>
+        <option value="">Selecione</option>
+        {% for u in usuarios %}
+        <option value="{{ u.usuario }}">{{ u.usuario }}</option>
+        {% endfor %}
+      </select>
 
-            <label>
-                <input type="checkbox" name="encerrado_pela_ra"> Encerrado pela RA
-            </label>
+      <!-- Observações -->
+      <label for="observacoes">Observações</label>
+      <textarea id="observacoes" name="observacoes" rows="3" placeholder="Observações relevantes (opcional)..."></textarea>
 
-            <label for="data_encerramento_pela_ra">Data de Encerramento pela RA</label>
-            <input type="date" name="data_encerramento_pela_ra">
-
-            <label for="observacoes">Observações</label>
-            <textarea name="observacoes" rows="4"></textarea>
-
-            <button type="submit" class="btn-primary" style="margin-top: 1rem;">Salvar Processo</button>
-        </form>
-        <div style="text-align: center; margin-top: 2rem;">
-            <a href="{{ url_for('logout') }}">
-              <button class="btn-danger">Sair do Sistema</button>
-            </a>
-          </div>          
-    </div>
+      <!-- Botões -->
+      <div style="margin-top: 1.5rem;">
+        <button type="submit" class="btn-primary">Salvar Processo</button>
+        <a href="{{ url_for('logout') }}">
+          <button type="button" class="btn-danger">Sair do Sistema</button>
+        </a>
+      </div>
+    </form>
+  </div>
 </body>
 </html>
