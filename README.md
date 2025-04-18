@@ -44,13 +44,19 @@ cp .env.example .env
 
 ---
 
-## 🔑 Exemplo de .env:
+## 🔑 Exemplo de .env
 
+```env
 FLASK_APP=run.py
 FLASK_ENV=development
-SECRET_KEY=sua_chave_secreta_aqui
-DATABASE_URL=sqlite:///cr_novacap.db
+SECRET_KEY=sua_chave_secreta
+DATABASE_URL=mysql+pymysql://usuario:senha@localhost/nome_do_banco
+```
+Para gerar uma SECRET_KEY segura, execute no terminal:
 
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
 ---
 
 ## ▶️ Para rodar a aplicação:
