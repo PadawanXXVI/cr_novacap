@@ -1,58 +1,73 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Redefinir Senha - Central de Relacionamento</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    .compact-form h1, .compact-form h2 {
+      margin-bottom: 0.5rem;
+    }
+    .compact-form p {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 0.25rem;
+    }
+    .form-spacing {
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+  </style>
 </head>
 <body>
-  <div class="container" style="text-align: center;">
-    <h1>Central de Relacionamento</h1>
-    <h2>Redefinir Senha</h2>
+  <div class="container compact-form">
+    <h1 style="text-align: center;">Central de Relacionamento</h1>
+    <h2 style="text-align: center;">Redefinir Senha</h2>
 
-    {% with messages = get_flashed_messages() %}
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="alert-success" style="color: green; margin-bottom: 1rem;">
-          {{ messages[0] }}
-        </div>
+        {% for category, message in messages %}
+          <div class="alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
       {% endif %}
     {% endwith %}
 
     <form method="POST" action="{{ url_for('trocar_senha') }}">
-      <div>
-        <label for="nome_completo">Nome Completo</label><br>
-        <input type="text" id="nome_completo" name="nome_completo" required placeholder="Informe seu nome completo" style="width: 100%; max-width: 400px;">
-      </div><br>
+      <div class="form-spacing">
+        <label for="nome_completo">Nome Completo</label>
+        <input type="text" id="nome_completo" name="nome_completo" placeholder="Informe seu nome completo" required>
+      </div>
 
-      <div>
-        <label for="email">E-mail Institucional</label><br>
-        <input type="email" id="email" name="email" required placeholder="ex: nome.sobrenome@novacap.df.gov.br" style="width: 100%; max-width: 400px;">
-      </div><br>
+      <div class="form-spacing">
+        <label for="email">E-mail Institucional</label>
+        <input type="email" id="email" name="email" placeholder="ex: nome.sobrenome@novacap.df.gov.br" required>
+      </div>
 
-      <div>
-        <label for="nova_senha">Nova Senha</label><br>
-        <input type="password" id="nova_senha" name="nova_senha" required style="width: 100%; max-width: 400px;">
-      </div><br>
+      <div class="form-spacing">
+        <label for="nova_senha">Nova Senha</label>
+        <input type="password" id="nova_senha" name="nova_senha" required>
+      </div>
 
-      <div>
-        <label for="confirmar_senha">Confirmar Nova Senha</label><br>
-        <input type="password" id="confirmar_senha" name="confirmar_senha" required style="width: 100%; max-width: 400px;">
-      </div><br>
+      <div class="form-spacing">
+        <label for="confirmar_senha">Confirmar Nova Senha</label>
+        <input type="password" id="confirmar_senha" name="confirmar_senha" required>
+      </div>
 
-      <button type="submit" class="btn-primary">Atualizar Senha</button>
+      <div class="button-group">
+        <button type="submit" class="btn-primary">Atualizar Senha</button>
+        <a href="{{ url_for('login') }}">
+          <button type="button" class="btn-secondary">Voltar ao Login</button>
+        </a>
+      </div>
+
+      <p style="text-align: center; font-size: 0.9rem; margin-top: 1rem;">
+        ⚠️ Para redefinir sua senha, os dados informados devem coincidir exatamente com os dados cadastrados.
+        <br>
+        Caso tenha dúvidas, entre em contato com o administrador do sistema.
+      </p>
     </form>
-
-    <p style="font-size: 0.9rem; color: #555; margin-top: 1rem;">
-      ⚠️ Para redefinir sua senha, os dados informados devem coincidir exatamente com os dados cadastrados. <br>
-      Caso tenha dúvidas, entre em contato com o administrador do sistema.
-    </p>
-
-    <div style="margin-top: 1.5rem;">
-      <a href="{{ url_for('login') }}">
-        <button class="btn-secondary">Voltar ao Login</button>
-      </a>
-    </div>
   </div>
 </body>
 </html>
