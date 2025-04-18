@@ -4,33 +4,54 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Alterar Processo</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
   <style>
     form {
-      max-width: 700px;
+      max-width: 800px;
       margin: 2rem auto;
     }
 
     label {
       display: block;
-      margin-top: 1rem;
+      margin-bottom: 0.3rem;
+      font-weight: 500;
     }
 
     input, select, textarea {
       width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.3rem;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
     }
 
     .btn-group {
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
       margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 style="text-align: center;">Alterar Processo</h1>
+    <h1>Alterar Processo</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
     <form method="POST" action="{{ url_for('alterar_processo', id_processo=processo.id_processo) }}">
       
@@ -53,16 +74,16 @@
         {% endfor %}
       </select>
 
-      <!-- Observação -->
+      <!-- Observações -->
       <label for="observacao">Observação</label>
-      <textarea name="observacao" rows="4" required></textarea>
+      <textarea name="observacao" rows="4" placeholder="Descreva a alteração realizada..." required></textarea>
 
       <!-- Data da Movimentação -->
       <label for="data_movimentacao">Data da Movimentação</label>
       <input type="date" name="data_movimentacao" required />
 
       <!-- Responsável Técnico -->
-      <label for="responsavel_tecnico">Responsável Técnico (nome.sobrenome)</label>
+      <label for="responsavel_tecnico">Responsável Técnico</label>
       <select name="responsavel_tecnico" required>
         <option value="">Selecione</option>
         {% for u in usuarios %}
@@ -70,9 +91,10 @@
         {% endfor %}
       </select>
 
+      <!-- Botões -->
       <div class="btn-group">
         <button type="submit" class="btn-primary">Salvar Alteração</button>
-        <a href="{{ url_for('dashboard_processos') }}"><button type="button" class="btn-secondary">Voltar</button></a>
+        <a href="{{ url_for('dashboard_processos') }}"><button type="button" class="btn-secondary">Tela de Totais</button></a>
         <a href="{{ url_for('logout') }}"><button type="button" class="btn-danger">Sair do Sistema</button></a>
       </div>
     </form>
