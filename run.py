@@ -194,6 +194,8 @@ def logout():
 # ================================
 # ROTA 10: Cadastro de Processo
 # ================================
+from datetime import datetime
+
 @app.route('/cadastro-processo', methods=['GET', 'POST'])
 def cadastro_processo():
     if request.method == 'POST':
@@ -210,11 +212,16 @@ def cadastro_processo():
         db.session.add(novo_processo)
         db.session.flush()
 
+        # Conversão de strings para objetos datetime.date
+        data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
+        data_entrada_novacap = datetime.strptime(request.form.get('data_entrada_novacap'), "%Y-%m-%d").date()
+        data_documento = datetime.strptime(request.form.get('data_documento'), "%Y-%m-%d").date()
+
         entrada = EntradaProcesso(
             id_processo=novo_processo.id_processo,
-            data_criacao_ra=request.form.get('data_criacao_ra'),
-            data_entrada_novacap=request.form.get('data_entrada_novacap'),
-            data_documento=request.form.get('data_documento'),
+            data_criacao_ra=data_criacao_ra,
+            data_entrada_novacap=data_entrada_novacap,
+            data_documento=data_documento,
             tramite_inicial=request.form.get('tramite_inicial'),
             ra_origem=request.form.get('ra_origem'),
             id_tipo=int(request.form.get('id_tipo')),
@@ -227,6 +234,7 @@ def cadastro_processo():
 
         return "✅ Processo cadastrado com sucesso!", 200
 
+    # GET: carrega dados para os selects
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao).all()
     demandas = Demanda.query.order_by(Demanda.descricao).all()
