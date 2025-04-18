@@ -177,3 +177,8 @@ input[type="submit"] {
 button + button {
     margin-left: 0.5rem;
 }
+
+/* ==== Ajuste visual dos botões de ação em tabelas ==== */
+td form {
+    display: inline-block;
+}

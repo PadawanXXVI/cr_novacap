@@ -11,6 +11,15 @@
     <div class="container" style="text-align: center;">
         <h1>Central de Relacionamento</h1>
         <h2>Painel de Gerenciamento de Usuários</h2>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert-success" style="color: green; margin-bottom: 1rem;">
+              {{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
         <div style="text-align: right; margin-bottom: 1rem;">
             <a href="{{ url_for('logout') }}">
                 <button class="btn-danger">Sair do Sistema</button>
@@ -42,7 +51,7 @@
                                     <button type="submit" class="btn-success">Aprovar</button>
                                 </form>
                                 <form method="POST" action="{{ url_for('atribuir_admin', id_usuario=u.id_usuario) }}">
-                                    <button type="submit" class="btn-warning">Tornar Admin</button>
+                                    <button type="submit" class="btn-warning">Admin.</button>
                                 </form>
                                 <form method="POST" action="{{ url_for('bloquear_usuario', id_usuario=u.id_usuario) }}">
                                     <button type="submit" class="btn-danger">Bloquear</button>
