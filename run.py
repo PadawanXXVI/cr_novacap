@@ -199,22 +199,25 @@ def cadastro_processo():
     if request.method == 'POST':
         numero = request.form.get('numero_processo')
 
+        # Verificação antes de qualquer tentativa de gravação
         processo_existente = Processo.query.filter_by(numero_processo=numero).first()
         if processo_existente:
-            flash("⚠️ Processo já cadastrado anteriormente.", "warning")
+            flash("⚠️ Processo já cadastrado. Redirecionando para alteração...", "warning")
             return redirect(url_for('alterar_processo', id_processo=processo_existente.id_processo))
 
         try:
+            # Conversão das datas antes de salvar
+            data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
+            data_entrada_novacap = datetime.strptime(request.form.get('data_entrada_novacap'), "%Y-%m-%d").date()
+            data_documento = datetime.strptime(request.form.get('data_documento'), "%Y-%m-%d").date()
+
             novo_processo = Processo(
                 numero_processo=numero,
                 status_atual=request.form.get('status_inicial'),
                 observacoes=request.form.get('observacoes')
             )
             db.session.add(novo_processo)
-
-            data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
-            data_entrada_novacap = datetime.strptime(request.form.get('data_entrada_novacap'), "%Y-%m-%d").date()
-            data_documento = datetime.strptime(request.form.get('data_documento'), "%Y-%m-%d").date()
+            db.session.flush()  # Aqui o ID do processo é gerado
 
             entrada = EntradaProcesso(
                 id_processo=novo_processo.id_processo,
@@ -228,7 +231,6 @@ def cadastro_processo():
                 usuario_responsavel=request.form.get('usuario_responsavel'),
                 status_inicial=request.form.get('status_inicial')
             )
-
             db.session.add(entrada)
             db.session.commit()
 
@@ -240,7 +242,7 @@ def cadastro_processo():
             flash(f"❌ Erro ao cadastrar processo: {str(e)}", "error")
             return redirect(url_for('cadastro_processo'))
 
-    # GET
+    # GET: carregar dados para o formulário
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
     demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
