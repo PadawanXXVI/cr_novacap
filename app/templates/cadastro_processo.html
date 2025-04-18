@@ -10,36 +10,43 @@
   <div class="container">
     <h1>Cadastro de Processo</h1>
 
-    <form method="POST" action="{{ url_for('cadastro_processo') }}">
+    <!-- Mensagem flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
+    <form method="POST" action="{{ url_for('cadastro_processo') }}">
+      
       <!-- Número do processo -->
       <label for="numero_processo">Número do Processo</label>
       <input type="text" id="numero_processo" name="numero_processo" placeholder="00000-00000000/0000-00" required />
 
-      <!-- Data de Criação na RA + Região Administrativa -->
       <div class="form-row">
-        <div class="form-col">
+        <div class="form-group">
           <label for="data_criacao_ra">Data de Criação na RA</label>
           <input type="date" id="data_criacao_ra" name="data_criacao_ra" required />
         </div>
-        <div class="form-col">
+        <div class="form-group">
           <label for="ra_origem">Região Administrativa</label>
           <select id="ra_origem" name="ra_origem" required>
             <option value="">Selecione</option>
             {% for r in regioes %}
-              <option value="{{ r.descricao_ra }}">{{ r.descricao_ra }}</option>
+            <option value="{{ r.descricao_ra }}">{{ r.descricao_ra }}</option>
             {% endfor %}
           </select>
         </div>
       </div>
 
-      <!-- Data de Entrada na NOVACAP + Tramitação Inicial -->
       <div class="form-row">
-        <div class="form-col">
+        <div class="form-group">
           <label for="data_entrada_novacap">Data de Entrada na NOVACAP</label>
           <input type="date" id="data_entrada_novacap" name="data_entrada_novacap" required />
         </div>
-        <div class="form-col">
+        <div class="form-group">
           <label for="tramite_inicial">Tramitação Inicial</label>
           <select id="tramite_inicial" name="tramite_inicial" required>
             <option value="">Selecione</option>
@@ -49,61 +56,63 @@
         </div>
       </div>
 
-      <!-- Demanda + Tipo de Demanda -->
       <div class="form-row">
-        <div class="form-col">
+        <div class="form-group">
           <label for="id_demanda">Demanda</label>
           <select id="id_demanda" name="id_demanda" required>
             <option value="">Selecione</option>
             {% for demanda in demandas %}
-              <option value="{{ demanda.id_demanda }}">{{ demanda.descricao }}</option>
+            <option value="{{ demanda.id_demanda }}">{{ demanda.descricao }}</option>
             {% endfor %}
           </select>
         </div>
-        <div class="form-col">
+        <div class="form-group">
           <label for="id_tipo">Tipo de Demanda</label>
           <select id="id_tipo" name="id_tipo" required>
             <option value="">Selecione</option>
             {% for tipo in tipos %}
-              <option value="{{ tipo.id_tipo }}">{{ tipo.descricao }}</option>
+            <option value="{{ tipo.id_tipo }}">{{ tipo.descricao }}</option>
             {% endfor %}
           </select>
         </div>
       </div>
 
-      <!-- Data do Documento + Usuário Responsável -->
       <div class="form-row">
-        <div class="form-col">
+        <div class="form-group">
           <label for="data_documento">Data do Documento</label>
           <input type="date" id="data_documento" name="data_documento" required />
         </div>
-        <div class="form-col">
+        <div class="form-group">
           <label for="usuario_responsavel">Usuário Responsável</label>
           <select id="usuario_responsavel" name="usuario_responsavel" required>
             <option value="">Selecione</option>
             {% for u in usuarios %}
-              <option value="{{ u.usuario }}">{{ u.usuario }}</option>
+            <option value="{{ u.usuario }}">{{ u.usuario }}</option>
             {% endfor %}
           </select>
         </div>
       </div>
 
-      <!-- Status Inicial -->
       <label for="status_inicial">Status Inicial</label>
       <select id="status_inicial" name="status_inicial" required>
         <option value="">Selecione</option>
         {% for s in status %}
-          <option value="{{ s.descricao }}">{{ s.descricao }}</option>
+        <option value="{{ s.descricao }}">{{ s.descricao }}</option>
         {% endfor %}
       </select>
 
-      <!-- Observações -->
       <label for="observacoes">Observações</label>
       <textarea id="observacoes" name="observacoes" rows="3" placeholder="Observações relevantes (opcional)..."></textarea>
 
       <!-- Botões -->
-      <div style="margin-top: 1.5rem;">
+      <div style="margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem;">
         <button type="submit" class="btn-primary">Salvar Processo</button>
+        <a href="{{ url_for('dashboard_processos') }}">
+          <button type="button" class="btn-outline-blue">Tela de Totais de Processos</button>
+        </a>
+        <a href="{{ url_for('listar_processos') }}">
+          <button type="button" class="btn-outline-blue">Visualizar Processos</button>
+        </a>
         <a href="{{ url_for('logout') }}">
           <button type="button" class="btn-danger">Sair do Sistema</button>
         </a>
