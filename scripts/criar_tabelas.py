@@ -1,12 +1,21 @@
 import sys
 import os
+from dotenv import load_dotenv
+
+# 🟢 Garante que o .env seja carregado antes de criar o app
+load_dotenv()
+
+# 🛠 Ajusta o path para permitir importações relativas ao projeto
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Cria o app primeiro
+# 🔧 Cria o app com as configurações corretas (incluindo DATABASE_URL)
 from app import create_app
 app = create_app()
 
-# Agora importa o db e os modelos, depois do app estar criado
+# 🧪 Diagnóstico: mostra qual URI do banco está sendo usada
+print("🔍 URI ativa:", app.config['SQLALCHEMY_DATABASE_URI'])
+
+# 📦 Carrega extensões e modelos
 from app.ext import db
 from app.models.modelos import Status, TipoDemanda, RegiaoAdministrativa, Demanda
 
@@ -75,4 +84,4 @@ with app.app_context():
         db.session.add(Demanda(descricao=d))
 
     db.session.commit()
-    print("✅ Banco criado e tabelas populadas com sucesso!")
+    print("✅ Banco MySQL criado e tabelas populadas com sucesso!")
