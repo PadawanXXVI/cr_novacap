@@ -142,3 +142,34 @@ input[type="submit"] {
         padding: 1rem 2rem;
     }
 }
+
+.btn-outline-blue {
+    padding: 0.4rem 0.8rem;
+    background-color: transparent;
+    border: 1px solid #007bff;
+    color: #007bff;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btn-outline-blue:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-outline-gray {
+    padding: 0.4rem 0.8rem;
+    background-color: transparent;
+    border: 1px solid #6c757d;
+    color: #6c757d;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btn-outline-gray:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
