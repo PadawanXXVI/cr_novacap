@@ -199,25 +199,28 @@ def cadastro_processo():
     if request.method == 'POST':
         numero = request.form.get('numero_processo')
 
-        # Verificação antes de qualquer tentativa de gravação
         processo_existente = Processo.query.filter_by(numero_processo=numero).first()
         if processo_existente:
             flash("⚠️ Processo já cadastrado. Redirecionando para alteração...", "warning")
             return redirect(url_for('alterar_processo', id_processo=processo_existente.id_processo))
 
         try:
-            # Conversão das datas antes de salvar
+            # Conversão das datas
             data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
             data_entrada_novacap = datetime.strptime(request.form.get('data_entrada_novacap'), "%Y-%m-%d").date()
             data_documento = datetime.strptime(request.form.get('data_documento'), "%Y-%m-%d").date()
 
+            # Coleta da diretoria de destino
+            diretoria_destino = request.form.get('diretoria_destino')
+
             novo_processo = Processo(
                 numero_processo=numero,
                 status_atual=request.form.get('status_inicial'),
-                observacoes=request.form.get('observacoes')
+                observacoes=request.form.get('observacoes'),
+                diretoria_destino=diretoria_destino
             )
             db.session.add(novo_processo)
-            db.session.flush()  # Aqui o ID do processo é gerado
+            db.session.flush()
 
             entrada = EntradaProcesso(
                 id_processo=novo_processo.id_processo,
@@ -242,12 +245,19 @@ def cadastro_processo():
             flash(f"❌ Erro ao cadastrar processo: {str(e)}", "error")
             return redirect(url_for('cadastro_processo'))
 
-    # GET: carregar dados para o formulário
+    # GET: dados para os selects
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
     demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
     status = Status.query.order_by(Status.ordem_exibicao.asc()).all()
     usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario.asc()).all()
+
+    # Diretoria de destino: valores fixos
+    diretorias = [
+        "Diretoria das Cidades - DC",
+        "Diretoria de Obras - DO",
+        "Não tramita na Novacap"
+    ]
 
     return render_template(
         'cadastro_processo.html',
@@ -255,7 +265,8 @@ def cadastro_processo():
         tipos=tipos,
         demandas=demandas,
         status=status,
-        usuarios=usuarios
+        usuarios=usuarios,
+        diretorias=diretorias
     )
 
 # ================================
