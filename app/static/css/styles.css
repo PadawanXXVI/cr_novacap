@@ -173,3 +173,7 @@ input[type="submit"] {
     color: white;
 }
 
+/* ==== Espaçamento entre botões lado a lado ==== */
+button + button {
+    margin-left: 0.5rem;
+}
