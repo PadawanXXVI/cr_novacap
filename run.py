@@ -202,14 +202,13 @@ def cadastro_processo():
         if Processo.query.filter_by(numero_processo=numero).first():
             return "Erro: número de processo já cadastrado.", 400
 
-        # Cria o processo principal
         novo_processo = Processo(
             numero_processo=numero,
             status_atual=request.form.get('status_inicial'),
             observacoes=request.form.get('observacoes')
         )
         db.session.add(novo_processo)
-        db.session.flush()  # Garante que o ID do processo fique disponível
+        db.session.flush()
 
         entrada = EntradaProcesso(
             id_processo=novo_processo.id_processo,
@@ -221,16 +220,13 @@ def cadastro_processo():
             id_tipo=int(request.form.get('id_tipo')),
             id_demanda=int(request.form.get('id_demanda')),
             usuario_responsavel=request.form.get('usuario_responsavel'),
-            status_inicial=request.form.get('status_inicial'),
-            possui_vistoria='possui_vistoria' in request.form,
-            oficio_assinado='oficio_assinado' in request.form
+            status_inicial=request.form.get('status_inicial')
         )
         db.session.add(entrada)
         db.session.commit()
 
         return "✅ Processo cadastrado com sucesso!", 200
 
-    # GET: busca dados para preencher selects
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao).all()
     demandas = Demanda.query.order_by(Demanda.descricao).all()
