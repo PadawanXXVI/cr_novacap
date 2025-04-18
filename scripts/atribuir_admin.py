@@ -14,8 +14,7 @@ with app.app_context():
     if not usuarios:
         print("❌ Nenhum usuário encontrado.")
     else:
-        print("Usuários disponíveis:
-")
+        print("Usuários disponíveis:\n")
         for usuario in usuarios:
             admin_status = "✅ ADMIN" if usuario.is_admin else "—"
             print(f"ID: {usuario.id_usuario} | Nome: {usuario.nome} | Usuário: {usuario.usuario} | {admin_status}")
