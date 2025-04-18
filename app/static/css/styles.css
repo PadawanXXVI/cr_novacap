@@ -17,7 +17,7 @@ body {
 /* ==== Container Central ==== */
 .container {
     max-width: 800px;
-    margin: 3rem auto;
+    margin: 2rem auto; /* Reduzido de 3rem para 2rem */
     padding: 2rem;
     background-color: #fff;
     border-radius: 1rem;
@@ -54,7 +54,7 @@ textarea {
     padding: 0.75rem;
     border: 1px solid #ccc;
     border-radius: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem; /* Reduzido de 1rem */
     font-size: 1rem;
 }
 
@@ -77,7 +77,7 @@ input[type="submit"] {
     transition: background-color 0.2s ease-in-out;
 }
 
-/* Cores dos botões */
+/* ==== Cores dos Botões ==== */
 .btn-primary {
     background-color: #007bff;
     color: white;
@@ -114,6 +114,33 @@ input[type="submit"] {
     background-color: #c82333;
 }
 
+.btn-warning {
+    background-color: #ffc107;
+    color: black;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+}
+
+/* ==== Botões lado a lado ==== */
+button + button {
+    margin-left: 0.5rem;
+}
+
+/* ==== Botões agrupados com flexbox (ex: login) ==== */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* ==== Formulários dentro de <td> (painel admin) ==== */
+td form {
+    display: inline-block;
+}
+
 /* ==== Responsividade ==== */
 @media (max-width: 768px) {
     .container {
@@ -126,9 +153,18 @@ input[type="submit"] {
         width: 100%;
         margin-top: 1rem;
     }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    button + button {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
 }
 
-/* ==== Telas Grandes: Smart TVs, 4K Monitores ==== */
+/* ==== Telas Grandes (Smart TVs, 4K) ==== */
 @media (min-width: 1400px) {
     .container {
         max-width: 1200px;
@@ -143,6 +179,7 @@ input[type="submit"] {
     }
 }
 
+/* ==== Botões com Borda Colorida ==== */
 .btn-outline-blue {
     padding: 0.4rem 0.8rem;
     background-color: transparent;
@@ -171,14 +208,4 @@ input[type="submit"] {
 .btn-outline-gray:hover {
     background-color: #6c757d;
     color: white;
-}
-
-/* ==== Espaçamento entre botões lado a lado ==== */
-button + button {
-    margin-left: 0.5rem;
-}
-
-/* ==== Ajuste visual dos botões de ação em tabelas ==== */
-td form {
-    display: inline-block;
 }
