@@ -199,42 +199,48 @@ def cadastro_processo():
     if request.method == 'POST':
         numero = request.form.get('numero_processo')
 
-        if Processo.query.filter_by(numero_processo=numero).first():
-            flash("❌ Número de processo já cadastrado.", "error")
+        processo_existente = Processo.query.filter_by(numero_processo=numero).first()
+        if processo_existente:
+            flash("⚠️ Processo já cadastrado anteriormente.", "warning")
+            return redirect(url_for('alterar_processo', id_processo=processo_existente.id_processo))
+
+        try:
+            novo_processo = Processo(
+                numero_processo=numero,
+                status_atual=request.form.get('status_inicial'),
+                observacoes=request.form.get('observacoes')
+            )
+            db.session.add(novo_processo)
+
+            data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
+            data_entrada_novacap = datetime.strptime(request.form.get('data_entrada_novacap'), "%Y-%m-%d").date()
+            data_documento = datetime.strptime(request.form.get('data_documento'), "%Y-%m-%d").date()
+
+            entrada = EntradaProcesso(
+                id_processo=novo_processo.id_processo,
+                data_criacao_ra=data_criacao_ra,
+                data_entrada_novacap=data_entrada_novacap,
+                data_documento=data_documento,
+                tramite_inicial=request.form.get('tramite_inicial'),
+                ra_origem=request.form.get('ra_origem'),
+                id_tipo=int(request.form.get('id_tipo')),
+                id_demanda=int(request.form.get('id_demanda')),
+                usuario_responsavel=request.form.get('usuario_responsavel'),
+                status_inicial=request.form.get('status_inicial')
+            )
+
+            db.session.add(entrada)
+            db.session.commit()
+
+            flash("✅ Processo cadastrado com sucesso!", "success")
             return redirect(url_for('cadastro_processo'))
 
-        novo_processo = Processo(
-            numero_processo=numero,
-            status_atual=request.form.get('status_inicial'),
-            observacoes=request.form.get('observacoes')
-        )
-        db.session.add(novo_processo)
-        db.session.flush()
+        except Exception as e:
+            db.session.rollback()
+            flash(f"❌ Erro ao cadastrar processo: {str(e)}", "error")
+            return redirect(url_for('cadastro_processo'))
 
-        # Conversão de strings para objetos datetime.date
-        data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
-        data_entrada_novacap = datetime.strptime(request.form.get('data_entrada_novacap'), "%Y-%m-%d").date()
-        data_documento = datetime.strptime(request.form.get('data_documento'), "%Y-%m-%d").date()
-
-        entrada = EntradaProcesso(
-            id_processo=novo_processo.id_processo,
-            data_criacao_ra=data_criacao_ra,
-            data_entrada_novacap=data_entrada_novacap,
-            data_documento=data_documento,
-            tramite_inicial=request.form.get('tramite_inicial'),
-            ra_origem=request.form.get('ra_origem'),
-            id_tipo=int(request.form.get('id_tipo')),
-            id_demanda=int(request.form.get('id_demanda')),
-            usuario_responsavel=request.form.get('usuario_responsavel'),
-            status_inicial=request.form.get('status_inicial')
-        )
-        db.session.add(entrada)
-        db.session.commit()
-
-        flash("✅ Processo cadastrado com sucesso!", "success")
-        return redirect(url_for('cadastro_processo'))
-
-    # GET: carrega dados para os selects em ordem alfabética
+    # GET
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
     demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
