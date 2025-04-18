@@ -98,16 +98,19 @@ def trocar_senha():
         confirmar_senha = request.form.get('confirmar_senha')
 
         if nova_senha != confirmar_senha:
-            return "Erro: as senhas não coincidem.", 400
+            flash("Erro: as senhas não coincidem.")
+            return redirect(url_for('trocar_senha'))
 
         usuario = Usuario.query.filter_by(nome=nome, email=email).first()
 
         if usuario:
             usuario.senha_hash = generate_password_hash(nova_senha)
             db.session.commit()
-            return "Senha atualizada com sucesso!", 200
+            flash("Senha atualizada com sucesso! Faça login com sua nova senha.")
+            return redirect(url_for('login'))
         else:
-            return "Erro: dados não encontrados.", 404
+            flash("Erro: dados não encontrados. Verifique o nome e e-mail informados.")
+            return redirect(url_for('trocar_senha'))
 
     return render_template('trocar_senha.html')
 

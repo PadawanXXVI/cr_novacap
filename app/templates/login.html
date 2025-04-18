@@ -1,49 +1,55 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Central de Relacionamento</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Central de Relacionamento</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
+  <div class="container" style="text-align: center;">
+    <h1>Central de Relacionamento</h1>
+    <h2>Login</h2>
 
-    <div class="container" style="max-width: 500px; margin: auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-top: 5rem; text-align: center;">
-        <h1>Central de Relacionamento</h1>
-        <h2 style="margin-bottom: 2rem;">Login</h2>
-
-        <form method="POST" action="{{ url_for('login') }}">
-            <div style="margin-bottom: 1rem; text-align: left;">
-                <label for="username">Nome de Usuário</label>
-                <input type="text" name="username" id="username" class="input" placeholder="ex: nome.sobrenome" required>
-            </div>
-
-            <div style="margin-bottom: 1rem; text-align: left;">
-                <label for="password">Senha</label>
-                <input type="password" name="password" id="password" class="input" required>
-            </div>
-
-            <div style="margin-bottom: 1.5rem; text-align: left;">
-                <label for="sistema">Escolha o sistema:</label>
-                <select name="sistema" id="sistema" class="input" required>
-                    <option value="">Selecione</option>
-                    <option value="tramite">Sistema de Tramitação</option>
-                    <option value="protocolo">Sistema de Protocolo</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn-primary" style="width: 100%;">Entrar no Sistema</button>
-        </form>
-
-        <div class="botoes-secundarios" style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 1rem;">
-            <a href="{{ url_for('cadastro') }}">
-                <button class="btn-outline-blue">Solicitar Cadastro</button>
-            </a>
-            <a href="{{ url_for('trocar_senha') }}">
-                <button class="btn-outline-gray">Redefinir Senha</button>
-            </a>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert-success" style="margin-bottom: 1rem; color: green;">
+          {{ messages[0] }}
         </div>
-    </div>
+      {% endif %}
+    {% endwith %}
 
+    <form method="POST" action="{{ url_for('login') }}">
+      <div>
+        <label for="username">Nome de Usuário</label><br />
+        <input type="text" id="username" name="username" placeholder="ex: nome.sobrenome" required style="width: 100%; max-width: 400px;" />
+      </div><br />
+
+      <div>
+        <label for="password">Senha</label><br />
+        <input type="password" id="password" name="password" required style="width: 100%; max-width: 400px;" />
+      </div><br />
+
+      <div>
+        <label for="sistema">Escolha o sistema:</label><br />
+        <select id="sistema" name="sistema" required style="width: 100%; max-width: 400px;">
+          <option value="">Selecione</option>
+          <option value="tramite">Tramitação de Processos</option>
+          <option value="protocolo">Protocolo de Atendimento</option>
+        </select>
+      </div><br />
+
+      <button type="submit" class="btn-primary">Entrar no Sistema</button>
+    </form>
+
+    <div style="margin-top: 1rem;">
+      <a href="{{ url_for('cadastro') }}">
+        <button class="btn-secondary" style="margin-right: 10px;">Solicitar Cadastro</button>
+      </a>
+      <a href="{{ url_for('trocar_senha') }}">
+        <button class="btn-secondary">Redefinir Senha</button>
+      </a>
+    </div>
+  </div>
 </body>
 </html>
