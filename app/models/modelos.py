@@ -26,6 +26,7 @@ class Processo(db.Model):
     numero_processo = db.Column(db.String(25), unique=True, nullable=False)
     status_atual = db.Column(db.String(100), nullable=True)
     observacoes = db.Column(db.Text)
+    diretoria_destino = db.Column(db.String(100), nullable=False)  # Novo campo
 
     entradas = db.relationship('EntradaProcesso', backref='processo', cascade="all, delete-orphan")
 
