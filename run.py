@@ -453,6 +453,34 @@ def aprovar_usuario(id_usuario):
     return redirect(url_for('painel_admin'))
 
 # ================================
+# ROTA 13: Bloquear usuário
+# ================================
+@app.route('/bloquear-usuario/<int:id_usuario>', methods=['POST'])
+def bloquear_usuario(id_usuario):
+    if not session.get('is_admin'):
+        return "Acesso restrito ao administrador.", 403
+
+    usuario = Usuario.query.get_or_404(id_usuario)
+    usuario.bloqueado = True
+    db.session.commit()
+    flash(f"Usuário {usuario.usuario} foi bloqueado.")
+    return redirect(url_for('painel_admin'))
+
+# ================================
+# ROTA 14: Tornar usuário admin
+# ================================
+@app.route('/atribuir-admin/<int:id_usuario>', methods=['POST'])
+def atribuir_admin(id_usuario):
+    if not session.get('is_admin'):
+        return "Acesso restrito ao administrador.", 403
+
+    usuario = Usuario.query.get_or_404(id_usuario)
+    usuario.is_admin = True
+    db.session.commit()
+    flash(f"Usuário {usuario.usuario} agora é administrador.")
+    return redirect(url_for('painel_admin'))
+
+# ================================
 # ROTA 8: Dashboard de Protocolo
 # ================================
 @app.route('/dashboard-protocolo')
@@ -535,33 +563,6 @@ def exportar_tramitacoes():
     response.headers["Content-Type"] = "text/csv"
     return response
 
-# ================================
-# ROTA 16: Tornar usuário admin
-# ================================
-@app.route('/atribuir-admin/<int:id_usuario>', methods=['POST'])
-def atribuir_admin(id_usuario):
-    if not session.get('is_admin'):
-        return "Acesso restrito ao administrador.", 403
-
-    usuario = Usuario.query.get_or_404(id_usuario)
-    usuario.is_admin = True
-    db.session.commit()
-    flash(f"Usuário {usuario.usuario} agora é administrador.")
-    return redirect(url_for('painel_admin'))
-
-# ================================
-# ROTA 17: Bloquear usuário
-# ================================
-@app.route('/bloquear-usuario/<int:id_usuario>', methods=['POST'])
-def bloquear_usuario(id_usuario):
-    if not session.get('is_admin'):
-        return "Acesso restrito ao administrador.", 403
-
-    usuario = Usuario.query.get_or_404(id_usuario)
-    usuario.bloqueado = True
-    db.session.commit()
-    flash(f"Usuário {usuario.usuario} foi bloqueado.")
-    return redirect(url_for('painel_admin'))
 
 # ================================
 # Execução do servidor
