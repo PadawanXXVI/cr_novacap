@@ -6,7 +6,7 @@ from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, 
 from datetime import datetime
 import pandas as pd
 from io import BytesIO
-from flask_login import login_required
+from flask_login import login_required, login_user
 
 app = create_app()
 
@@ -41,7 +41,10 @@ def login():
         if usuario.bloqueado:
             return "Erro: usuário bloqueado.", 403
 
-        # Armazena dados na sessão
+        # ✅ LOGIN FLASK-LOGIN
+        login_user(usuario)
+
+        # (opcional) manter compatibilidade com session manual
         session['usuario'] = usuario.usuario
         session['is_admin'] = usuario.is_admin
         session['id_usuario'] = usuario.id_usuario
