@@ -481,6 +481,14 @@ def atribuir_admin(id_usuario):
     return redirect(url_for('painel_admin'))
 
 # ================================
+# ROTA 15: Logout
+# ================================
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
+# ================================
 # ROTA 8: Dashboard de Protocolo
 # ================================
 @app.route('/dashboard-protocolo')
@@ -489,13 +497,7 @@ def dashboard_protocolo():
         return redirect(url_for('login'))
     return "<h2>Bem-vindo ao Sistema de Protocolo de Atendimento</h2>"
 
-# ================================
-# ROTA 9: Logout
-# ================================
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('index'))
+
 
 # ================================
 # ROTA 14: Relatórios Gerenciais
