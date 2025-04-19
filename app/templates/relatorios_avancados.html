@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatórios Avançados</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1 style="text-align: center;">Relatórios Gerenciais Avançados</h1>
+
+    <!-- Filtros -->
+    <form method="GET" action="{{ url_for('relatorios_avancados') }}" class="filtros">
+      <div class="form-row">
+        <div class="form-col">
+          <label for="status">Status</label>
+          <select name="status" id="status">
+            <option value="">Todos</option>
+            {% for s in todos_status %}
+              <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>{{ s.descricao }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-col">
+          <label for="ra">Região Administrativa</label>
+          <select name="ra" id="ra">
+            <option value="">Todas</option>
+            {% for r in todas_ras %}
+              <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>{{ r.descricao_ra }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-col">
+          <label for="usuario">Responsável Técnico</label>
+          <select name="usuario" id="usuario">
+            <option value="">Todos</option>
+            {% for u in usuarios %}
+              <option value="{{ u.usuario }}" {% if request.args.get('usuario') == u.usuario %}selected{% endif %}>{{ u.nome }} ({{ u.usuario }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <label for="inicio">Data Inicial</label>
+          <input type="date" id="inicio" name="inicio" value="{{ request.args.get('inicio', '') }}">
+        </div>
+        <div class="form-col">
+          <label for="fim">Data Final</label>
+          <input type="date" id="fim" name="fim" value="{{ request.args.get('fim', '') }}">
+        </div>
+      </div>
+
+      <div style="margin-top: 1rem; text-align: center;">
+        <button type="submit" class="btn-primary">Filtrar Resultados</button>
+      </div>
+    </form>
+
+    <!-- Botões de Ação -->
+    <div style="text-align: center; margin-top: 2rem;">
+      <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display: inline-block;">
+        <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
+        <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
+        <input type="hidden" name="usuario" value="{{ request.args.get('usuario', '') }}">
+        <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
+        <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
+        <input type="hidden" name="formato" value="csv">
+        <button class="btn-secondary">Exportar para CSV</button>
+      </form>
+
+      <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display: inline-block;">
+        <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
+        <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
+        <input type="hidden" name="usuario" value="{{ request.args.get('usuario', '') }}">
+        <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
+        <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
+        <input type="hidden" name="formato" value="xlsx">
+        <button class="btn-secondary">Exportar para Excel</button>
+      </form>
+
+      <a href="{{ url_for('relatorios_bi') }}">
+        <button class="btn-primary" style="margin-top: 1rem;">Ver Painel Interativo (BI)</button>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

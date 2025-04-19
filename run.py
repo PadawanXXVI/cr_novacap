@@ -555,6 +555,25 @@ def exportar_tramitacoes():
     return response
 
 # ================================
+# ROTA 18: Relatórios Avançados
+# ================================
+@app.route('/relatorios-avancados')
+def relatorios_avancados():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    todos_status = Status.query.order_by(Status.ordem_exibicao).all()
+    todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
+    usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario).all()
+
+    return render_template(
+        'relatorios_avancados.html',
+        todos_status=todos_status,
+        todas_ras=todas_ras,
+        usuarios=usuarios
+    )
+
+# ================================
 # ROTA 8: Dashboard de Protocolo
 # ================================
 @app.route('/dashboard-protocolo')
