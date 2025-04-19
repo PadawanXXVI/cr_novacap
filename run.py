@@ -286,35 +286,60 @@ def cadastro_processo():
         diretorias=diretorias
     )
 # ================================
-# ROTA 11: Visualizar Processo
+# ROTA 8: Listar Processos
 # ================================
-@app.route('/visualizar-processo/<int:id_processo>')
-def visualizar_processo(id_processo):
+@app.route('/listar-processos')
+def listar_processos():
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
-    processo = Processo.query.get_or_404(id_processo)
-    entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
+    # Filtros recebidos via GET
+    status_filtro = request.args.get('status')
+    ra = request.args.get('ra')
+    diretoria = request.args.get('diretoria')
+    inicio = request.args.get('inicio')
+    fim = request.args.get('fim')
 
-    # Join com usuário para mostrar no histórico
-    movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
-        Movimentacao.id_entrada == entrada.id_entrada if entrada else None
-    ).order_by(Movimentacao.data.asc()).all()
+    # Base da query
+    query = db.session.query(Processo).join(EntradaProcesso)
 
-    ultima_observacao = (
-        movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao
-        else processo.observacoes
-    )
+    if status_filtro:
+        query = query.filter(Processo.status_atual == status_filtro)
+    if ra:
+        query = query.filter(EntradaProcesso.ra_origem == ra)
+    if diretoria:
+        query = query.filter(Processo.diretoria_destino == diretoria)
+    if inicio and fim:
+        query = query.filter(EntradaProcesso.data_entrada_novacap.between(inicio, fim))
 
-    return render_template(
-        'visualizar_processo.html',
-        processo=processo,
-        entrada=entrada,
-        movimentacoes=movimentacoes,
-        ultima_observacao=ultima_observacao
-    )
+    processos = query.order_by(Processo.id_processo.desc()).all()
+
+    # Enriquecimento com dados relacionados
+    for p in processos:
+        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
+        p.entrada = entrada
+
+        if entrada:
+            entrada.tipo = TipoDemanda.query.get(entrada.id_tipo)
+            entrada.movimentacoes = Movimentacao.query.filter_by(id_entrada=entrada.id_entrada).order_by(Movimentacao.data).all()
+
+            # Atribui a última movimentação (ou data do documento)
+            if entrada.movimentacoes:
+                p.ultima_data = entrada.movimentacoes[-1].data
+            else:
+                p.ultima_data = entrada.data_documento
+
+    # Dados para os filtros (selects)
+    todos_status = Status.query.order_by(Status.ordem_exibicao).all()
+    todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
+
+    return render_template("listar_processos.html",
+                           processos=processos,
+                           todos_status=todos_status,
+                           todas_ras=todas_ras)
+
 # ================================
-# ROTA 8: Listar Processos
+# ROTA 9: Visualizar Processo
 # ================================
 @app.route('/visualizar-processo/<int:id_processo>')
 def visualizar_processo(id_processo):
@@ -344,49 +369,7 @@ def visualizar_processo(id_processo):
     )
 
 # ================================
-# ROTA 5: Painel Administrativo
-# ================================
-@app.route('/painel-admin')
-def painel_admin():
-    if not session.get('is_admin'):
-        return "Acesso restrito ao administrador.", 403
-
-    usuarios = Usuario.query.filter_by(aprovado=False).all()
-    return render_template('painel-admin.html', usuarios=usuarios)
-
-# ================================
-# ROTA 6: Aprovar Usuário
-# ================================
-@app.route('/aprovar-usuario/<int:id_usuario>', methods=['POST'])
-def aprovar_usuario(id_usuario):
-    if not session.get('is_admin'):
-        return "Acesso restrito ao administrador.", 403
-
-    usuario = Usuario.query.get_or_404(id_usuario)
-    usuario.aprovado = True
-    db.session.commit()
-    flash(f"Usuário {usuario.usuario} aprovado com sucesso.")
-    return redirect(url_for('painel_admin'))
-
-# ================================
-# ROTA 8: Dashboard de Protocolo
-# ================================
-@app.route('/dashboard-protocolo')
-def dashboard_protocolo():
-    if not session.get('usuario'):
-        return redirect(url_for('login'))
-    return "<h2>Bem-vindo ao Sistema de Protocolo de Atendimento</h2>"
-
-# ================================
-# ROTA 9: Logout
-# ================================
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('index'))
-
-# ================================
-# ROTA 13: Alterar Processo
+# ROTA 10: Alterar Processo
 # ================================
 @app.route('/alterar-processo/<int:id_processo>', methods=['GET', 'POST'])
 def alterar_processo(id_processo):
@@ -443,6 +426,48 @@ def alterar_processo(id_processo):
                            processo=processo,
                            status=status,
                            usuarios=usuarios)
+
+# ================================
+# ROTA 5: Painel Administrativo
+# ================================
+@app.route('/painel-admin')
+def painel_admin():
+    if not session.get('is_admin'):
+        return "Acesso restrito ao administrador.", 403
+
+    usuarios = Usuario.query.filter_by(aprovado=False).all()
+    return render_template('painel-admin.html', usuarios=usuarios)
+
+# ================================
+# ROTA 6: Aprovar Usuário
+# ================================
+@app.route('/aprovar-usuario/<int:id_usuario>', methods=['POST'])
+def aprovar_usuario(id_usuario):
+    if not session.get('is_admin'):
+        return "Acesso restrito ao administrador.", 403
+
+    usuario = Usuario.query.get_or_404(id_usuario)
+    usuario.aprovado = True
+    db.session.commit()
+    flash(f"Usuário {usuario.usuario} aprovado com sucesso.")
+    return redirect(url_for('painel_admin'))
+
+# ================================
+# ROTA 8: Dashboard de Protocolo
+# ================================
+@app.route('/dashboard-protocolo')
+def dashboard_protocolo():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+    return "<h2>Bem-vindo ao Sistema de Protocolo de Atendimento</h2>"
+
+# ================================
+# ROTA 9: Logout
+# ================================
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 # ================================
 # ROTA 14: Relatórios Gerenciais
