@@ -597,7 +597,7 @@ def relatorios_avancados():
     )
 
 # ================================
-# ROTA: Relatórios BI Interativo
+# ROTA 19: Relatórios BI Interativo
 # ================================
 from flask import render_template, session, redirect, url_for
 from app.models.modelos import Processo, EntradaProcesso, Movimentacao
@@ -641,7 +641,7 @@ def relatorios_bi():
     ]
     tempo_medio_entrada = round(sum(tempos_entrada) / len(tempos_entrada), 1) if tempos_entrada else 0
 
-    # Tempo médio de atendimento (processos com status "Atendido")
+    # Tempo médio de atendimento
     atendidos = Processo.query.filter_by(status_atual="Atendido").all()
     tempos_atendimento = []
     for p in atendidos:
@@ -655,13 +655,18 @@ def relatorios_bi():
 
     tempo_medio_atendimento = round(sum(tempos_atendimento) / len(tempos_atendimento), 1) if tempos_atendimento else 0
 
+    total_processos = Processo.query.count()
+    total_tramitacoes = Movimentacao.query.count()
+
     return render_template(
         "relatorios_bi.html",
         grafico_status=grafico_status,
         grafico_ra=grafico_ra,
         grafico_diretoria=grafico_diretoria,
         tempo_medio_entrada=tempo_medio_entrada,
-        tempo_medio_atendimento=tempo_medio_atendimento
+        tempo_medio_atendimento=tempo_medio_atendimento,
+        total_processos=total_processos,
+        total_tramitacoes=total_tramitacoes
     )
 
 # ================================

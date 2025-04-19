@@ -6,16 +6,74 @@
   <title>Painel BI - Central de Relacionamento</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    .card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: #444;
+    }
+
+    .card p {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .btn-group {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .btn-group a {
+      margin: 0 0.5rem;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h1 style="text-align: center;">Painel Interativo de BI</h1>
 
-    <div id="grafico-status" style="margin-top: 2rem;"></div>
-    <div id="grafico-ra" style="margin-top: 2rem;"></div>
-    <div id="grafico-diretorias" style="margin-top: 2rem;"></div>
+    <!-- Cards de Métricas -->
+    <div class="card-grid">
+      <div class="card">
+        <h3>Total de Processos</h3>
+        <p>{{ total_processos }}</p>
+      </div>
+      <div class="card">
+        <h3>Total de Tramitações</h3>
+        <p>{{ total_tramitacoes }}</p>
+      </div>
+      <div class="card">
+        <h3>Tempo Médio de Entrada na NOVACAP</h3>
+        <p>{{ tempo_medio_entrada }} dias</p>
+      </div>
+      <div class="card">
+        <h3>Tempo Médio de Atendimento</h3>
+        <p>{{ tempo_medio_atendimento }} dias</p>
+      </div>
+    </div>
 
-    <div style="text-align: center; margin-top: 2rem;">
+    <!-- Gráficos -->
+    <div id="grafico-status" style="margin-top: 3rem;"></div>
+    <div id="grafico-ra" style="margin-top: 3rem;"></div>
+    <div id="grafico-diretorias" style="margin-top: 3rem;"></div>
+
+    <div class="btn-group">
       <a href="{{ url_for('relatorios_avancados') }}"><button class="btn-secondary">Voltar</button></a>
       <a href="{{ url_for('logout') }}"><button class="btn-danger">Sair</button></a>
     </div>
