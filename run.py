@@ -489,18 +489,7 @@ def logout():
     return redirect(url_for('index'))
 
 # ================================
-# ROTA 8: Dashboard de Protocolo
-# ================================
-@app.route('/dashboard-protocolo')
-def dashboard_protocolo():
-    if not session.get('usuario'):
-        return redirect(url_for('login'))
-    return "<h2>Bem-vindo ao Sistema de Protocolo de Atendimento</h2>"
-
-
-
-# ================================
-# ROTA 14: Relatórios Gerenciais
+# ROTA 16: Relatórios Gerenciais
 # ================================
 @app.route('/relatorios-gerenciais')
 def relatorios_gerenciais():
@@ -517,7 +506,7 @@ def relatorios_gerenciais():
     )
 
 # ===================================
-# ROTA 15: Exportação de Tramitações
+# ROTA 17: Exportação de Tramitações
 # ===================================
 @app.route('/exportar-tramitacoes')
 def exportar_tramitacoes():
@@ -565,6 +554,14 @@ def exportar_tramitacoes():
     response.headers["Content-Type"] = "text/csv"
     return response
 
+# ================================
+# ROTA 8: Dashboard de Protocolo
+# ================================
+@app.route('/dashboard-protocolo')
+def dashboard_protocolo():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+    return "<h2>Bem-vindo ao Sistema de Protocolo de Atendimento</h2>"
 
 # ================================
 # Execução do servidor
