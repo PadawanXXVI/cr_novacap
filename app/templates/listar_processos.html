@@ -46,9 +46,6 @@
 
     <!-- Filtros -->
     <form method="GET" action="{{ url_for('listar_processos') }}" class="filtros">
-      <input type="text" name="numero" placeholder="Buscar por número do processo"
-             value="{{ request.args.get('numero', '') }}">
-
       <select name="status">
         <option value="">-- Filtrar por status --</option>
         {% for s in todos_status %}
@@ -58,15 +55,39 @@
         {% endfor %}
       </select>
 
+      <select name="ra">
+        <option value="">-- Filtrar por RA --</option>
+        {% for r in todas_ras %}
+          <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>
+            {{ r.descricao_ra }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <select name="diretoria">
+        <option value="">-- Filtrar por Diretoria --</option>
+        <option value="Diretoria das Cidades - DC">Diretoria das Cidades - DC</option>
+        <option value="Diretoria de Obras - DO">Diretoria de Obras - DO</option>
+        <option value="Não tramita na Novacap">Não tramita na Novacap</option>
+      </select>
+
+      <input type="date" name="inicio" value="{{ request.args.get('inicio', '') }}" placeholder="Data inicial">
+      <input type="date" name="fim" value="{{ request.args.get('fim', '') }}" placeholder="Data final">
+
       <button type="submit" class="btn-primary">Filtrar</button>
     </form>
 
     <!-- Exportar CSV -->
-    <form method="GET" action="{{ url_for('exportar_processos_csv') }}" class="exportar">
-      <input type="hidden" name="numero" value="{{ request.args.get('numero', '') }}">
+    {% if processos %}
+    <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" class="exportar">
       <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
-      <button type="submit" class="btn-outline-gray">Exportar CSV</button>
+      <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
+      <input type="hidden" name="diretoria" value="{{ request.args.get('diretoria', '') }}">
+      <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
+      <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
+      <button type="submit" class="btn-outline-gray">Exportar Resultados em CSV</button>
     </form>
+    {% endif %}
 
     <!-- Tabela -->
     {% if processos %}

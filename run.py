@@ -342,28 +342,47 @@ def listar_processos():
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
-    numero = request.args.get('numero')
+    # Filtros recebidos via GET
     status_filtro = request.args.get('status')
+    ra = request.args.get('ra')
+    diretoria = request.args.get('diretoria')
+    inicio = request.args.get('inicio')
+    fim = request.args.get('fim')
 
-    query = Processo.query
+    # Base da query
+    query = db.session.query(Processo).join(EntradaProcesso)
 
-    if numero:
-        query = query.filter(Processo.numero_processo.ilike(f"%{numero}%"))
+    # Aplicação dos filtros
     if status_filtro:
-        query = query.filter_by(status_atual=status_filtro)
+        query = query.filter(Processo.status_atual == status_filtro)
 
+    if ra:
+        query = query.filter(EntradaProcesso.ra_origem == ra)
+
+    if diretoria:
+        query = query.filter(Processo.diretoria_destino == diretoria)
+
+    if inicio and fim:
+        query = query.filter(EntradaProcesso.data_entrada_novacap.between(inicio, fim))
+
+    # Ordenação padrão
     processos = query.order_by(Processo.id_processo.desc()).all()
 
-    # Enriquecer com entrada, tipo, movimentações
+    # Enriquecimento com relações adicionais
     for p in processos:
         p.entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
         if p.entrada:
             p.entrada.tipo = TipoDemanda.query.get(p.entrada.id_tipo)
             p.entrada.movimentacoes = Movimentacao.query.filter_by(id_entrada=p.entrada.id_entrada).order_by(Movimentacao.data).all()
 
+    # Dados para os selects
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
+    todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
 
-    return render_template("listar_processos.html", processos=processos, todos_status=todos_status)
+    return render_template("listar_processos.html",
+                           processos=processos,
+                           todos_status=todos_status,
+                           todas_ras=todas_ras)
 
 # ================================
 # ROTA 13: Alterar Processo
