@@ -4,7 +4,9 @@ from datetime import datetime
 # ----------------------------
 # USUÁRIOS DO SISTEMA
 # ----------------------------
-class Usuario(db.Model):
+from flask_login import UserMixin
+
+class Usuario(db.Model, UserMixin):  # ✅ agora compatível com Flask-Login
     __tablename__ = 'usuarios'
 
     id_usuario = db.Column(db.Integer, primary_key=True)
