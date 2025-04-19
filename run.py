@@ -71,9 +71,21 @@ def cadastro():
         senha = request.form.get('senha')
         confirmar_senha = request.form.get('confirmar_senha')
 
+        # Verifica se senhas coincidem
         if senha != confirmar_senha:
-            return "Erro: as senhas não coincidem.", 400
+            flash("Erro: as senhas não coincidem.")
+            return redirect(url_for('cadastro'))
 
+        # Verifica duplicidade de e-mail ou nome de usuário
+        existente = Usuario.query.filter(
+            (Usuario.usuario == usuario) | (Usuario.email == email)
+        ).first()
+
+        if existente:
+            flash("Erro: e-mail ou nome de usuário já cadastrado.")
+            return redirect(url_for('cadastro'))
+
+        # Criação do usuário
         novo_usuario = Usuario(
             nome=nome,
             email=email,
@@ -86,7 +98,9 @@ def cadastro():
 
         db.session.add(novo_usuario)
         db.session.commit()
-        return "Cadastro realizado com sucesso. Aguarde aprovação do administrador.", 200
+
+        flash("Cadastro enviado com sucesso. Aguarde aprovação do administrador.")
+        return redirect(url_for('index'))
 
     return render_template('cadastro.html')
 
