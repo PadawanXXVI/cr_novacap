@@ -381,7 +381,7 @@ def alterar_processo(id_processo):
         data_movimentacao = request.form.get('data_movimentacao')
         id_usuario = int(request.form.get('responsavel_tecnico'))
 
-        if not (novo_status and observacao and data_movimentacao and usuario_nome):
+        if not (novo_status and observacao and data_movimentacao and id_usuario):
             flash("❌ Todos os campos são obrigatórios.", "error")
             return redirect(url_for('alterar_processo', id_processo=id_processo))
 
@@ -423,7 +423,6 @@ def alterar_processo(id_processo):
                            processo=processo,
                            status=status,
                            usuarios=usuarios)
-
 
 # ================================
 # ROTA 14: Relatórios Gerenciais
