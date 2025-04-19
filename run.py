@@ -599,6 +599,11 @@ def relatorios_avancados():
 # ================================
 # ROTA: Relatórios BI Interativo
 # ================================
+from flask import render_template, session, redirect, url_for
+from app.models.modelos import Processo, EntradaProcesso, Movimentacao
+from app.ext import db
+from datetime import datetime
+
 @app.route('/relatorios-bi')
 def relatorios_bi():
     if not session.get('usuario'):
@@ -628,11 +633,35 @@ def relatorios_bi():
         "valores": [d[1] for d in dir_data]
     }
 
+    # Tempo médio entre criação na RA e entrada na NOVACAP
+    entradas = EntradaProcesso.query.all()
+    tempos_entrada = [
+        (e.data_entrada_novacap - e.data_criacao_ra).days
+        for e in entradas if e.data_criacao_ra and e.data_entrada_novacap
+    ]
+    tempo_medio_entrada = round(sum(tempos_entrada) / len(tempos_entrada), 1) if tempos_entrada else 0
+
+    # Tempo médio de atendimento (processos com status "Atendido")
+    atendidos = Processo.query.filter_by(status_atual="Atendido").all()
+    tempos_atendimento = []
+    for p in atendidos:
+        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
+        if entrada:
+            ultima_mov = db.session.query(Movimentacao).filter_by(id_entrada=entrada.id_entrada) \
+                .order_by(Movimentacao.data.desc()).first()
+            if ultima_mov and entrada.data_entrada_novacap:
+                dias = (ultima_mov.data.date() - entrada.data_entrada_novacap).days
+                tempos_atendimento.append(dias)
+
+    tempo_medio_atendimento = round(sum(tempos_atendimento) / len(tempos_atendimento), 1) if tempos_atendimento else 0
+
     return render_template(
         "relatorios_bi.html",
         grafico_status=grafico_status,
         grafico_ra=grafico_ra,
-        grafico_diretoria=grafico_diretoria
+        grafico_diretoria=grafico_diretoria,
+        tempo_medio_entrada=tempo_medio_entrada,
+        tempo_medio_atendimento=tempo_medio_atendimento
     )
 
 # ================================
