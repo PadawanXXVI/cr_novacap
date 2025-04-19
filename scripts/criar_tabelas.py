@@ -2,38 +2,39 @@ import sys
 import os
 from dotenv import load_dotenv
 
-# 🟢 Garante que o .env seja carregado antes de criar o app
+# 🟢 Carrega variáveis do .env antes de qualquer configuração
 load_dotenv()
 
-# 🛠 Ajusta o path para permitir importações relativas ao projeto
+# 🛠 Ajusta o path para garantir importações corretas
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# 🔧 Cria o app com as configurações corretas (incluindo DATABASE_URL)
+# 🔧 Cria o app com configurações do .env
 from app import create_app
 app = create_app()
 
-# 🧪 Diagnóstico: mostra qual URI do banco está sendo usada
+# 🧪 Mostra qual banco está conectado
 print("🔍 URI ativa:", app.config['SQLALCHEMY_DATABASE_URI'])
 
-# 📦 Carrega extensões e modelos
+# 📦 Importa extensões e modelos necessários para a criação
 from app.ext import db
 from app.models.modelos import Status, TipoDemanda, RegiaoAdministrativa, Demanda
 
 with app.app_context():
+    # 💣 Apaga todas as tabelas antes de recriar
     db.drop_all()
     db.create_all()
 
     # ------------------
-    # TIPOS DE DEMANDA
+    # TIPOS DE DEMANDA (ordem alfabética)
     # ------------------
-    tipos = ["Zeladoria", "Implantação", "Indivíduo Arbóreo"]
+    tipos = sorted(["Zeladoria", "Implantação", "Indivíduo Arbóreo"])
     for descricao in tipos:
         db.session.add(TipoDemanda(descricao=descricao))
 
     # ------------------
-    # STATUS
+    # STATUS (ordem alfabética por descrição)
     # ------------------
-    status_lista = [
+    status_lista = sorted([
         ("Devolvido à RA de origem – adequação de requisitos", 1, False),
         ("Devolvido à RA de origem – parecer técnico de outro órgão", 2, False),
         ("Devolvido à RA de origem – serviço com contrato de natureza continuada pela DC/DO", 3, False),
@@ -44,7 +45,8 @@ with app.app_context():
         ("Improcedente – tramita por órgão diferente da NOVACAP", 8, False),
         ("Encerrado pela RA de origem", 9, True),
         ("Atendido", 10, True)
-    ]
+    ], key=lambda x: x[0])  # Ordena pela descrição
+
     for descricao, ordem, finaliza in status_lista:
         db.session.add(Status(descricao=descricao, ordem_exibicao=ordem, finaliza_processo=finaliza))
 
@@ -80,8 +82,9 @@ with app.app_context():
         "Pista de Skate", "Poda / Supressão de Árvore", "Ponto de Encontro Comunitário (PEC)",
         "Praça", "Quadra de Esporte", "Rampa", "Recapeamento Asfáltico", "Tapa-buraco"
     ]
-    for d in demandas:
+    for d in sorted(demandas):  # também opcionalmente ordenado
         db.session.add(Demanda(descricao=d))
 
+    # 💾 Finaliza a transação
     db.session.commit()
     print("✅ Banco MySQL criado e tabelas populadas com sucesso!")
