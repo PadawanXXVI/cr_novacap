@@ -96,6 +96,7 @@
       {% if session.get('is_admin') %}
         <a href="{{ url_for('painel_admin') }}"><button class="btn-warning">Painel Administrativo</button></a>
         <a href="{{ url_for('relatorios_gerenciais') }}"><button class="btn-outline-gray">Relatórios Gerenciais</button></a>
+        <a href="{{ url_for('relatorios_avancados') }}"><button class="btn-outline-gray">Relatórios Avançados</button></a>
       {% endif %}
       <a href="{{ url_for('logout') }}"><button class="btn-danger">Sair</button></a>
     </div>
