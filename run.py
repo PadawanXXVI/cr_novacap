@@ -597,6 +597,45 @@ def relatorios_avancados():
     )
 
 # ================================
+# ROTA: Relatórios BI Interativo
+# ================================
+@app.route('/relatorios-bi')
+def relatorios_bi():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    # Gráfico de Status
+    status_data = db.session.query(Processo.status_atual, db.func.count(Processo.id_processo)) \
+        .group_by(Processo.status_atual).all()
+    grafico_status = {
+        "labels": [s[0] for s in status_data],
+        "valores": [s[1] for s in status_data]
+    }
+
+    # Gráfico de RA
+    ra_data = db.session.query(EntradaProcesso.ra_origem, db.func.count(EntradaProcesso.id_entrada)) \
+        .group_by(EntradaProcesso.ra_origem).all()
+    grafico_ra = {
+        "labels": [r[0] for r in ra_data],
+        "valores": [r[1] for r in ra_data]
+    }
+
+    # Gráfico de Diretorias
+    dir_data = db.session.query(Processo.diretoria_destino, db.func.count(Processo.id_processo)) \
+        .group_by(Processo.diretoria_destino).all()
+    grafico_diretoria = {
+        "labels": [d[0] for d in dir_data],
+        "valores": [d[1] for d in dir_data]
+    }
+
+    return render_template(
+        "relatorios_bi.html",
+        grafico_status=grafico_status,
+        grafico_ra=grafico_ra,
+        grafico_diretoria=grafico_diretoria
+    )
+
+# ================================
 # ROTA 8: Dashboard de Protocolo
 # ================================
 @app.route('/dashboard-protocolo')

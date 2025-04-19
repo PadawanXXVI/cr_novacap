@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel BI - Central de Relacionamento</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1 style="text-align: center;">Painel Interativo de BI</h1>
+
+    <div id="grafico-status" style="margin-top: 2rem;"></div>
+    <div id="grafico-ra" style="margin-top: 2rem;"></div>
+    <div id="grafico-diretorias" style="margin-top: 2rem;"></div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="{{ url_for('relatorios_avancados') }}"><button class="btn-secondary">Voltar</button></a>
+      <a href="{{ url_for('logout') }}"><button class="btn-danger">Sair</button></a>
+    </div>
+  </div>
+
+  <script>
+    // Gráfico de Status
+    const dataStatus = [{
+      x: {{ grafico_status.labels | tojson | safe }},
+      y: {{ grafico_status.valores | tojson | safe }},
+      type: 'bar',
+      marker: { color: '#007bff' }
+    }];
+    Plotly.newPlot('grafico-status', dataStatus, { title: 'Distribuição por Status' });
+
+    // Gráfico de RA
+    const dataRA = [{
+      labels: {{ grafico_ra.labels | tojson | safe }},
+      values: {{ grafico_ra.valores | tojson | safe }},
+      type: 'pie'
+    }];
+    Plotly.newPlot('grafico-ra', dataRA, { title: 'Processos por Região Administrativa' });
+
+    // Gráfico de Diretorias
+    const dataDir = [{
+      x: {{ grafico_diretoria.labels | tojson | safe }},
+      y: {{ grafico_diretoria.valores | tojson | safe }},
+      type: 'bar',
+      marker: { color: '#28a745' }
+    }];
+    Plotly.newPlot('grafico-diretorias', dataDir, { title: 'Distribuição por Diretoria' });
+  </script>
+</body>
+</html>
