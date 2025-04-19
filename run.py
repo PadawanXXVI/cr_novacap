@@ -337,30 +337,32 @@ def listar_processos():
     # Base da query
     query = db.session.query(Processo).join(EntradaProcesso)
 
-    # Aplicação dos filtros
     if status_filtro:
         query = query.filter(Processo.status_atual == status_filtro)
-
     if ra:
         query = query.filter(EntradaProcesso.ra_origem == ra)
-
     if diretoria:
         query = query.filter(Processo.diretoria_destino == diretoria)
-
     if inicio and fim:
         query = query.filter(EntradaProcesso.data_entrada_novacap.between(inicio, fim))
 
-    # Ordenação padrão
     processos = query.order_by(Processo.id_processo.desc()).all()
 
-    # Enriquecimento com relações adicionais
+    # Enriquecer com dados relacionados + última movimentação
     for p in processos:
-        p.entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
-        if p.entrada:
-            p.entrada.tipo = TipoDemanda.query.get(p.entrada.id_tipo)
-            p.entrada.movimentacoes = Movimentacao.query.filter_by(id_entrada=p.entrada.id_entrada).order_by(Movimentacao.data).all()
+        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
+        p.entrada = entrada
 
-    # Dados para os selects
+        if entrada:
+            entrada.tipo = TipoDemanda.query.get(entrada.id_tipo)
+            entrada.movimentacoes = Movimentacao.query.filter_by(id_entrada=entrada.id_entrada).order_by(Movimentacao.data).all()
+
+            # Atribui última movimentação (se houver), senão usa data_documento
+            if entrada.movimentacoes:
+                p.ultima_data = entrada.movimentacoes[-1].data
+            else:
+                p.ultima_data = entrada.data_documento  # ou entrada.data_entrada_novacap
+
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
 

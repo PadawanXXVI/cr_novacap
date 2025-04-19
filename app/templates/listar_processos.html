@@ -71,8 +71,8 @@
         <option value="Não tramita na Novacap">Não tramita na Novacap</option>
       </select>
 
-      <input type="date" name="inicio" value="{{ request.args.get('inicio', '') }}" placeholder="Data inicial">
-      <input type="date" name="fim" value="{{ request.args.get('fim', '') }}" placeholder="Data final">
+      <input type="date" name="inicio" value="{{ request.args.get('inicio', '') }}">
+      <input type="date" name="fim" value="{{ request.args.get('fim', '') }}">
 
       <button type="submit" class="btn-primary">Filtrar</button>
     </form>
@@ -109,11 +109,11 @@
               <td>{{ p.numero_processo }}</td>
               <td>{{ p.status_atual }}</td>
               <td>{{ p.entrada.ra_origem if p.entrada else '---' }}</td>
-              <td>{{ p.entrada.tipo.descricao if p.entrada else '---' }}</td>
+              <td>{{ p.entrada.tipo.descricao if p.entrada and p.entrada.tipo else '---' }}</td>
               <td>{{ p.diretoria_destino or '---' }}</td>
               <td>
-                {% if p.entrada and p.entrada.movimentacoes %}
-                  {{ p.entrada.movimentacoes[-1].data.strftime('%d/%m/%Y %H:%M') }}
+                {% if p.ultima_data %}
+                  {{ p.ultima_data.strftime('%d/%m/%Y %H:%M') }}
                 {% else %}
                   ---
                 {% endif %}
@@ -134,7 +134,6 @@
       <p style="margin-top: 2rem;">Nenhum processo encontrado com os critérios informados.</p>
     {% endif %}
 
-    <!-- Navegação -->
     <div style="text-align: center; margin-top: 2rem;">
       <a href="{{ url_for('dashboard_processos') }}">
         <button class="btn-secondary">Voltar ao Dashboard</button>
