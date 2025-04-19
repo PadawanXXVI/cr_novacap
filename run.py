@@ -6,6 +6,7 @@ from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, 
 from datetime import datetime
 import pandas as pd
 from io import BytesIO
+from flask_login import login_required
 
 app = create_app()
 
@@ -219,33 +220,42 @@ def logout():
 # ================================
 # ROTA 10: Cadastro de Processo
 # ================================
+from flask import render_template, request, redirect, url_for, flash, session
+from datetime import datetime
+from flask_login import login_required
+from app.models.modelos import (
+    Processo, EntradaProcesso, RegiaoAdministrativa,
+    TipoDemanda, Demanda, Status, Usuario
+)
+from app.ext import db
+
 @app.route('/cadastro-processo', methods=['GET', 'POST'])
+@login_required
 def cadastro_processo():
     if request.method == 'POST':
-        numero = request.form.get('numero_processo')
+        numero = request.form.get('numero_processo').strip()
 
+        # 🔍 Verifica se o processo já existe
         processo_existente = Processo.query.filter_by(numero_processo=numero).first()
         if processo_existente:
             flash("⚠️ Processo já cadastrado. Redirecionando para alteração...", "warning")
             return redirect(url_for('alterar_processo', id_processo=processo_existente.id_processo))
 
         try:
-            # Conversão das datas
+            # 📅 Conversão de datas
             data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
             data_entrada_novacap = datetime.strptime(request.form.get('data_entrada_novacap'), "%Y-%m-%d").date()
             data_documento = datetime.strptime(request.form.get('data_documento'), "%Y-%m-%d").date()
 
-            # Coleta da diretoria de destino
-            diretoria_destino = request.form.get('diretoria_destino')
-
+            # 📝 Criação do Processo
             novo_processo = Processo(
                 numero_processo=numero,
                 status_atual=request.form.get('status_inicial'),
                 observacoes=request.form.get('observacoes'),
-                diretoria_destino=diretoria_destino
+                diretoria_destino=request.form.get('diretoria_destino')
             )
             db.session.add(novo_processo)
-            db.session.flush()
+            db.session.flush()  # Garante que o ID esteja disponível para a EntradaProcesso
 
             entrada = EntradaProcesso(
                 id_processo=novo_processo.id_processo,
@@ -270,14 +280,13 @@ def cadastro_processo():
             flash(f"❌ Erro ao cadastrar processo: {str(e)}", "error")
             return redirect(url_for('cadastro_processo'))
 
-    # GET: dados para os selects
+    # GET: carrega os dados para os selects
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
     demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
     status = Status.query.order_by(Status.ordem_exibicao.asc()).all()
     usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario.asc()).all()
 
-    # Diretoria de destino: valores fixos
     diretorias = [
         "Diretoria das Cidades - DC",
         "Diretoria de Obras - DO",
@@ -369,37 +378,41 @@ def alterar_processo(id_processo):
         data_movimentacao = request.form.get('data_movimentacao')
         usuario_nome = request.form.get('responsavel_tecnico')
 
-        # Validação dos campos obrigatórios
         if not (novo_status and observacao and data_movimentacao and usuario_nome):
-            return "Erro: Todos os campos são obrigatórios.", 400
+            flash("❌ Todos os campos são obrigatórios.", "error")
+            return redirect(url_for('alterar_processo', id_processo=id_processo))
 
-        # Busca do responsável
         responsavel = Usuario.query.filter_by(usuario=usuario_nome).first()
         if not responsavel:
-            return "Erro: responsável técnico não encontrado.", 404
+            flash("❌ Responsável técnico não encontrado.", "error")
+            return redirect(url_for('alterar_processo', id_processo=id_processo))
 
-        # Busca da entrada do processo
         entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
         if not entrada:
-            return "Erro: entrada do processo não encontrada.", 404
+            flash("❌ Entrada do processo não encontrada.", "error")
+            return redirect(url_for('alterar_processo', id_processo=id_processo))
 
-        # Criação da movimentação
+        try:
+            data = datetime.strptime(data_movimentacao, "%Y-%m-%d")
+        except ValueError:
+            flash("❌ Data inválida. Use o formato correto (aaaa-mm-dd).", "error")
+            return redirect(url_for('alterar_processo', id_processo=id_processo))
+
         nova_mov = Movimentacao(
             id_entrada=entrada.id_entrada,
             id_usuario=responsavel.id_usuario,
             novo_status=novo_status,
             observacao=observacao,
-            data=datetime.strptime(data_movimentacao, "%Y-%m-%d")
+            data=data
         )
         db.session.add(nova_mov)
 
-        # Atualiza o status atual do processo
         processo.status_atual = novo_status
         db.session.commit()
 
+        flash("✅ Processo alterado com sucesso!", "success")
         return redirect(url_for('dashboard_processos'))
 
-    # GET – carrega lista de usuários e status
     status = Status.query.order_by(Status.ordem_exibicao).all()
     usuarios = Usuario.query.order_by(Usuario.usuario).all()
 
@@ -407,6 +420,7 @@ def alterar_processo(id_processo):
                            processo=processo,
                            status=status,
                            usuarios=usuarios)
+
 
 # ================================
 # ROTA 14: Relatórios Gerenciais
