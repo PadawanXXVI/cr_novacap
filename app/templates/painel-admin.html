@@ -8,63 +8,63 @@
 </head>
 <body>
 
-    <div class="container" style="text-align: center;">
-        <h1>Central de Relacionamento</h1>
-        <h2>Painel de Gerenciamento de Usuários</h2>
+  <div class="container" style="text-align: center;">
+    <h1>Central de Relacionamento</h1>
+    <h2>Painel de Gerenciamento de Usuários</h2>
 
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div class="alert-success" style="color: green; margin-bottom: 1rem;">
-              {{ messages[0] }}
-            </div>
-          {% endif %}
-        {% endwith %}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert-success" style="color: green; margin-bottom: 1rem;">
+          {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
 
-        <div style="text-align: right; margin-bottom: 1rem;">
-            <a href="{{ url_for('logout') }}">
-                <button class="btn-danger">Sair do Sistema</button>
-            </a>
-        </div>          
-
-        {% if usuarios %}
-            <table style="width: 100%; margin-top: 2rem; text-align: left;">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Usuário</th>
-                        <th>E-mail</th>
-                        <th>Admin?</th>
-                        <th>Bloqueado?</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for u in usuarios %}
-                        <tr>
-                            <td>{{ u.nome }}</td>
-                            <td>{{ u.usuario }}</td>
-                            <td>{{ u.email }}</td>
-                            <td>{{ "Sim" if u.is_admin else "Não" }}</td>
-                            <td>{{ "Sim" if u.bloqueado else "Não" }}</td>
-                            <td style="display: flex; gap: 0.5rem;">
-                                <form method="POST" action="{{ url_for('aprovar_usuario', id_usuario=u.id_usuario) }}">
-                                    <button type="submit" class="btn-success">Aprovar</button>
-                                </form>
-                                <form method="POST" action="{{ url_for('atribuir_admin', id_usuario=u.id_usuario) }}">
-                                    <button type="submit" class="btn-warning">Admin.</button>
-                                </form>
-                                <form method="POST" action="{{ url_for('bloquear_usuario', id_usuario=u.id_usuario) }}">
-                                    <button type="submit" class="btn-danger">Bloquear</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p style="margin-top: 2rem;">Nenhum usuário pendente de aprovação.</p>
-        {% endif %}
+    <div style="text-align: right; margin-bottom: 1rem;">
+      <a href="{{ url_for('logout') }}">
+        <button class="btn-danger">Sair do Sistema</button>
+      </a>
     </div>
+
+    {% if usuarios %}
+      <table style="width: 100%; margin-top: 2rem; text-align: left;">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Usuário</th>
+            <th>E-mail</th>
+            <th>Admin?</th>
+            <th>Bloqueado?</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in usuarios %}
+            <tr>
+              <td>{{ u.nome }}</td>
+              <td>{{ u.usuario }}</td>
+              <td>{{ u.email }}</td>
+              <td>{{ "Sim" if u.is_admin else "Não" }}</td>
+              <td>{{ "Sim" if u.bloqueado else "Não" }}</td>
+              <td style="display: flex; gap: 0.5rem;">
+                <form method="POST" action="{{ url_for('aprovar_usuario', id_usuario=u.id_usuario) }}">
+                  <button type="submit" class="btn-success">Aprovar</button>
+                </form>
+                <form method="POST" action="{{ url_for('atribuir_admin', id_usuario=u.id_usuario) }}">
+                  <button type="submit" class="btn-warning">Admin.</button>
+                </form>
+                <form method="POST" action="{{ url_for('bloquear_usuario', id_usuario=u.id_usuario) }}">
+                  <button type="submit" class="btn-danger">Bloquear</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p style="margin-top: 2rem;">Nenhum usuário pendente de aprovação.</p>
+    {% endif %}
+  </div>
 
 </body>
 </html>

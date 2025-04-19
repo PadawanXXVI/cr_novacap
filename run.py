@@ -435,7 +435,7 @@ def painel_admin():
     if not session.get('is_admin'):
         return "Acesso restrito ao administrador.", 403
 
-    usuarios = Usuario.query.filter_by(aprovado=False).all()
+    usuarios = Usuario.query.order_by(Usuario.nome).all()
     return render_template('painel-admin.html', usuarios=usuarios)
 
 # ================================
