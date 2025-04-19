@@ -34,6 +34,7 @@
     <div class="card">
       <h3>Histórico de Movimentações</h3>
       {% if movimentacoes %}
+        <p><strong>Total de Tramitações:</strong> {{ movimentacoes|length }}</p>
         <ul>
           {% for mov in movimentacoes %}
             <li>
