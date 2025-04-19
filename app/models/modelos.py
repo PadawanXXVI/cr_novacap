@@ -6,7 +6,7 @@ from datetime import datetime
 # ----------------------------
 from flask_login import UserMixin
 
-class Usuario(db.Model, UserMixin):  # ✅ agora compatível com Flask-Login
+class Usuario(db.Model, UserMixin):
     __tablename__ = 'usuarios'
 
     id_usuario = db.Column(db.Integer, primary_key=True)
@@ -17,6 +17,9 @@ class Usuario(db.Model, UserMixin):  # ✅ agora compatível com Flask-Login
     aprovado = db.Column(db.Boolean, default=False)
     bloqueado = db.Column(db.Boolean, default=False)
     is_admin = db.Column(db.Boolean, default=False)
+
+    def get_id(self):
+        return str(self.id_usuario)  # 🔐 Flask-Login exige string
 
 # ----------------------------
 # PROCESSOS
