@@ -1,3 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualização do Processo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <h1>Visualização do Processo</h1>
 
-<!-- Exibição do responsável com nome real -->
-<p><strong>Responsável:</strong> {{ entrada.responsavel.nome if entrada.responsavel else '---' }}</p>
+    <div class="card">
+      <h3>Informações do Processo</h3>
+      <p><strong>Número:</strong> {{ processo.numero_processo }}</p>
+      <p><strong>Status Atual:</strong> {{ processo.status_atual }}</p>
+      <p><strong>Diretoria de Destino:</strong> {{ processo.diretoria_destino }}</p>
+      <p><strong>Observações:</strong> {{ processo.observacoes or '---' }}</p>
+    </div>
+
+    <div class="card">
+      <h3>Informações da Entrada</h3>
+      <p><strong>RA de Origem:</strong> {{ entrada.ra_origem }}</p>
+      <p><strong>Tramitação Inicial:</strong> {{ entrada.tramite_inicial }}</p>
+      <p><strong>Data de Entrada na NOVACAP:</strong> {{ entrada.data_entrada_novacap.strftime('%d/%m/%Y') }}</p>
+      <p><strong>Data do Documento:</strong> {{ entrada.data_documento.strftime('%d/%m/%Y') }}</p>
+      <p><strong>Tipo:</strong> {{ entrada.tipo.descricao if entrada.tipo else '---' }}</p>
+      <p><strong>Responsável Técnico:</strong> {{ entrada.responsavel.nome if entrada.responsavel else '---' }}</p>
+    </div>
+
+    <div class="card">
+      <h3>Histórico de Movimentações</h3>
+      {% if movimentacoes %}
+        <ul>
+          {% for mov in movimentacoes %}
+            <li>
+              <strong>{{ mov.data.strftime('%d/%m/%Y %H:%M') }}</strong> —
+              Status: <strong>{{ mov.novo_status }}</strong> —
+              Por: <strong>{{ mov.id_usuario }}</strong><br>
+              <em>{{ mov.observacao }}</em>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>Sem movimentações registradas.</p>
+      {% endif %}
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="{{ url_for('listar_processos') }}">
+        <button class="btn-secondary">Voltar à Lista</button>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

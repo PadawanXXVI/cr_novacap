@@ -238,19 +238,16 @@ def cadastro_processo():
     if request.method == 'POST':
         numero = request.form.get('numero_processo').strip()
 
-        # 🔍 Verifica se o processo já existe
         processo_existente = Processo.query.filter_by(numero_processo=numero).first()
         if processo_existente:
             flash("⚠️ Processo já cadastrado. Redirecionando para alteração...", "warning")
             return redirect(url_for('alterar_processo', id_processo=processo_existente.id_processo))
 
         try:
-            # 📅 Conversão de datas
             data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
             data_entrada_novacap = datetime.strptime(request.form.get('data_entrada_novacap'), "%Y-%m-%d").date()
             data_documento = datetime.strptime(request.form.get('data_documento'), "%Y-%m-%d").date()
 
-            # 📝 Criação do Processo
             novo_processo = Processo(
                 numero_processo=numero,
                 status_atual=request.form.get('status_inicial'),
@@ -258,7 +255,7 @@ def cadastro_processo():
                 diretoria_destino=request.form.get('diretoria_destino')
             )
             db.session.add(novo_processo)
-            db.session.flush()  # Garante que o ID esteja disponível para a EntradaProcesso
+            db.session.flush()
 
             entrada = EntradaProcesso(
                 id_processo=novo_processo.id_processo,
@@ -273,8 +270,19 @@ def cadastro_processo():
                 status_inicial=request.form.get('status_inicial')
             )
             db.session.add(entrada)
-            db.session.commit()
+            db.session.flush()
 
+            # ✅ REGISTRA PRIMEIRA MOVIMENTAÇÃO
+            primeira_mov = Movimentacao(
+                id_entrada=entrada.id_entrada,
+                id_usuario=entrada.usuario_responsavel,
+                novo_status=entrada.status_inicial,
+                observacao="Cadastro inicial do processo.",
+                data=data_documento  # Pode ser datetime.utcnow() se quiser usar a data do sistema
+            )
+            db.session.add(primeira_mov)
+
+            db.session.commit()
             flash("✅ Processo cadastrado com sucesso!", "success")
             return redirect(url_for('cadastro_processo'))
 
@@ -282,29 +290,6 @@ def cadastro_processo():
             db.session.rollback()
             flash(f"❌ Erro ao cadastrar processo: {str(e)}", "error")
             return redirect(url_for('cadastro_processo'))
-
-    # GET: carrega os dados para os selects
-    regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
-    tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
-    demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
-    status = Status.query.order_by(Status.ordem_exibicao.asc()).all()
-    usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario.asc()).all()
-
-    diretorias = [
-        "Diretoria das Cidades - DC",
-        "Diretoria de Obras - DO",
-        "Não tramita na Novacap"
-    ]
-
-    return render_template(
-        'cadastro_processo.html',
-        regioes=regioes,
-        tipos=tipos,
-        demandas=demandas,
-        status=status,
-        usuarios=usuarios,
-        diretorias=diretorias
-    )
 
 # ================================
 # ROTA 11: Visualizar Processo
