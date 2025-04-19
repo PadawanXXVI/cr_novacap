@@ -439,7 +439,7 @@ def painel_admin():
     return render_template('painel-admin.html', usuarios=usuarios)
 
 # ================================
-# ROTA 6: Aprovar Usuário
+# ROTA 12: Aprovar Usuário
 # ================================
 @app.route('/aprovar-usuario/<int:id_usuario>', methods=['POST'])
 def aprovar_usuario(id_usuario):
