@@ -138,6 +138,13 @@
       <a href="{{ url_for('dashboard_processos') }}">
         <button class="btn-secondary">Voltar ao Dashboard</button>
       </a>
+
+      {% if session.get('is_admin') %}
+        <a href="{{ url_for('relatorios_avancados') }}">
+          <button class="btn-outline-gray">Relatórios Avançados</button>
+        </a>
+      {% endif %}
+
       <a href="{{ url_for('logout') }}">
         <button class="btn-danger">Sair do Sistema</button>
       </a>
