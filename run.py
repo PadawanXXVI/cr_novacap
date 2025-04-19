@@ -513,17 +513,21 @@ def exportar_tramitacoes():
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
+    # Parâmetros de filtro
     ra = request.args.get('ra')
     usuario = request.args.get('usuario')
     status = request.args.get('status')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
+    formato = request.args.get('formato', 'csv').lower()  # padrão: CSV
 
+    # Consulta base
     query = db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo) \
         .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario) \
         .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada) \
         .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
 
+    # Filtros
     if ra:
         query = query.filter(EntradaProcesso.ra_origem == ra)
     if usuario:
@@ -535,6 +539,7 @@ def exportar_tramitacoes():
 
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
+    # Monta dados
     dados = []
     for mov, user, entrada, processo in resultados:
         dados.append({
@@ -546,13 +551,31 @@ def exportar_tramitacoes():
             "Observação": mov.observacao or ''
         })
 
-    df = pd.DataFrame(dados)
-    csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig')
+    # Exporta CSV
+    if formato == 'csv':
+        df = pd.DataFrame(dados)
+        csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig')
+        response = make_response(csv)
+        response.headers["Content-Disposition"] = "attachment; filename=tramitacoes_filtradas.csv"
+        response.headers["Content-Type"] = "text/csv"
+        return response
 
-    response = make_response(csv)
-    response.headers["Content-Disposition"] = "attachment; filename=tramitacoes_filtradas.csv"
-    response.headers["Content-Type"] = "text/csv"
-    return response
+    # Exporta XLSX
+    elif formato == 'xlsx':
+        df = pd.DataFrame(dados)
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Tramitações')
+        output.seek(0)
+
+        response = send_file(output,
+                             download_name="tramitacoes_filtradas.xlsx",
+                             as_attachment=True,
+                             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        return response
+
+    else:
+        return "Formato inválido. Use 'csv' ou 'xlsx'.", 400
 
 # ================================
 # ROTA 18: Relatórios Avançados
