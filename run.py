@@ -269,7 +269,7 @@ def cadastro_processo():
                 ra_origem=request.form.get('ra_origem'),
                 id_tipo=int(request.form.get('id_tipo')),
                 id_demanda=int(request.form.get('id_demanda')),
-                usuario_responsavel=request.form.get('usuario_responsavel'),
+                usuario_responsavel=int(request.form.get('usuario_responsavel')),
                 status_inicial=request.form.get('status_inicial')
             )
             db.session.add(entrada)
@@ -379,13 +379,13 @@ def alterar_processo(id_processo):
         novo_status = request.form.get('novo_status')
         observacao = request.form.get('observacao')
         data_movimentacao = request.form.get('data_movimentacao')
-        usuario_nome = request.form.get('responsavel_tecnico')
+        id_usuario = int(request.form.get('responsavel_tecnico'))
 
         if not (novo_status and observacao and data_movimentacao and usuario_nome):
             flash("❌ Todos os campos são obrigatórios.", "error")
             return redirect(url_for('alterar_processo', id_processo=id_processo))
 
-        responsavel = Usuario.query.filter_by(usuario=usuario_nome).first()
+        responsavel = Usuario.query.get(id_usuario)
         if not responsavel:
             flash("❌ Responsável técnico não encontrado.", "error")
             return redirect(url_for('alterar_processo', id_processo=id_processo))
