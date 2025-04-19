@@ -173,50 +173,25 @@ def dashboard_processos():
                            devolvidos_ra=devolvidos_ra)
 
 # ================================
-# ROTA 5: Painel Administrativo
+# ROTA 6: Verificar Processo
 # ================================
-@app.route('/painel-admin')
-def painel_admin():
-    if not session.get('is_admin'):
-        return "Acesso restrito ao administrador.", 403
+from flask import jsonify
 
-    usuarios = Usuario.query.filter_by(aprovado=False).all()
-    return render_template('painel-admin.html', usuarios=usuarios)
+@app.route('/verificar-processo', methods=['POST'])
+def verificar_processo():
+    data = request.get_json()
+    numero = data.get('numero_processo')
 
-# ================================
-# ROTA 6: Aprovar Usuário
-# ================================
-@app.route('/aprovar-usuario/<int:id_usuario>', methods=['POST'])
-def aprovar_usuario(id_usuario):
-    if not session.get('is_admin'):
-        return "Acesso restrito ao administrador.", 403
+    processo = Processo.query.filter_by(numero_processo=numero).first()
 
-    usuario = Usuario.query.get_or_404(id_usuario)
-    usuario.aprovado = True
-    db.session.commit()
-    flash(f"Usuário {usuario.usuario} aprovado com sucesso.")
-    return redirect(url_for('painel_admin'))
-
-# ================================
-# ROTA 8: Dashboard de Protocolo
-# ================================
-@app.route('/dashboard-protocolo')
-def dashboard_protocolo():
-    if not session.get('usuario'):
-        return redirect(url_for('login'))
-    return "<h2>Bem-vindo ao Sistema de Protocolo de Atendimento</h2>"
-
-# ================================
-# ROTA 9: Logout
-# ================================
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('index'))
+    if processo:
+        return jsonify({"existe": True, "id": processo.id_processo})
+    else:
+        return jsonify({"existe": False})
 
 
 # ================================
-# ROTA 10: Cadastro de Processo
+# ROTA 7: Cadastro de Processo
 # ================================
 from flask import render_template, request, redirect, url_for, flash, session
 from datetime import datetime
@@ -310,6 +285,48 @@ def cadastro_processo():
         usuarios=usuarios,
         diretorias=diretorias
     )
+
+# ================================
+# ROTA 5: Painel Administrativo
+# ================================
+@app.route('/painel-admin')
+def painel_admin():
+    if not session.get('is_admin'):
+        return "Acesso restrito ao administrador.", 403
+
+    usuarios = Usuario.query.filter_by(aprovado=False).all()
+    return render_template('painel-admin.html', usuarios=usuarios)
+
+# ================================
+# ROTA 6: Aprovar Usuário
+# ================================
+@app.route('/aprovar-usuario/<int:id_usuario>', methods=['POST'])
+def aprovar_usuario(id_usuario):
+    if not session.get('is_admin'):
+        return "Acesso restrito ao administrador.", 403
+
+    usuario = Usuario.query.get_or_404(id_usuario)
+    usuario.aprovado = True
+    db.session.commit()
+    flash(f"Usuário {usuario.usuario} aprovado com sucesso.")
+    return redirect(url_for('painel_admin'))
+
+# ================================
+# ROTA 8: Dashboard de Protocolo
+# ================================
+@app.route('/dashboard-protocolo')
+def dashboard_protocolo():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+    return "<h2>Bem-vindo ao Sistema de Protocolo de Atendimento</h2>"
+
+# ================================
+# ROTA 9: Logout
+# ================================
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 # ================================
 # ROTA 11: Visualizar Processo
