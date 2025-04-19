@@ -52,11 +52,7 @@ class EntradaProcesso(db.Model):
     usuario_responsavel = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
     responsavel = db.relationship("Usuario", foreign_keys=[usuario_responsavel])
     status_inicial = db.Column(db.String(100), db.ForeignKey('status.descricao'), nullable=False)
-    possui_vistoria = db.Column(db.Boolean, default=False)
-    oficio_assinado = db.Column(db.Boolean, default=False)
-    encerrado_pela_ra = db.Column(db.Boolean, default=False)
-    data_encerramento_pela_ra = db.Column(db.Date)
-
+    
     movimentacoes = db.relationship('Movimentacao', backref='entrada', cascade="all, delete-orphan")
 
 # ----------------------------
