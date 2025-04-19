@@ -10,6 +10,7 @@
   <div class="container">
     <h1>Visualização do Processo</h1>
 
+    <!-- Informações do Processo -->
     <div class="card">
       <h3>Informações do Processo</h3>
       <p><strong>Número:</strong> {{ processo.numero_processo }}</p>
@@ -18,6 +19,7 @@
       <p><strong>Observações:</strong> {{ processo.observacoes or '---' }}</p>
     </div>
 
+    <!-- Dados de Entrada -->
     <div class="card">
       <h3>Informações da Entrada</h3>
       <p><strong>RA de Origem:</strong> {{ entrada.ra_origem }}</p>
@@ -25,18 +27,19 @@
       <p><strong>Data de Entrada na NOVACAP:</strong> {{ entrada.data_entrada_novacap.strftime('%d/%m/%Y') }}</p>
       <p><strong>Data do Documento:</strong> {{ entrada.data_documento.strftime('%d/%m/%Y') }}</p>
       <p><strong>Tipo:</strong> {{ entrada.tipo.descricao if entrada.tipo else '---' }}</p>
-      <p><strong>Responsável Técnico:</strong> {{ entrada.responsavel.nome if entrada.responsavel else '---' }}</p>
+      <p><strong>Responsável Técnico:</strong> {{ entrada.responsavel.nome }} ({{ entrada.responsavel.usuario }})</p>
     </div>
 
+    <!-- Histórico de Movimentações -->
     <div class="card">
       <h3>Histórico de Movimentações</h3>
       {% if movimentacoes %}
         <ul>
           {% for mov in movimentacoes %}
             <li>
-              <strong>{{ mov.data.strftime('%d/%m/%Y %H:%M') }}</strong> —
-              Status: <strong>{{ mov.novo_status }}</strong> —
-              Por: <strong>{{ mov.id_usuario }}</strong><br>
+              <strong>{{ mov.data.strftime('%d/%m/%Y %H:%M') }}</strong> — 
+              Status: <strong>{{ mov.novo_status }}</strong> — 
+              Por: <strong>{{ mov.usuario.usuario }}</strong><br>
               <em>{{ mov.observacao }}</em>
             </li>
           {% endfor %}
@@ -46,6 +49,7 @@
       {% endif %}
     </div>
 
+    <!-- Botões de navegação -->
     <div style="text-align: center; margin-top: 2rem;">
       <a href="{{ url_for('listar_processos') }}">
         <button class="btn-secondary">Voltar à Lista</button>

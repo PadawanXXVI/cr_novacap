@@ -285,6 +285,63 @@ def cadastro_processo():
         usuarios=usuarios,
         diretorias=diretorias
     )
+# ================================
+# ROTA 11: Visualizar Processo
+# ================================
+@app.route('/visualizar-processo/<int:id_processo>')
+def visualizar_processo(id_processo):
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    processo = Processo.query.get_or_404(id_processo)
+    entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
+
+    # Join com usuário para mostrar no histórico
+    movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
+        Movimentacao.id_entrada == entrada.id_entrada if entrada else None
+    ).order_by(Movimentacao.data.asc()).all()
+
+    ultima_observacao = (
+        movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao
+        else processo.observacoes
+    )
+
+    return render_template(
+        'visualizar_processo.html',
+        processo=processo,
+        entrada=entrada,
+        movimentacoes=movimentacoes,
+        ultima_observacao=ultima_observacao
+    )
+# ================================
+# ROTA 8: Listar Processos
+# ================================
+@app.route('/visualizar-processo/<int:id_processo>')
+def visualizar_processo(id_processo):
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    processo = Processo.query.get_or_404(id_processo)
+    entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
+
+    movimentacoes = []
+    if entrada:
+        movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
+            Movimentacao.id_entrada == entrada.id_entrada
+        ).order_by(Movimentacao.data.asc()).all()
+
+    ultima_observacao = (
+        movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao
+        else processo.observacoes
+    )
+
+    return render_template(
+        'visualizar_processo.html',
+        processo=processo,
+        entrada=entrada,
+        movimentacoes=movimentacoes,
+        ultima_observacao=ultima_observacao
+    )
 
 # ================================
 # ROTA 5: Painel Administrativo
@@ -327,86 +384,6 @@ def dashboard_protocolo():
 def logout():
     session.clear()
     return redirect(url_for('index'))
-
-# ================================
-# ROTA 11: Visualizar Processo
-# ================================
-@app.route('/visualizar-processo/<int:id_processo>')
-def visualizar_processo(id_processo):
-    if not session.get('usuario'):
-        return redirect(url_for('login'))
-
-    processo = Processo.query.get_or_404(id_processo)
-    entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
-
-    # Join com usuário para mostrar no histórico
-    movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
-        Movimentacao.id_entrada == entrada.id_entrada if entrada else None
-    ).order_by(Movimentacao.data.asc()).all()
-
-    ultima_observacao = (
-        movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao
-        else processo.observacoes
-    )
-
-    return render_template(
-        'visualizar_processo.html',
-        processo=processo,
-        entrada=entrada,
-        movimentacoes=movimentacoes,
-        ultima_observacao=ultima_observacao
-    )
-# ================================
-# ROTA 12: Listar Processos
-# ================================
-@app.route('/listar-processos')
-def listar_processos():
-    if not session.get('usuario'):
-        return redirect(url_for('login'))
-
-    # Filtros recebidos via GET
-    status_filtro = request.args.get('status')
-    ra = request.args.get('ra')
-    diretoria = request.args.get('diretoria')
-    inicio = request.args.get('inicio')
-    fim = request.args.get('fim')
-
-    # Base da query
-    query = db.session.query(Processo).join(EntradaProcesso)
-
-    if status_filtro:
-        query = query.filter(Processo.status_atual == status_filtro)
-    if ra:
-        query = query.filter(EntradaProcesso.ra_origem == ra)
-    if diretoria:
-        query = query.filter(Processo.diretoria_destino == diretoria)
-    if inicio and fim:
-        query = query.filter(EntradaProcesso.data_entrada_novacap.between(inicio, fim))
-
-    processos = query.order_by(Processo.id_processo.desc()).all()
-
-    # Enriquecer com dados relacionados + última movimentação
-    for p in processos:
-        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
-        p.entrada = entrada
-
-        if entrada:
-            entrada.tipo = TipoDemanda.query.get(entrada.id_tipo)
-            entrada.movimentacoes = Movimentacao.query.filter_by(id_entrada=entrada.id_entrada).order_by(Movimentacao.data).all()
-
-            # Atribui última movimentação (se houver), senão usa data_documento
-            if entrada.movimentacoes:
-                p.ultima_data = entrada.movimentacoes[-1].data
-            else:
-                p.ultima_data = entrada.data_documento  # ou entrada.data_entrada_novacap
-
-    todos_status = Status.query.order_by(Status.ordem_exibicao).all()
-    todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
-
-    return render_template("listar_processos.html",
-                           processos=processos,
-                           todos_status=todos_status,
-                           todas_ras=todas_ras)
 
 # ================================
 # ROTA 13: Alterar Processo
