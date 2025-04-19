@@ -8,7 +8,7 @@
   <style>
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
       margin-top: 2rem;
     }
@@ -48,10 +48,8 @@
   <div class="container">
     <h1 style="text-align: center;">Dashboard – Processos</h1>
 
-    <!-- Grupo de Cards -->
     <div class="card-grid">
-
-      <!-- Resumo Geral -->
+      <!-- Linha 1 -->
       <div class="card">
         <h3>Total de Processos</h3>
         <p>{{ total_processos }}</p>
@@ -60,12 +58,8 @@
         <h3>Processos Atendidos</h3>
         <p>{{ processos_atendidos }}</p>
       </div>
-      <div class="card">
-        <h3>Total em Atendimento</h3>
-        <p>{{ total_em_atendimento }}</p>
-      </div>
 
-      <!-- Origem da Tramitação -->
+      <!-- Linha 2 -->
       <div class="card">
         <h3>Iniciados pela SECRE</h3>
         <p>{{ processos_secre }}</p>
@@ -75,7 +69,7 @@
         <p>{{ processos_cr }}</p>
       </div>
 
-      <!-- Diretoria Executora -->
+      <!-- Linha 3 -->
       <div class="card">
         <h3>Diretoria das Cidades</h3>
         <p>{{ processos_dc }}</p>
@@ -85,11 +79,17 @@
         <p>{{ processos_do }}</p>
       </div>
 
-      <!-- Devoluções e Improcedentes -->
+      <!-- Linha 4 -->
+      <div class="card">
+        <h3>Total em Atendimento</h3>
+        <p>{{ total_em_atendimento }}</p>
+      </div>
       <div class="card">
         <h3>Devolvidos à RA</h3>
         <p>{{ devolvidos_ra }}</p>
       </div>
+
+      <!-- Linha 5 -->
       <div class="card">
         <h3>Processos SGIA</h3>
         <p>{{ processos_sgia }}</p>
@@ -100,7 +100,6 @@
       </div>
     </div>
 
-    <!-- Botões -->
     <div class="button-group">
       <a href="{{ url_for('cadastro_processo') }}"><button class="btn-primary">Cadastrar Novo Processo</button></a>
       <a href="{{ url_for('listar_processos') }}"><button class="btn-secondary">Visualizar Processo</button></a>
