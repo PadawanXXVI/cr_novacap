@@ -428,7 +428,7 @@ def alterar_processo(id_processo):
                            usuarios=usuarios)
 
 # ================================
-# ROTA 5: Painel Administrativo
+# ROTA 11: Painel Administrativo
 # ================================
 @app.route('/painel-admin')
 def painel_admin():

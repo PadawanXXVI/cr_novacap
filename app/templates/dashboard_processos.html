@@ -48,8 +48,8 @@
   <div class="container">
     <h1 style="text-align: center;">Dashboard – Processos</h1>
 
+    <!-- Grupo de Cards -->
     <div class="card-grid">
-      <!-- Linha 1 -->
       <div class="card">
         <h3>Total de Processos</h3>
         <p>{{ total_processos }}</p>
@@ -59,7 +59,6 @@
         <p>{{ processos_atendidos }}</p>
       </div>
 
-      <!-- Linha 2 -->
       <div class="card">
         <h3>Iniciados pela SECRE</h3>
         <p>{{ processos_secre }}</p>
@@ -69,7 +68,6 @@
         <p>{{ processos_cr }}</p>
       </div>
 
-      <!-- Linha 3 -->
       <div class="card">
         <h3>Diretoria das Cidades</h3>
         <p>{{ processos_dc }}</p>
@@ -79,7 +77,6 @@
         <p>{{ processos_do }}</p>
       </div>
 
-      <!-- Linha 4 -->
       <div class="card">
         <h3>Total em Atendimento</h3>
         <p>{{ total_em_atendimento }}</p>
@@ -89,7 +86,6 @@
         <p>{{ devolvidos_ra }}</p>
       </div>
 
-      <!-- Linha 5 -->
       <div class="card">
         <h3>Processos SGIA</h3>
         <p>{{ processos_sgia }}</p>
@@ -100,9 +96,13 @@
       </div>
     </div>
 
+    <!-- Botões -->
     <div class="button-group">
       <a href="{{ url_for('cadastro_processo') }}"><button class="btn-primary">Cadastrar Novo Processo</button></a>
-      <a href="{{ url_for('listar_processos') }}"><button class="btn-secondary">Visualizar Processo</button></a>
+      <a href="{{ url_for('listar_processos') }}"><button class="btn-secondary">Visualizar Processos</button></a>
+      {% if session.get('is_admin') %}
+        <a href="{{ url_for('painel_admin') }}"><button class="btn-warning">Painel Administrativo</button></a>
+      {% endif %}
       <a href="{{ url_for('logout') }}"><button class="btn-danger">Sair</button></a>
     </div>
   </div>
