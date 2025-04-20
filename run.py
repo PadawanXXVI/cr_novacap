@@ -668,7 +668,6 @@ def relatorios_bi():
         total_processos=total_processos,
         total_tramitacoes=total_tramitacoes
     )
-
 # ================================
 # ROTA 20: Buscar Processo
 # ================================

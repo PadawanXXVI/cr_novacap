@@ -38,8 +38,23 @@
       margin-top: 2rem;
     }
 
-    .button-group a {
-      margin: 0 0.5rem;
+    .button-group a,
+    .button-group form {
+      margin: 0.5rem;
+      display: inline-block;
+    }
+
+    .form-inline {
+      display: inline-flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .form-inline input[type="text"] {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      font-size: 1rem;
     }
   </style>
 </head>
@@ -64,17 +79,23 @@
       <a href="{{ url_for('cadastro_processo') }}">
         <button class="btn-primary">Cadastrar Novo Processo</button>
       </a>
+
       <a href="{{ url_for('listar_processos') }}">
         <button class="btn-secondary">Listar Processos</button>
       </a>
-      <a href="{{ url_for('pesquisar_processo') }}">
-        <button class="btn-outline-blue">Visualizar Processo</button>
-      </a>
+
+      <!-- Novo formulário para buscar processo -->
+      <form class="form-inline" action="{{ url_for('buscar_processo') }}" method="get">
+        <input type="text" name="numero_processo" placeholder="Digite o número do processo" required>
+        <button type="submit" class="btn-outline-blue">Visualizar Processo</button>
+      </form>
+
       {% if session.get('is_admin') %}
         <a href="{{ url_for('painel_admin') }}"><button class="btn-warning">Painel Administrativo</button></a>
         <a href="{{ url_for('relatorios_gerenciais') }}"><button class="btn-outline-gray">Relatórios Gerenciais</button></a>
         <a href="{{ url_for('relatorios_avancados') }}"><button class="btn-outline-gray">Relatórios Avançados</button></a>
       {% endif %}
+
       <a href="{{ url_for('logout') }}"><button class="btn-danger">Sair</button></a>
     </div>
   </div>
