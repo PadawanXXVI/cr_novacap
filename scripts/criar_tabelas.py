@@ -104,7 +104,7 @@ with app.app_context():
         "Estacionamentos", "Galeria de Águas Pluviais", "Jardim", "Mato Alto", "Meio-fio",
         "Parque Infantil", "Passagem Subterrânea", "Passarela", "Pisos Articulados",
         "Pista de Skate", "Poda / Supressão de Árvore", "Ponto de Encontro Comunitário (PEC)",
-        "Praça", "Quadra de Esporte", "Rampa", "Recapeamento Asfáltico", "Tapa-buraco", "Limpeza de Resíduos da Novacap"
+        "Praça", "Quadra de Esporte", "Rampa", "Rua, Via ou Rodovia (Pista)", "Tapa-buraco", "Limpeza de Resíduos da Novacap"
     ]
     for d in sorted(demandas):  # também opcionalmente ordenado
         db.session.add(Demanda(descricao=d))
