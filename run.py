@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, send_file, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import create_app
 from app.ext import db
@@ -20,6 +20,10 @@ def index():
 # ================================
 # ROTA 2: Login com autenticação
 # ================================
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -41,15 +45,12 @@ def login():
         if usuario.bloqueado:
             return "Erro: usuário bloqueado.", 403
 
-        # ✅ LOGIN FLASK-LOGIN
         login_user(usuario)
 
-        # (opcional) manter compatibilidade com session manual
         session['usuario'] = usuario.usuario
         session['is_admin'] = usuario.is_admin
         session['id_usuario'] = usuario.id_usuario
 
-        # Redireciona conforme sistema escolhido
         if sistema == 'tramite':
             return redirect(url_for('dashboard_processos'))
         elif sistema == 'protocolo':
@@ -71,21 +72,16 @@ def cadastro():
         senha = request.form.get('senha')
         confirmar_senha = request.form.get('confirmar_senha')
 
-        # Verifica se senhas coincidem
         if senha != confirmar_senha:
             flash("Erro: as senhas não coincidem.")
             return redirect(url_for('cadastro'))
 
-        # Verifica duplicidade de e-mail ou nome de usuário
-        existente = Usuario.query.filter(
-            (Usuario.usuario == usuario) | (Usuario.email == email)
-        ).first()
+        existente = Usuario.query.filter((Usuario.usuario == usuario) | (Usuario.email == email)).first()
 
         if existente:
             flash("Erro: e-mail ou nome de usuário já cadastrado.")
             return redirect(url_for('cadastro'))
 
-        # Criação do usuário
         novo_usuario = Usuario(
             nome=nome,
             email=email,
@@ -148,9 +144,7 @@ def dashboard_processos():
     processos_do = Processo.query.filter_by(status_atual='Enviado à Diretoria de Obras').count()
     total_em_atendimento = processos_dc + processos_do
     processos_sgia = Processo.query.filter_by(status_atual='Improcedente – tramitação via SGIA').count()
-    processos_improcedentes = Processo.query.filter_by(
-        status_atual='Improcedente – tramita por órgão diferente da NOVACAP'
-    ).count()
+    processos_improcedentes = Processo.query.filter_by(status_atual='Improcedente – tramita por órgão diferente da NOVACAP').count()
     devolvidos_ra = Processo.query.filter(
         Processo.status_atual.in_([
             "Devolvido à RA de origem – adequação de requisitos",
@@ -173,7 +167,40 @@ def dashboard_processos():
                            devolvidos_ra=devolvidos_ra)
 
 # ================================
-# ROTA 6: Verificar Processo
+# ROTA 6: Buscar Processo
+# ================================
+@app.route('/buscar-processo', methods=['GET'])
+def buscar_processo():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    numero = request.args.get('numero_processo')
+    processo = Processo.query.filter_by(numero_processo=numero).first()
+
+    if not processo:
+        flash("❌ Processo não localizado. Deseja cadastrá-lo?", "error")
+        return render_template('visualizar_processo.html', processo=None)
+
+    entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
+    movimentacoes = []
+
+    if entrada:
+        movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
+            Movimentacao.id_entrada == entrada.id_entrada
+        ).order_by(Movimentacao.data.asc()).all()
+
+    ultima_observacao = (
+        movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao else processo.observacoes
+    )
+
+    return render_template('visualizar_processo.html',
+                           processo=processo,
+                           entrada=entrada,
+                           movimentacoes=movimentacoes,
+                           ultima_observacao=ultima_observacao)
+
+# ================================
+# ROTA 7: Verificar Processo
 # ================================
 from flask import jsonify
 
@@ -191,7 +218,7 @@ def verificar_processo():
 
 
 # ================================
-# ROTA 7: Cadastro de Processo
+# ROTA 8: Cadastro de Processo
 # ================================
 from flask import render_template, request, redirect, url_for, flash, session
 from datetime import datetime
@@ -286,7 +313,7 @@ def cadastro_processo():
         diretorias=diretorias
     )
 # ================================
-# ROTA 8: Listar Processos
+# ROTA 9: Listar Processos
 # ================================
 @app.route('/listar-processos')
 def listar_processos():
@@ -339,7 +366,7 @@ def listar_processos():
                            todas_ras=todas_ras)
 
 # ================================
-# ROTA 9: Visualizar Processo
+# ROTA 10: Visualizar Processo
 # ================================
 @app.route('/visualizar-processo/<int:id_processo>')
 def visualizar_processo(id_processo):
@@ -369,7 +396,7 @@ def visualizar_processo(id_processo):
     )
 
 # ================================
-# ROTA 10: Alterar Processo
+# ROTA 11: Alterar Processo
 # ================================
 @app.route('/alterar-processo/<int:id_processo>', methods=['GET', 'POST'])
 def alterar_processo(id_processo):
@@ -428,7 +455,7 @@ def alterar_processo(id_processo):
                            usuarios=usuarios)
 
 # ================================
-# ROTA 11: Painel Administrativo
+# ROTA 12: Painel Administrativo
 # ================================
 @app.route('/painel-admin')
 def painel_admin():
@@ -439,7 +466,7 @@ def painel_admin():
     return render_template('painel-admin.html', usuarios=usuarios)
 
 # ================================
-# ROTA 12: Aprovar Usuário
+# ROTA 13: Aprovar Usuário
 # ================================
 @app.route('/aprovar-usuario/<int:id_usuario>', methods=['POST'])
 def aprovar_usuario(id_usuario):
@@ -453,7 +480,7 @@ def aprovar_usuario(id_usuario):
     return redirect(url_for('painel_admin'))
 
 # ================================
-# ROTA 13: Bloquear usuário
+# ROTA 14: Bloquear usuário
 # ================================
 @app.route('/bloquear-usuario/<int:id_usuario>', methods=['POST'])
 def bloquear_usuario(id_usuario):
@@ -467,7 +494,7 @@ def bloquear_usuario(id_usuario):
     return redirect(url_for('painel_admin'))
 
 # ================================
-# ROTA 14: Tornar usuário admin
+# ROTA 15: Tornar usuário admin
 # ================================
 @app.route('/atribuir-admin/<int:id_usuario>', methods=['POST'])
 def atribuir_admin(id_usuario):
@@ -481,7 +508,7 @@ def atribuir_admin(id_usuario):
     return redirect(url_for('painel_admin'))
 
 # ================================
-# ROTA 15: Logout
+# ROTA 16: Logout
 # ================================
 @app.route('/logout')
 def logout():
@@ -489,7 +516,7 @@ def logout():
     return redirect(url_for('index'))
 
 # ================================
-# ROTA 16: Relatórios Gerenciais
+# ROTA 17: Relatórios Gerenciais
 # ================================
 @app.route('/relatorios-gerenciais')
 def relatorios_gerenciais():
@@ -506,7 +533,7 @@ def relatorios_gerenciais():
     )
 
 # ===================================
-# ROTA 17: Exportação de Tramitações
+# ROTA 18: Exportação de Tramitações
 # ===================================
 @app.route('/exportar-tramitacoes')
 def exportar_tramitacoes():
@@ -578,7 +605,7 @@ def exportar_tramitacoes():
         return "Formato inválido. Use 'csv' ou 'xlsx'.", 400
 
 # ================================
-# ROTA 18: Relatórios Avançados
+# ROTA 19: Relatórios Avançados
 # ================================
 @app.route('/relatorios-avancados')
 def relatorios_avancados():
@@ -597,7 +624,7 @@ def relatorios_avancados():
     )
 
 # ================================
-# ROTA 19: Relatórios BI Interativo
+# ROTA 20: Relatórios BI Interativo
 # ================================
 from flask import render_template, session, redirect, url_for
 from app.models.modelos import Processo, EntradaProcesso, Movimentacao
@@ -668,45 +695,9 @@ def relatorios_bi():
         total_processos=total_processos,
         total_tramitacoes=total_tramitacoes
     )
-# ================================
-# ROTA 20: Buscar Processo
-# ================================
-@app.route('/buscar-processo', methods=['GET'])
-def buscar_processo():
-    if not session.get('usuario'):
-        return redirect(url_for('login'))
-
-    numero = request.args.get('numero_processo')
-
-    processo = Processo.query.filter_by(numero_processo=numero).first()
-
-    if not processo:
-        flash("❌ Processo não localizado. Deseja cadastrá-lo?", "error")
-        return render_template('visualizar_processo.html', processo=None)
-
-    entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
-    movimentacoes = []
-
-    if entrada:
-        movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
-            Movimentacao.id_entrada == entrada.id_entrada
-        ).order_by(Movimentacao.data.asc()).all()
-
-    ultima_observacao = (
-        movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao
-        else processo.observacoes
-    )
-
-    return render_template(
-        'visualizar_processo.html',
-        processo=processo,
-        entrada=entrada,
-        movimentacoes=movimentacoes,
-        ultima_observacao=ultima_observacao
-    )
 
 # ================================
-# ROTA 8: Dashboard de Protocolo
+# ROTA 21: Dashboard de Protocolo
 # ================================
 @app.route('/dashboard-protocolo')
 def dashboard_protocolo():

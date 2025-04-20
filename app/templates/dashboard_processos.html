@@ -70,9 +70,9 @@
         <button class="btn-secondary">Listar Processos</button>
       </a>
 
-      <a href="{{ url_for('visualizar_processo', id_processo=0) }}">
-        <button class="btn-outline-blue">Visualizar Processo</button>
-      </a>
+      <a href="{{ url_for('visualizar_processo_form') }}">
+        <button class="btn-secondary">Visualizar Processo</button>
+      </a>      
 
       {% if session.get('is_admin') %}
         <a href="{{ url_for('painel_admin') }}"><button class="btn-warning">Painel Administrativo</button></a>
