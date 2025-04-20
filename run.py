@@ -663,7 +663,16 @@ def relatorios_bi():
     )
 
 # ================================
-# ROTA 20: Dashboard de Protocolo
+# ROTA 20: Visualizar Processo
+# ================================
+@app.route('/visualizar-processo')
+def visualizar_processo_form():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+    return render_template('visualizar_processo.html', processo=None)
+
+# ================================
+# ROTA 21: Dashboard de Protocolo
 # ================================
 @app.route('/dashboard-protocolo')
 def dashboard_protocolo():
