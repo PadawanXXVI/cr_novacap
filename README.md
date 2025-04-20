@@ -1,6 +1,6 @@
 # 🏗 Sistema da Central de Relacionamento – NOVACAP
 
-Este sistema foi desenvolvido para atender à Central de Relacionamento (CR) da Companhia Urbanizadora da Nova Capital (NOVACAP), com o objetivo de registrar, acompanhar, tramitar e exportar processos internos e protocolos de atendimento ao cidadão e às Regiões Administrativas do DF.
+Este sistema foi desenvolvido para atender à Central de Relacionamento (CR) da Companhia Urbanizadora da Nova Capital (NOVACAP), com o objetivo de registrar, acompanhar, tramitar e exportar processos administrativos e protocolos de atendimento ao cidadão e às Regiões Administrativas do Distrito Federal.
 
 ---
 
@@ -11,15 +11,14 @@ Este sistema foi desenvolvido para atender à Central de Relacionamento (CR) da 
 - SQLAlchemy
 - Flask-Migrate
 - HTML + CSS (Flexbox)
-- SQLite (temporário para testes)
-- MySQL (futuramente)
+- MySQL (produção e testes)
 - Git + GitHub
 
 ---
 
 ## 🧱 Estrutura do projeto
 
-cr_novacap/ ├── app/ │ ├── static/ │ ├── templates/ │ ├── routes/ │ ├── models/ │ ├── controllers/ │ ├── utils/ │ └── init.py ├── scripts/ ├── tests/ ├── docs/ ├── wiki/ ├── venv/ # não versionado ├── cr_novacap.db # banco local SQLite (gerado automaticamente) ├── run.py ├── requirements.txt ├── .env.example └── README.md
+CR_NOVACAP/ ├── app/ │ ├── static/ │ │ └── css/ │ │ └── styles.css │ ├── templates/ │ │ ├── *.html # (todos os templates da interface) │ ├── models/ │ │ └── modelos.py │ ├── docs/ │ │ ├── MERs, checklist de testes etc. │ └── ext.py │ ├── scripts/ ├── venv/ # ambiente virtual (não versionado) ├── run.py # ponto de entrada da aplicação ├── configuracoes.py # configuração de ambiente e credenciais ├── requirements.txt ├── .env ├── .env.example ├── .gitignore ├── LICENSE └── README.md
 
 ---
 
@@ -61,7 +60,9 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 ## ▶️ Para rodar a aplicação:
 
+```bash
 flask run
+```
 
 Acesse: http://127.0.0.1:5000/
 
@@ -69,152 +70,89 @@ Acesse: http://127.0.0.1:5000/
 
 ## 🧭 Objetivos do sistema
 
-Registrar e acompanhar processos internos da Central de Relacionamento
-
-Gerar protocolos de atendimento aos cidadãos e Regiões Administrativas do DF
-
-Facilitar a tramitação e exportação de informações
-
-Disponibilizar dashboards internos e relatórios estratégicos
-
-Integrar com canais como e-mail e WhatsApp futuramente
+- Registrar e acompanhar processos administrativos da CR
+- Gerar protocolos de atendimento ao cidadão e às RAs
+- Facilitar tramitações internas com histórico e responsável técnico
+- Gerar relatórios estratégicos para gestão
+- Exportar dados em diferentes formatos
+- Integrar futuramente com WhatsApp, e-mail e outros canais
 
 ---
 
 ## 🧩 Módulos do sistema
 
-📁 Processos administrativos
+- 📁 Processos administrativos  
 Registro, tramitação e histórico de processos internos da CR
 
-📥 Protocolos de atendimento
+- 📥 Protocolos de atendimento  
 Registro de atendimentos presenciais, telefônicos, e por canais digitais (e-mail, WhatsApp)
 
-📞 Agenda de contatos e ramais
+- 📞 Agenda de contatos e ramais  
 Lista interna de telefones e ramais pesquisável (atalho CTRL+L), integrada ao sistema de protocolo
 
-📊 Dashboard e Painel Gerencial
+- 📊 Dashboard e Painel Gerencial  
 Cards com indicadores por status, tipo de protocolo e área responsável
 
-🧾 Exportação de relatórios
+- 🧾 Exportação de relatórios  
 Exportação para CSV, Excel, PDF, DOCX e JSON (em desenvolvimento)
 
 ---
 
 ## 🎯 Funcionalidades
 
-Autenticação de usuários com controle de acesso
-
-Cadastro e atualização de processos
-
-Registro de protocolos com canal de origem e resposta
-
-Exportação de relatórios por período e tipo
-
-Visualização de histórico de tramitação
-
-Consulta de ramais internos diretamente pelo sistema
-
-Integração futura com canais externos (WhatsApp, e-mail)
+- Autenticação de usuários com permissões (admin, padrão)
+- Cadastro e atualização de processos
+- Visualização do histórico completo de tramitação
+- Dashboards estatísticos
+- Filtros e relatórios gerenciais e avançados
+- Exportação de dados (CSV, Excel)
+- Agenda de ramais pesquisável
+- Troca de senha com validação
+- Aprovação e bloqueio de usuários via painel admin
 
 ---
 
 ## 📦 Exportações suportadas
 
-Em desenvolvimento:
-
-📄 CSV
-
-📊 Excel
-
-📘 PDF
-
-📝 DOCX
-
-📂 JSON
-
----
-
-## 📸 Capturas de tela
-
-Esta seção será preenchida quando as interfaces estiverem implementadas.
+- ✅ CSV
+- ✅ Excel
+- 🔄 PDF (em desenvolvimento)
+- 🔄 DOCX (em desenvolvimento)
+- 🔄 JSON (em desenvolvimento)
 
 ---
 
 ## 🧪 Testes
 
-Testes manuais em ambiente local
-
-Checklist de funcionalidades por tela
-
-Planejamento para testes unitários com pytest ou unittest (futuramente)
-
----
-
-## 🛠️ Contribuição
-
-Este é um sistema interno da CR/NOVACAP. Contribuições externas não são aceitas neste momento.
-
-Se você for colaborador interno:
-
-Solicite autorização prévia para push no repositório
-
-Siga as diretrizes do GitHub Projects para tarefas e commits
+- Testes manuais em ambiente local
+- Checklist de funcionalidades por tela
+- Planejamento de testes automatizados (pytest/unittest)
 
 ---
 
 ## 🔐 Segurança
 
-Senhas armazenadas com hash
-
-Arquivo .env com SECRET_KEY e credenciais fora do Git
-
-Acesso restrito por autenticação (em desenvolvimento)
+- Senhas criptografadas com hash seguro (Werkzeug)
+- Variáveis de ambiente protegidas (.env)
+- Acesso restrito por login
+- Restrições por perfil de usuário
 
 ---
 
 ## 🔄 Fluxo de desenvolvimento
 
-Clonar o repositório
-
-Criar ambiente virtual e instalar dependências
-
-Rodar flask run para desenvolvimento local
-
-Commits enviados via main
-
-Projeto gerido por GitHub Projects (Kanban)
-
----
-
-## 🧠 Referências
-
-Flask Documentation – https://flask.palletsprojects.com/
-
-SQLAlchemy – https://www.sqlalchemy.org/
-
-GitHub Projects – https://docs.github.com/en/issues/planning-and-tracking-with-projects
-
-Documentação institucional da NOVACAP
+- Clonar repositório
+- Ativar venv e instalar dependências
+- Executar flask run
+- Enviar alterações via Git
+- Gerenciar tarefas com GitHub Projects (Kanban)
 
 ---
 
 ## 👤 Autor
 
-Desenvolvido por Anderson de Matos Guimarães
-
-Central de Relacionamento – NOVACAP
-
+Anderson de Matos Guimarães  
+Central de Relacionamento – NOVACAP  
 Brasília/DF – 2025
 
----
-
-## ✅ Próximo passo:
-
-### Mensagem de commit:
-
-```bash
-git add README.md
-git commit -m "Atualiza README.md com todas as seções: módulos, funcionalidades, segurança e estrutura do projeto CR"
-git push origin main
-```
 ---
