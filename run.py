@@ -670,6 +670,23 @@ def relatorios_bi():
     )
 
 # ================================
+# ROTA 20: Buscar Processo
+# ================================
+@app.route('/buscar-processo', methods=['GET'])
+def buscar_processo():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    numero = request.args.get('numero_processo')
+    processo = Processo.query.filter_by(numero_processo=numero).first()
+
+    if processo:
+        return redirect(url_for('visualizar_processo', id_processo=processo.id_processo))
+    else:
+        flash("❌ Processo não localizado. Deseja cadastrá-lo?", "error")
+        return redirect(url_for('cadastro_processo'))
+
+# ================================
 # ROTA 8: Dashboard de Protocolo
 # ================================
 @app.route('/dashboard-protocolo')

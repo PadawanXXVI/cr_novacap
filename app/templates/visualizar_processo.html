@@ -8,8 +8,24 @@
 </head>
 <body>
   <div class="container">
-    <h1>Visualização do Processo</h1>
+    <h1 style="text-align: center;">Visualizar Processo</h1>
 
+    <!-- Formulário para busca -->
+    <form method="GET" action="{{ url_for('buscar_processo') }}" style="text-align: center; margin-bottom: 2rem;">
+      <label for="numero_processo">Digite o número do processo:</label>
+      <input type="text" name="numero_processo" id="numero_processo" required placeholder="00000-00000000/0000-00" />
+      <button type="submit" class="btn-primary">Buscar</button>
+    </form>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if processo %}
     <!-- Informações do Processo -->
     <div class="card">
       <h3>Informações do Processo</h3>
@@ -49,12 +65,10 @@
         <p>Sem movimentações registradas.</p>
       {% endif %}
     </div>
+    {% endif %}
 
-    <!-- Botões de navegação -->
     <div style="text-align: center; margin-top: 2rem;">
-      <a href="{{ url_for('listar_processos') }}">
-        <button class="btn-secondary">Voltar à Lista</button>
-      </a>
+      <a href="{{ url_for('dashboard_processos') }}"><button class="btn-secondary">Voltar ao Dashboard</button></a>
     </div>
   </div>
 </body>
