@@ -171,29 +171,40 @@ def buscar_processo():
         return redirect(url_for('login'))
 
     numero = request.args.get('numero_processo')
-    processo = Processo.query.filter_by(numero_processo=numero).first()
 
-    if not processo:
-        flash("❌ Processo não localizado. Deseja cadastrá-lo?", "error")
+    try:
+        processo = Processo.query.filter_by(numero_processo=numero).first()
+
+        if not processo:
+            flash("❌ Processo não localizado. Deseja cadastrá-lo?", "error")
+            return render_template('visualizar_processo.html', processo=None)
+
+        entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
+        movimentacoes = []
+
+        if entrada:
+            movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
+                Movimentacao.id_entrada == entrada.id_entrada
+            ).order_by(Movimentacao.data.asc()).all()
+
+        ultima_observacao = (
+            movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao
+            else processo.observacoes
+        )
+
+        return render_template(
+            'visualizar_processo.html',
+            processo=processo,
+            entrada=entrada,
+            movimentacoes=movimentacoes,
+            ultima_observacao=ultima_observacao
+        )
+
+    except Exception as e:
+        # Mostra erro no terminal
+        print("Erro ao buscar processo:", str(e))
+        flash("❌ Erro interno ao tentar exibir o processo. Verifique o número e tente novamente.", "error")
         return render_template('visualizar_processo.html', processo=None)
-
-    entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
-    movimentacoes = []
-
-    if entrada:
-        movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
-            Movimentacao.id_entrada == entrada.id_entrada
-        ).order_by(Movimentacao.data.asc()).all()
-
-    ultima_observacao = (
-        movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao else processo.observacoes
-    )
-
-    return render_template('visualizar_processo.html',
-                           processo=processo,
-                           entrada=entrada,
-                           movimentacoes=movimentacoes,
-                           ultima_observacao=ultima_observacao)
 
 # ================================
 # ROTA 7: Verificar Processo

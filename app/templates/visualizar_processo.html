@@ -35,6 +35,7 @@
       <p><strong>Observações:</strong> {{ processo.observacoes or '---' }}</p>
     </div>
 
+    {% if entrada %}
     <!-- Dados de Entrada -->
     <div class="card">
       <h3>Informações da Entrada</h3>
@@ -43,8 +44,15 @@
       <p><strong>Data de Entrada na NOVACAP:</strong> {{ entrada.data_entrada_novacap.strftime('%d/%m/%Y') }}</p>
       <p><strong>Data do Documento:</strong> {{ entrada.data_documento.strftime('%d/%m/%Y') }}</p>
       <p><strong>Tipo:</strong> {{ entrada.tipo.descricao if entrada.tipo else '---' }}</p>
-      <p><strong>Responsável Técnico:</strong> {{ entrada.responsavel.nome }} ({{ entrada.responsavel.usuario }})</p>
+      <p><strong>Responsável Técnico:</strong>
+        {% if entrada.responsavel %}
+          {{ entrada.responsavel.nome }} ({{ entrada.responsavel.usuario }})
+        {% else %}
+          ---
+        {% endif %}
+      </p>
     </div>
+    {% endif %}
 
     <!-- Histórico de Movimentações -->
     <div class="card">
@@ -54,8 +62,8 @@
         <ul>
           {% for mov in movimentacoes %}
             <li>
-              <strong>{{ mov.data.strftime('%d/%m/%Y %H:%M') }}</strong> — 
-              Status: <strong>{{ mov.novo_status }}</strong> — 
+              <strong>{{ mov.data.strftime('%d/%m/%Y %H:%M') }}</strong> —
+              Status: <strong>{{ mov.novo_status }}</strong> —
               Por: <strong>{{ mov.usuario.usuario }}</strong><br>
               <em>{{ mov.observacao }}</em>
             </li>
@@ -68,7 +76,9 @@
     {% endif %}
 
     <div style="text-align: center; margin-top: 2rem;">
-      <a href="{{ url_for('dashboard_processos') }}"><button class="btn-secondary">Voltar ao Dashboard</button></a>
+      <a href="{{ url_for('dashboard_processos') }}">
+        <button class="btn-secondary">Voltar ao Dashboard</button>
+      </a>
     </div>
   </div>
 </body>
