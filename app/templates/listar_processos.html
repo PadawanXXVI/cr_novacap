@@ -119,7 +119,7 @@
                 {% endif %}
               </td>
               <td style="white-space: nowrap;">
-                <a href="{{ url_for('visualizar_processo', id_processo=p.id_processo) }}">
+                <a href="{{ url_for('buscar_processo') }}?numero_processo={{ p.numero_processo }}">
                   <button class="btn-secondary">Visualizar</button>
                 </a>
                 <a href="{{ url_for('alterar_processo', id_processo=p.id_processo) }}">
