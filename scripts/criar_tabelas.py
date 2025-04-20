@@ -50,24 +50,48 @@ with app.app_context():
     for descricao, ordem, finaliza in status_lista:
         db.session.add(Status(descricao=descricao, ordem_exibicao=ordem, finaliza_processo=finaliza))
 
-    # ------------------
-    # REGIÕES ADMINISTRATIVAS
-    # ------------------
+    # =============================
+    # ✅ REGIÕES ADMINISTRATIVAS
+    # =============================
+
     regioes = [
-        ("RA I", "Plano Piloto"), ("RA II", "Gama"), ("RA III", "Taguatinga"),
-        ("RA IV", "Brazlândia"), ("RA V", "Sobradinho"), ("RA VI", "Planaltina"),
-        ("RA VII", "Paranoá"), ("RA VIII", "Núcleo Bandeirante"), ("RA IX", "Ceilândia"),
-        ("RA X", "Guará"), ("RA XI", "Cruzeiro"), ("RA XII", "Samambaia"),
-        ("RA XIII", "Santa Maria"), ("RA XIV", "São Sebastião"), ("RA XV", "Recanto das Emas"),
-        ("RA XVI", "Lago Sul"), ("RA XVII", "Riacho Fundo"), ("RA XVIII", "Lago Norte"),
-        ("RA XIX", "Candangolândia"), ("RA XX", "Águas Claras"), ("RA XXI", "Riacho Fundo II"),
-        ("RA XXII", "Sudoeste/Octogonal"), ("RA XXIII", "Varjão"), ("RA XXIV", "Park Way"),
-        ("RA XXV", "SCIA – Estrutural"), ("RA XXVI", "Sobradinho II"), ("RA XXVII", "Jardim Botânico"),
-        ("RA XXVIII", "Itapoã"), ("RA XXIX", "SIA"), ("RA XXX", "Vicente Pires"),
-        ("RA XXXI", "Fercal"), ("RA XXXII", "Sol Nascente/Pôr do Sol"),
-        ("RA XXXIII", "Arniqueira"), ("RA XXXIV", "Pôr do Sol/Sol Nascente"),
-        ("RA XXXV", "Águas Claras Norte")
+        ("RA I", "Plano Piloto"),
+        ("RA II", "Gama"),
+        ("RA III", "Taguatinga"),
+        ("RA IV", "Brazlândia"),
+        ("RA V", "Sobradinho"),
+        ("RA VI", "Planaltina"),
+        ("RA VII", "Paranoá"),
+        ("RA VIII", "Núcleo Bandeirante"),
+        ("RA IX", "Ceilândia"),
+        ("RA X", "Guará"),
+        ("RA XI", "Cruzeiro"),
+        ("RA XII", "Samambaia"),
+        ("RA XIII", "Santa Maria"),
+        ("RA XIV", "São Sebastião"),
+        ("RA XV", "Recanto das Emas"),
+        ("RA XVI", "Lago Sul"),
+        ("RA XVII", "Riacho Fundo"),
+        ("RA XVIII", "Lago Norte"),
+        ("RA XIX", "Candangolândia"),
+        ("RA XX", "Águas Claras"),
+        ("RA XXI", "Riacho Fundo II"),
+        ("RA XXII", "Sudoeste/Octogonal"),
+        ("RA XXIII", "Varjão"),
+        ("RA XXIV", "Park Way"),
+        ("RA XXV", "SCIA – Estrutural"),
+        ("RA XXVI", "Sobradinho II"),
+        ("RA XXVII", "Jardim Botânico"),
+        ("RA XXVIII", "Itapoã"),
+        ("RA XXIX", "SIA"),
+        ("RA XXX", "Vicente Pires"),
+        ("RA XXXI", "Fercal"),
+        ("RA XXXII", "Sol Nascente/Pôr do Sol"),
+        ("RA XXXIII", "Arniqueira"),
+        ("RA XXXIV", "Arapoanga"),
+        ("RA XXXV", "Água Quente")
     ]
+
     for codigo, nome in regioes:
         descricao = f"{nome} ({codigo})"
         db.session.add(RegiaoAdministrativa(codigo_ra=codigo, nome_ra=nome, descricao_ra=descricao))
