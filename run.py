@@ -362,37 +362,7 @@ def listar_processos():
                            todas_ras=todas_ras)
 
 # ================================
-# ROTA 10: Visualizar Processo
-# ================================
-@app.route('/visualizar-processo/<int:id_processo>')
-def visualizar_processo(id_processo):
-    if not session.get('usuario'):
-        return redirect(url_for('login'))
-
-    processo = Processo.query.get_or_404(id_processo)
-    entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
-
-    movimentacoes = []
-    if entrada:
-        movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
-            Movimentacao.id_entrada == entrada.id_entrada
-        ).order_by(Movimentacao.data.asc()).all()
-
-    ultima_observacao = (
-        movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao
-        else processo.observacoes
-    )
-
-    return render_template(
-        'visualizar_processo.html',
-        processo=processo,
-        entrada=entrada,
-        movimentacoes=movimentacoes,
-        ultima_observacao=ultima_observacao
-    )
-
-# ================================
-# ROTA 11: Alterar Processo
+# ROTA 10: Alterar Processo
 # ================================
 @app.route('/alterar-processo/<int:id_processo>', methods=['GET', 'POST'])
 def alterar_processo(id_processo):
@@ -451,7 +421,7 @@ def alterar_processo(id_processo):
                            usuarios=usuarios)
 
 # ================================
-# ROTA 12: Painel Administrativo
+# ROTA 11: Painel Administrativo
 # ================================
 @app.route('/painel-admin')
 def painel_admin():
@@ -462,7 +432,7 @@ def painel_admin():
     return render_template('painel-admin.html', usuarios=usuarios)
 
 # ================================
-# ROTA 13: Aprovar Usuário
+# ROTA 12: Aprovar Usuário
 # ================================
 @app.route('/aprovar-usuario/<int:id_usuario>', methods=['POST'])
 def aprovar_usuario(id_usuario):
@@ -476,7 +446,7 @@ def aprovar_usuario(id_usuario):
     return redirect(url_for('painel_admin'))
 
 # ================================
-# ROTA 14: Bloquear usuário
+# ROTA 13: Bloquear usuário
 # ================================
 @app.route('/bloquear-usuario/<int:id_usuario>', methods=['POST'])
 def bloquear_usuario(id_usuario):
@@ -490,7 +460,7 @@ def bloquear_usuario(id_usuario):
     return redirect(url_for('painel_admin'))
 
 # ================================
-# ROTA 15: Tornar usuário admin
+# ROTA 14: Tornar usuário admin
 # ================================
 @app.route('/atribuir-admin/<int:id_usuario>', methods=['POST'])
 def atribuir_admin(id_usuario):
@@ -504,7 +474,7 @@ def atribuir_admin(id_usuario):
     return redirect(url_for('painel_admin'))
 
 # ================================
-# ROTA 16: Logout
+# ROTA 15: Logout
 # ================================
 @app.route('/logout')
 def logout():
@@ -512,7 +482,7 @@ def logout():
     return redirect(url_for('index'))
 
 # ================================
-# ROTA 17: Relatórios Gerenciais
+# ROTA 16: Relatórios Gerenciais
 # ================================
 @app.route('/relatorios-gerenciais')
 def relatorios_gerenciais():
@@ -529,7 +499,7 @@ def relatorios_gerenciais():
     )
 
 # ===================================
-# ROTA 18: Exportação de Tramitações
+# ROTA 17: Exportação de Tramitações
 # ===================================
 @app.route('/exportar-tramitacoes')
 def exportar_tramitacoes():
@@ -601,7 +571,7 @@ def exportar_tramitacoes():
         return "Formato inválido. Use 'csv' ou 'xlsx'.", 400
 
 # ================================
-# ROTA 19: Relatórios Avançados
+# ROTA 18: Relatórios Avançados
 # ================================
 @app.route('/relatorios-avancados')
 def relatorios_avancados():
@@ -620,7 +590,7 @@ def relatorios_avancados():
     )
 
 # ================================
-# ROTA 20: Relatórios BI Interativo
+# ROTA 19: Relatórios BI Interativo
 # ================================
 from flask import render_template, session, redirect, url_for
 from app.models.modelos import Processo, EntradaProcesso, Movimentacao
@@ -693,7 +663,7 @@ def relatorios_bi():
     )
 
 # ================================
-# ROTA 21: Dashboard de Protocolo
+# ROTA 20: Dashboard de Protocolo
 # ================================
 @app.route('/dashboard-protocolo')
 def dashboard_protocolo():
