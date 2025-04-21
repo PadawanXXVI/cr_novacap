@@ -181,6 +181,8 @@ def buscar_processo():
     movimentacoes = []
 
     if entrada:
+        entrada.tipo = TipoDemanda.query.get(entrada.id_tipo)
+        entrada.responsavel = Usuario.query.get(entrada.usuario_responsavel)
         movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
             Movimentacao.id_entrada == entrada.id_entrada
         ).order_by(Movimentacao.data.asc()).all()
