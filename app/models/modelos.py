@@ -67,6 +67,8 @@ class Movimentacao(db.Model):
     novo_status = db.Column(db.String(100), db.ForeignKey('status.descricao'), nullable=False)
     data = db.Column(db.DateTime, default=datetime.utcnow)
     observacao = db.Column(db.Text)
+    
+    usuario = db.relationship("Usuario", backref="movimentacoes", lazy=True)
 
 # ----------------------------
 # STATUS
