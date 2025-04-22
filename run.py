@@ -736,6 +736,16 @@ def cadastro_atendimento():
     return render_template("cadastro_atendimento.html", ras=ras, demandas=demandas)
 
 # ================================
+# ROTA 23: Listar Atendimentos
+# ================================
+@app.route('/listar-atendimentos')
+@login_required
+def listar_atendimentos():
+    atendimentos = ProtocoloAtendimento.query.order_by(ProtocoloAtendimento.data_hora.desc()).all()
+    return render_template('listar_atendimentos.html', atendimentos=atendimentos)
+
+
+# ================================
 # Execução do servidor
 # ================================
 if __name__ == '__main__':
