@@ -19,23 +19,23 @@ print("🔍 URI ativa:", app.config['SQLALCHEMY_DATABASE_URI'])
 from app.ext import db
 from app.models.modelos import (
     Status, TipoDemanda, RegiaoAdministrativa, Demanda,
-    ProtocoloAtendimento, InteracaoAtendimento  # ✅ Novos modelos do sistema de protocolo
+    ProtocoloAtendimento, InteracaoAtendimento
 )
 
 with app.app_context():
-    # 💣 Apaga todas as tabelas antes de recriar
-    db.drop_all()
+    # ✅ Cria apenas as tabelas que ainda não existem
     db.create_all()
 
     # ------------------
-    # TIPOS DE DEMANDA (ordem alfabética)
+    # TIPOS DE DEMANDA
     # ------------------
     tipos = sorted(["Zeladoria", "Implantação", "Indivíduo Arbóreo"])
     for descricao in tipos:
-        db.session.add(TipoDemanda(descricao=descricao))
+        if not TipoDemanda.query.filter_by(descricao=descricao).first():
+            db.session.add(TipoDemanda(descricao=descricao))
 
     # ------------------
-    # STATUS (ordem alfabética por descrição)
+    # STATUS
     # ------------------
     status_lista = sorted([
         ("Devolvido à RA de origem – adequação de requisitos", 1, False),
@@ -48,14 +48,15 @@ with app.app_context():
         ("Improcedente – tramita por órgão diferente da NOVACAP", 8, False),
         ("Encerrado pela RA de origem", 9, True),
         ("Atendido", 10, True)
-    ], key=lambda x: x[0])  # Ordena pela descrição
+    ], key=lambda x: x[0])
 
     for descricao, ordem, finaliza in status_lista:
-        db.session.add(Status(descricao=descricao, ordem_exibicao=ordem, finaliza_processo=finaliza))
+        if not Status.query.filter_by(descricao=descricao).first():
+            db.session.add(Status(descricao=descricao, ordem_exibicao=ordem, finaliza_processo=finaliza))
 
-    # =============================
-    # ✅ REGIÕES ADMINISTRATIVAS
-    # =============================
+    # ------------------
+    # REGIÕES ADMINISTRATIVAS
+    # ------------------
     regioes = [
         ("RA I", "Plano Piloto"),
         ("RA II", "Gama"),
@@ -96,7 +97,8 @@ with app.app_context():
 
     for codigo, nome in regioes:
         descricao = f"{nome} ({codigo})"
-        db.session.add(RegiaoAdministrativa(codigo_ra=codigo, nome_ra=nome, descricao_ra=descricao))
+        if not RegiaoAdministrativa.query.filter_by(codigo_ra=codigo).first():
+            db.session.add(RegiaoAdministrativa(codigo_ra=codigo, nome_ra=nome, descricao_ra=descricao))
 
     # ------------------
     # DEMANDAS
@@ -110,8 +112,9 @@ with app.app_context():
         "Limpeza de Resíduos da Novacap"
     ]
     for d in sorted(demandas):
-        db.session.add(Demanda(descricao=d))
+        if not Demanda.query.filter_by(descricao=d).first():
+            db.session.add(Demanda(descricao=d))
 
     # 💾 Finaliza a transação
     db.session.commit()
-    print("✅ Banco MySQL criado e tabelas populadas com sucesso!")
+    print("✅ Tabelas criadas (se necessário) e dados essenciais inseridos com sucesso!")
