@@ -145,16 +145,12 @@ class Alerta(db.Model):
 # ----------------------------
 # PROTOCOLO DE ATENDIMENTO
 # ----------------------------
-# ----------------------------
-# PROTOCOLO DE ATENDIMENTO
-# ----------------------------
 class ProtocoloAtendimento(db.Model):
     __tablename__ = 'protocolo_atendimento'
 
     id = db.Column(db.Integer, primary_key=True)
+    numero_protocolo = db.Column(db.String(20), unique=True)  # ✅ Novo campo (segunda posição)
     data_hora = db.Column(db.DateTime, default=datetime.utcnow)
-
-    numero_protocolo = db.Column(db.String(20), unique=True)  # ✅ Novo campo
 
     numero_processo_sei = db.Column(db.String(25))
     numero_requisicao = db.Column(db.Integer)
