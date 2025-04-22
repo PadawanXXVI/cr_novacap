@@ -683,7 +683,7 @@ def visualizar_processo_form():
 def dashboard_protocolo():
     if not session.get('usuario'):
         return redirect(url_for('login'))
-    return "<h2>Bem-vindo ao Sistema de Protocolo de Atendimento</h2>"
+    return render_template('dashboard_protocolo.html')
 
 # ================================
 # ROTA 22: Cadastro de Atendimento
