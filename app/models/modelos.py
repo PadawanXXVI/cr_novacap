@@ -141,3 +141,46 @@ class Alerta(db.Model):
     respondido = db.Column(db.Boolean, default=False)
     data_resposta = db.Column(db.DateTime)
     forma_resposta = db.Column(db.String(50))
+
+# ----------------------------
+# PROTOCOLO DE ATENDIMENTO
+# ----------------------------
+class ProtocoloAtendimento(db.Model):
+    __tablename__ = 'protocolo_atendimento'
+
+    id = db.Column(db.Integer, primary_key=True)
+    data_hora = db.Column(db.DateTime, default=datetime.utcnow)
+
+    numero_processo_sei = db.Column(db.String(25))
+    numero_requisicao = db.Column(db.Integer)
+
+    nome_solicitante = db.Column(db.String(100), nullable=False)
+    tipo_solicitante = db.Column(db.String(30), nullable=False)
+    contato_telefone = db.Column(db.String(20))
+    contato_email = db.Column(db.String(100))
+
+    ra_origem = db.Column(db.String(100), nullable=False)
+    demanda = db.Column(db.String(100), nullable=False)
+
+    assunto = db.Column(db.Text, nullable=False)
+    encaminhamento_inicial = db.Column(db.Text, nullable=False)
+
+    id_usuario_criador = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+    
+    interacoes = db.relationship('InteracaoAtendimento', backref='protocolo', cascade="all, delete-orphan")
+
+# ----------------------------
+# INTERAÇÕES DE ATENDIMENTO
+# ----------------------------
+class InteracaoAtendimento(db.Model):
+    __tablename__ = 'interacoes_atendimento'
+
+    id = db.Column(db.Integer, primary_key=True)
+    id_atendimento = db.Column(db.Integer, db.ForeignKey('protocolo_atendimento.id'), nullable=False)
+
+    data_hora = db.Column(db.DateTime, default=datetime.utcnow)
+    resposta = db.Column(db.Text, nullable=False)
+
+    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+    
+    usuario = db.relationship("Usuario", backref="interacoes_protocolo", lazy=True)
