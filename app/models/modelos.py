@@ -52,7 +52,7 @@ class EntradaProcesso(db.Model):
     usuario_responsavel = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
     responsavel = db.relationship("Usuario", foreign_keys=[usuario_responsavel])
     status_inicial = db.Column(db.String(100), db.ForeignKey('status.descricao'), nullable=False)
-    
+
     movimentacoes = db.relationship('Movimentacao', backref='entrada', cascade="all, delete-orphan")
 
 # ----------------------------
@@ -67,7 +67,7 @@ class Movimentacao(db.Model):
     novo_status = db.Column(db.String(100), db.ForeignKey('status.descricao'), nullable=False)
     data = db.Column(db.DateTime, default=datetime.utcnow)
     observacao = db.Column(db.Text)
-    
+
     usuario = db.relationship("Usuario", backref="movimentacoes", lazy=True)
 
 # ----------------------------
@@ -166,7 +166,7 @@ class ProtocoloAtendimento(db.Model):
     encaminhamento_inicial = db.Column(db.Text, nullable=False)
 
     id_usuario_criador = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
-    
+
     interacoes = db.relationship('InteracaoAtendimento', backref='protocolo', cascade="all, delete-orphan")
 
 # ----------------------------
@@ -182,5 +182,5 @@ class InteracaoAtendimento(db.Model):
     resposta = db.Column(db.Text, nullable=False)
 
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
-    
+
     usuario = db.relationship("Usuario", backref="interacoes_protocolo", lazy=True)
