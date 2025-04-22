@@ -95,11 +95,32 @@
         <textarea name="encaminhamento_inicial" id="encaminhamento_inicial" rows="3" class="input w-full" required></textarea>
       </div>
 
-      <!-- Botão -->
+      <!-- Botões principais -->
       <div class="md:col-span-2 text-center mt-4">
-        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-700 transition">
+        <button type="submit"
+                class="bg-blue-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-700 transition">
           Salvar Atendimento
         </button>
+      </div>
+
+      <!-- Botões adicionais -->
+      <div class="md:col-span-2 text-center mt-6 flex flex-col md:flex-row justify-center gap-4">
+
+        <a href="{{ url_for('dashboard_protocolo') }}"
+           class="bg-yellow-500 text-white px-5 py-2 rounded-xl shadow hover:bg-yellow-600 transition">
+          🔙 Voltar ao Dashboard
+        </a>
+
+        <button type="reset"
+                class="bg-gray-600 text-white px-5 py-2 rounded-xl shadow hover:bg-gray-700 transition">
+          ♻️ Limpar Formulário
+        </button>
+
+        <a href="{{ url_for('listar_atendimentos') }}"
+           class="bg-blue-500 text-white px-5 py-2 rounded-xl shadow hover:bg-blue-600 transition">
+          📄 Listar Atendimentos
+        </a>
+
       </div>
     </form>
   </div>
