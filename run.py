@@ -1,14 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, send_file, jsonify
+from flask_login import login_required, login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import create_app
 from app.ext import db
-from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa, Status, Usuario, Movimentacao
+from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa, Status, Usuario, Movimentacao, ProtocoloAtendimento
 from datetime import datetime
 import pandas as pd
 from io import BytesIO
-from flask_login import login_required, login_user
-from app.models.modelos import ProtocoloAtendimento, Demanda, RegiaoAdministrativa
-from datetime import datetime
 
 app = create_app()
 
@@ -744,6 +742,23 @@ def listar_atendimentos():
     atendimentos = ProtocoloAtendimento.query.order_by(ProtocoloAtendimento.data_hora.desc()).all()
     return render_template('listar_atendimentos.html', atendimentos=atendimentos)
 
+# ================================
+# ROTA 24: Buscar Atendimento por Protocolo
+# ================================
+@app.route('/buscar-atendimento', methods=['GET', 'POST'])
+@login_required
+def buscar_atendimento():
+    if request.method == 'POST':
+        numero_protocolo = request.form.get('numero_protocolo')
+        atendimento = ProtocoloAtendimento.query.filter_by(numero_protocolo=numero_protocolo).first()
+
+        if atendimento:
+            return redirect(url_for('ver_atendimento', id=atendimento.id))
+        else:
+            flash("❌ Protocolo não encontrado. Verifique o número e tente novamente.", "error")
+            return redirect(url_for('buscar_atendimento'))
+
+    return render_template('buscar_atendimento.html')
 
 # ================================
 # Execução do servidor
