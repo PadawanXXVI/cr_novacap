@@ -17,7 +17,10 @@ print("🔍 URI ativa:", app.config['SQLALCHEMY_DATABASE_URI'])
 
 # 📦 Importa extensões e modelos necessários para a criação
 from app.ext import db
-from app.models.modelos import Status, TipoDemanda, RegiaoAdministrativa, Demanda
+from app.models.modelos import (
+    Status, TipoDemanda, RegiaoAdministrativa, Demanda,
+    ProtocoloAtendimento, InteracaoAtendimento  # ✅ Novos modelos do sistema de protocolo
+)
 
 with app.app_context():
     # 💣 Apaga todas as tabelas antes de recriar
@@ -53,7 +56,6 @@ with app.app_context():
     # =============================
     # ✅ REGIÕES ADMINISTRATIVAS
     # =============================
-
     regioes = [
         ("RA I", "Plano Piloto"),
         ("RA II", "Gama"),
@@ -104,9 +106,10 @@ with app.app_context():
         "Estacionamentos", "Galeria de Águas Pluviais", "Jardim", "Mato Alto", "Meio-fio",
         "Parque Infantil", "Passagem Subterrânea", "Passarela", "Pisos Articulados",
         "Pista de Skate", "Poda / Supressão de Árvore", "Ponto de Encontro Comunitário (PEC)",
-        "Praça", "Quadra de Esporte", "Rampa", "Rua, Via ou Rodovia (Pista)", "Tapa-buraco", "Limpeza de Resíduos da Novacap"
+        "Praça", "Quadra de Esporte", "Rampa", "Rua, Via ou Rodovia (Pista)", "Tapa-buraco",
+        "Limpeza de Resíduos da Novacap"
     ]
-    for d in sorted(demandas):  # também opcionalmente ordenado
+    for d in sorted(demandas):
         db.session.add(Demanda(descricao=d))
 
     # 💾 Finaliza a transação
