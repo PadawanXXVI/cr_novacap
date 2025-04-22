@@ -686,6 +686,52 @@ def dashboard_protocolo():
     return "<h2>Bem-vindo ao Sistema de Protocolo de Atendimento</h2>"
 
 # ================================
+# ROTA 22: Cadastro de Atendimento
+# ================================
+from app.models.modelos import ProtocoloAtendimento, InteracaoAtendimento
+
+@app.route('/cadastro-atendimento', methods=['GET', 'POST'])
+@login_required
+def cadastro_atendimento():
+    if request.method == 'POST':
+        try:
+            novo = ProtocoloAtendimento(
+                numero_processo_sei=request.form.get('numero_processo_sei') or None,
+                numero_requisicao=request.form.get('numero_requisicao') or None,
+                nome_solicitante=request.form.get('nome_solicitante'),
+                tipo_solicitante=request.form.get('tipo_solicitante'),
+                contato_telefone=request.form.get('contato_telefone') or None,
+                contato_email=request.form.get('contato_email') or None,
+                ra_origem=request.form.get('ra_origem'),
+                demanda=request.form.get('demanda'),
+                assunto=request.form.get('assunto'),
+                encaminhamento_inicial=request.form.get('encaminhamento_inicial'),
+                id_usuario_criador=session.get('id_usuario')
+            )
+
+            db.session.add(novo)
+            db.session.commit()
+
+            # Geração automática do número do protocolo (CR-0001/2025)
+            ano = datetime.now().year
+            novo.numero_protocolo = f"CR-{novo.id:04d}/{ano}"
+            db.session.commit()
+
+            flash(f"✅ Atendimento registrado com sucesso! Protocolo: {novo.numero_protocolo}", "success")
+            return redirect(url_for('cadastro_atendimento'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"❌ Erro ao registrar atendimento: {str(e)}", "error")
+            return redirect(url_for('cadastro_atendimento'))
+
+    # Se GET, carrega RAs e demandas
+    ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
+    demandas = Demanda.query.order_by(Demanda.descricao).all()
+
+    return render_template("cadastro_atendimento.html", ras=ras, demandas=demandas)
+
+# ================================
 # Execução do servidor
 # ================================
 if __name__ == '__main__':
