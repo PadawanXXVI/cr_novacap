@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard de Protocolo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+<body>
+  <div class="container max-w-3xl mx-auto mt-10 bg-white p-6 rounded-xl shadow-md text-center">
+    <h2 class="text-2xl font-bold mb-6 text-blue-700">📁 Sistema de Protocolo de Atendimento</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <a href="{{ url_for('cadastro_atendimento') }}"
+         class="bg-blue-600 text-white py-3 rounded-xl shadow hover:bg-blue-700 transition text-lg font-medium">
+        ➕ Novo Atendimento
+      </a>
+
+      <a href="#" class="bg-gray-600 text-white py-3 rounded-xl shadow hover:bg-gray-700 transition text-lg font-medium">
+        📄 Listar Atendimentos
+      </a>
+
+      <a href="{{ url_for('index') }}"
+         class="bg-yellow-500 text-white py-3 rounded-xl shadow hover:bg-yellow-600 transition text-lg font-medium">
+        🔙 Voltar ao Menu Inicial
+      </a>
+
+      <a href="{{ url_for('logout') }}"
+         class="bg-red-600 text-white py-3 rounded-xl shadow hover:bg-red-700 transition text-lg font-medium">
+        🚪 Sair do Sistema
+      </a>
+
+    </div>
+  </div>
+</body>
+</html>
