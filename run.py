@@ -3,7 +3,7 @@ from flask_login import login_required, login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import create_app
 from app.ext import db
-from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa, Status, Usuario, Movimentacao, ProtocoloAtendimento
+from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa, Status, Usuario, Movimentacao, ProtocoloAtendimento, InteracaoAtendimento
 from datetime import datetime
 import pandas as pd
 from io import BytesIO
@@ -759,6 +759,34 @@ def buscar_atendimento():
             return redirect(url_for('buscar_atendimento'))
 
     return render_template('buscar_atendimento.html')
+
+# ================================
+# ROTA 25: Visualizar Atendimento + Nova Resposta
+# ================================
+@app.route('/ver-atendimento/<int:id>', methods=['GET', 'POST'])
+@login_required
+def ver_atendimento(id):
+    atendimento = ProtocoloAtendimento.query.get_or_404(id)
+
+    if request.method == 'POST':
+        resposta = request.form.get('resposta')
+
+        if not resposta:
+            flash("❌ A resposta não pode estar vazia.", "error")
+            return redirect(url_for('ver_atendimento', id=id))
+
+        nova_interacao = InteracaoAtendimento(
+            id_atendimento=id,
+            resposta=resposta,
+            id_usuario=session['id_usuario']
+        )
+        db.session.add(nova_interacao)
+        db.session.commit()
+        flash("✅ Resposta adicionada com sucesso.", "success")
+        return redirect(url_for('ver_atendimento', id=id))
+
+    interacoes = InteracaoAtendimento.query.filter_by(id_atendimento=id).order_by(InteracaoAtendimento.data_hora.asc()).all()
+    return render_template('ver_atendimento.html', atendimento=atendimento, interacoes=interacoes)
 
 # ================================
 # Execução do servidor

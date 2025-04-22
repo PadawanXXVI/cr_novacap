@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ver Atendimento</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <div class="container max-w-4xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-md">
+    <h2 class="text-2xl font-bold text-blue-700 mb-4">📄 Atendimento {{ atendimento.numero_protocolo }}</h2>
+
+    <!-- Dados do protocolo -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-6">
+      <p><strong>Data:</strong> {{ atendimento.data_hora.strftime('%d/%m/%Y %H:%M') }}</p>
+      <p><strong>Solicitante:</strong> {{ atendimento.nome_solicitante }} ({{ atendimento.tipo_solicitante }})</p>
+      <p><strong>Telefone:</strong> {{ atendimento.contato_telefone or '-' }}</p>
+      <p><strong>E-mail:</strong> {{ atendimento.contato_email or '-' }}</p>
+      <p><strong>RA de Origem:</strong> {{ atendimento.ra_origem }}</p>
+      <p><strong>Demanda:</strong> {{ atendimento.demanda }}</p>
+    </div>
+
+    <div class="mb-4">
+      <p><strong>Assunto:</strong><br>{{ atendimento.assunto }}</p>
+    </div>
+
+    <div class="mb-4">
+      <p><strong>Encaminhamento Inicial:</strong><br>{{ atendimento.encaminhamento_inicial }}</p>
+    </div>
+
+    <!-- Interações -->
+    <div class="mt-8">
+      <h3 class="text-lg font-semibold text-gray-700 mb-3">💬 Histórico de Respostas</h3>
+
+      {% if interacoes %}
+        <ul class="space-y-4">
+          {% for i in interacoes %}
+            <li class="border-l-4 border-blue-600 pl-4 py-2 bg-gray-50 rounded-md">
+              <p class="text-sm text-gray-800"><strong>{{ i.usuario.usuario }}</strong> em {{ i.data_hora.strftime('%d/%m/%Y %H:%M') }}</p>
+              <p class="text-gray-700 mt-1">{{ i.resposta }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-gray-500">Nenhuma resposta registrada ainda.</p>
+      {% endif %}
+    </div>
+
+    <!-- Nova resposta -->
+    <div class="mt-8">
+      <h3 class="text-lg font-semibold text-gray-700 mb-3">➕ Nova Resposta</h3>
+      <form method="POST">
+        <textarea name="resposta" rows="3" class="input w-full" required></textarea>
+        <div class="text-center mt-4">
+          <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-700 transition">
+            Registrar Resposta
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Voltar -->
+    <div class="mt-6 text-center">
+      <a href="{{ url_for('listar_atendimentos') }}" class="text-blue-600 text-sm hover:underline">🔙 Voltar à lista</a>
+    </div>
+  </div>
+</body>
+</html>
