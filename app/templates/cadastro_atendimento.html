@@ -29,7 +29,7 @@
       <!-- Número da Requisição -->
       <div>
         <label for="numero_requisicao" class="block font-medium">Nº da Requisição</label>
-        <input type="number" name="numero_requisicao" id="numero_requisicao" class="input w-full">
+        <input type="text" name="numero_requisicao" id="numero_requisicao" class="input w-full" placeholder="000000000000000" maxlength="15">
       </div>
 
       <!-- Nome do Solicitante -->
@@ -105,7 +105,6 @@
 
       <!-- Botões adicionais -->
       <div class="md:col-span-2 text-center mt-6 flex flex-col md:flex-row justify-center gap-4">
-
         <a href="{{ url_for('dashboard_protocolo') }}"
            class="bg-yellow-500 text-white px-5 py-2 rounded-xl shadow hover:bg-yellow-600 transition">
           🔙 Voltar ao Dashboard
@@ -120,7 +119,6 @@
            class="bg-blue-500 text-white px-5 py-2 rounded-xl shadow hover:bg-blue-600 transition">
           📄 Listar Atendimentos
         </a>
-
       </div>
     </form>
   </div>
