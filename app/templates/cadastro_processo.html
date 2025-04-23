@@ -113,12 +113,15 @@
 
       <div class="button-group">
         <button type="submit" class="btn-primary">Salvar Processo</button>
+
         <a href="{{ url_for('dashboard_processos') }}">
           <button type="button" class="btn-secondary">Tela de Totais</button>
         </a>
-        <a href="{{ url_for('listar_processos') }}">
-          <button type="button" class="btn-secondary">Visualizar Processos</button>
+
+        <a href="{{ url_for('visualizar_processo_form') }}">
+          <button type="button" class="btn-secondary">Visualizar Processo</button>
         </a>
+
         <a href="{{ url_for('logout') }}">
           <button type="button" class="btn-danger">Sair do Sistema</button>
         </a>
