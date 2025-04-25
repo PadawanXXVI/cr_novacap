@@ -16,6 +16,7 @@
       padding: 0.75rem;
       border-bottom: 1px solid #ccc;
       text-align: left;
+      vertical-align: top;
     }
 
     th {
@@ -36,7 +37,39 @@
     }
 
     .exportar {
-      margin: 1rem 0;
+      margin: 1.5rem 0;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .botoes-acoes {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-secondary, .btn-primary, .btn-outline-gray {
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .btn-outline-gray {
+      background-color: #f8f9fa;
+      border: 1px solid #ccc;
+      color: #333;
     }
   </style>
 </head>
@@ -77,15 +110,24 @@
       <button type="submit" class="btn-primary">Filtrar</button>
     </form>
 
-    <!-- Exportar CSV -->
+    <!-- Exportar CSV/XLSX -->
     {% if processos %}
-    <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" class="exportar">
+    <form method="GET" class="exportar">
       <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
       <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
       <input type="hidden" name="diretoria" value="{{ request.args.get('diretoria', '') }}">
       <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
       <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
-      <button type="submit" class="btn-outline-gray">Exportar Resultados em CSV</button>
+
+      <button type="submit"
+              formaction="{{ url_for('exportar_tramitacoes') }}"
+              name="formato" value="csv"
+              class="btn-outline-gray">Exportar em CSV</button>
+
+      <button type="submit"
+              formaction="{{ url_for('exportar_tramitacoes') }}"
+              name="formato" value="xlsx"
+              class="btn-outline-gray">Exportar em XLSX</button>
     </form>
     {% endif %}
 
@@ -118,13 +160,15 @@
                   ---
                 {% endif %}
               </td>
-              <td style="white-space: nowrap;">
-                <a href="{{ url_for('buscar_processo') }}?numero_processo={{ p.numero_processo }}">
-                  <button class="btn-secondary">Visualizar</button>
-                </a>
-                <a href="{{ url_for('alterar_processo', id_processo=p.id_processo) }}">
-                  <button class="btn-primary">Alterar</button>
-                </a>
+              <td>
+                <div class="botoes-acoes">
+                  <a href="{{ url_for('buscar_processo') }}?numero_processo={{ p.numero_processo }}">
+                    <button class="btn-secondary">Visualizar</button>
+                  </a>
+                  <a href="{{ url_for('alterar_processo', id_processo=p.id_processo) }}">
+                    <button class="btn-primary">Alterar</button>
+                  </a>
+                </div>
               </td>
             </tr>
           {% endfor %}
