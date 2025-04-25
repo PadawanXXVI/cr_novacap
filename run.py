@@ -583,15 +583,42 @@ def relatorios_avancados():
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
+    # Listas para filtros
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
     usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario).all()
+
+    # Parâmetros de filtro
+    status = request.args.get('status')
+    ra = request.args.get('ra')
+    usuario = request.args.get('usuario')
+    inicio = request.args.get('inicio')
+    fim = request.args.get('fim')
+
+    # Consulta base
+    query = db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo) \
+        .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario) \
+        .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada) \
+        .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
+
+    # Aplicar filtros se fornecidos
+    if status:
+        query = query.filter(Movimentacao.novo_status == status)
+    if ra:
+        query = query.filter(EntradaProcesso.ra_origem == ra)
+    if usuario:
+        query = query.filter(Usuario.usuario == usuario)
+    if inicio and fim:
+        query = query.filter(Movimentacao.data.between(inicio, fim))
+
+    resultados = query.order_by(Movimentacao.data.desc()).all()
 
     return render_template(
         'relatorios_avancados.html',
         todos_status=todos_status,
         todas_ras=todas_ras,
-        usuarios=usuarios
+        usuarios=usuarios,
+        resultados=resultados
     )
 
 # ================================
