@@ -16,3 +16,5 @@ instance/
 
 # Arquivos de backup
 *~
+
+.ipynb_checkpoints/
