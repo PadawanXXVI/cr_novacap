@@ -1,4 +1,3 @@
-
 # Análise de Dados dos Processos – CR/NOVACAP
 
 # 📦 Carregar bibliotecas
@@ -13,32 +12,32 @@ load_dotenv()
 db_url = os.getenv("DATABASE_URL")
 engine = create_engine(db_url)
 
-# 📥 Carregar dados da tabela de processos
-df = pd.read_sql("SELECT * FROM processos", con=engine)
-print("\n📌 Primeiros registros:")
+# 📥 Carregar dados da VIEW
+df = pd.read_sql("SELECT * FROM vw_processos_completos", con=engine)
+print("\n📌 Primeiros registros da view:")
 print(df.head())
 
 # 📊 Análises básicas
 print("\n📈 Informações gerais:")
 print(df.info())
 
-print("\n📊 Quantidade por status:")
-print(df['status'].value_counts())
+print("\n📊 Quantidade por status final:")
+print(df['status_final'].value_counts())
 
-print("\n📍 Quantidade por RA:")
-print(df['regiao_administrativa'].value_counts())
+print("\n📍 Quantidade por Região Administrativa:")
+print(df['ra_origem'].value_counts())
 
-# 🗓️ Processos por Mês
-df['data_criacao'] = pd.to_datetime(df['data_criacao'])
-df['mes_ano'] = df['data_criacao'].dt.to_period('M').astype(str)
+# 🗓️ Processos por mês de entrada na Novacap
+df['data_entrada_novacap'] = pd.to_datetime(df['data_entrada_novacap'])
+df['mes_ano'] = df['data_entrada_novacap'].dt.to_period('M').astype(str)
 print("\n📅 Processos por mês:")
 print(df['mes_ano'].value_counts().sort_index())
 
-# 📈 Gráficos
-fig1 = px.bar(df, x='regiao_administrativa', title='Processos por Região Administrativa')
+# 📈 Gráficos com Plotly
+fig1 = px.bar(df, x='ra_origem', title='Processos por Região Administrativa (RA)', labels={'ra_origem': 'Região Administrativa'})
 fig1.show()
 
-fig2 = px.histogram(df, x='status', title='Distribuição por Status')
+fig2 = px.histogram(df, x='status_final', title='Distribuição por Status Final', labels={'status_final': 'Status'})
 fig2.show()
 
 # 📤 Exportar para Excel
