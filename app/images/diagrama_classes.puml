@@ -1,0 +1,78 @@
+@startuml
+
+left to right direction
+
+class Usuario {
+  +id_usuario: int
+  +nome: str
+  +usuario: str
+  +email: str
+  +senha_hash: str
+  +aprovado: bool
+  +bloqueado: bool
+  +is_admin: bool
+}
+
+class Processo {
+  +id_processo: int
+  +numero_processo: str
+  +status_atual: str
+  +observacoes: str
+  +diretoria_destino: str
+}
+
+class EntradaProcesso {
+  +id_entrada: int
+  +id_processo: int
+  +data_criacao_ra: date
+  +data_entrada_novacap: date
+  +data_documento: date
+  +tramite_inicial: str
+  +ra_origem: str
+  +id_demanda: int
+  +id_tipo: int
+  +usuario_responsavel: int
+  +status_inicial: str
+}
+
+class Movimentacao {
+  +id_movimentacao: int
+  +id_entrada: int
+  +id_usuario: int
+  +novo_status: str
+  +data: datetime
+  +observacao: str
+}
+
+class ProtocoloAtendimento {
+  +id_protocolo: int
+  +data_hora: datetime
+  +numero_protocolo: int
+  +numero_processo_sei: str
+  +numero_requisicao: str
+  +nome_solicitante: str
+  +tipo_solicitante: str
+  +contato_telefone: str
+  +contato_email: str
+  +ra_origem: str
+  +demanda: str
+  +assunto: str
+  +encaminhamento_inicial: str
+}
+
+class InteracaoAtendimento {
+  +id_interacao: int
+  +id_protocolo: int
+  +data_hora: datetime
+  +resposta: str
+  +tecnico_responsavel: str
+}
+
+Usuario --> Movimentacao : realiza
+Usuario --> EntradaProcesso : cadastra
+Usuario --> InteracaoAtendimento : responde
+Processo --> EntradaProcesso : possui
+EntradaProcesso --> Movimentacao : gera
+ProtocoloAtendimento --> InteracaoAtendimento : possui
+
+@enduml

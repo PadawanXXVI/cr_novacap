@@ -1,0 +1,42 @@
+
+@startuml
+
+left to right direction
+actor "Administrador" as Admin
+actor "Usuário da CR" as CR
+actor "Servidor da RA" as RA
+actor "Cidadão / Solicitante" as Cid
+
+package "Sistema CR/NOVACAP" {
+
+  usecase "Cadastrar Processo" as UC1
+  usecase "Visualizar e Alterar Processo" as UC2
+  usecase "Tramitar Processo" as UC3
+  usecase "Listar Processos por Filtro" as UC4
+  usecase "Cadastrar Protocolo de Atendimento" as UC5
+  usecase "Responder Atendimento" as UC6
+  usecase "Consultar Atendimento" as UC7
+  usecase "Gerar Relatórios e Dashboards" as UC8
+  usecase "Exportar Dados (CSV/Excel)" as UC9
+  usecase "Aprovar / Bloquear Usuário" as UC10
+  usecase "Atribuir Permissão de Admin" as UC11
+
+}
+
+RA --> UC1
+CR --> UC2
+CR --> UC3
+CR --> UC4
+CR --> UC5
+CR --> UC6
+CR --> UC7
+CR --> UC8
+CR --> UC9
+
+Admin --> UC10
+Admin --> UC11
+
+Cid --> UC5
+Cid --> UC7
+
+@enduml
