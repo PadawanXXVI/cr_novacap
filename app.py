@@ -110,3 +110,18 @@ def atualizar_graficos(ra, status):
 # Executar servidor local
 if __name__ == '__main__':
     app.run(debug=True)
+
+# --------------------------------------------
+# CLI Flask para atualizar MMD manualmente
+# --------------------------------------------
+from flask import Flask as FlaskCLI
+import subprocess
+
+cli_app = FlaskCLI(__name__)
+
+@cli_app.cli.command("atualizar_mmd")
+def atualizar_mmd():
+    """Atualiza o Modelo Multidimensional com os dados mais recentes do cr_novacap"""
+    print("🔄 Iniciando atualização do MMD via script...")
+    subprocess.run(["python", "atualiza_mmd.py"])
+    print("✅ Atualização concluída com sucesso.")
