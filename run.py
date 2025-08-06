@@ -125,7 +125,7 @@ def trocar_senha():
     return render_template('trocar_senha.html')
 
 # ================================
-# ROTA 5: Dashboard de Processos
+# ROTA 5: Dashboard de Processos (ATUALIZADA)
 # ================================
 @app.route('/dashboard-processos')
 def dashboard_processos():
@@ -149,6 +149,9 @@ def dashboard_processos():
             "Devolvido à RA de origem – implantação"
         ])
     ).count()
+    processos_urgentes = Processo.query.filter_by(status_atual="Solicitação de urgência").count()
+    processos_prazo_execucao = Processo.query.filter_by(status_atual="Solicitação de prazo de execução").count()
+    processos_ouvidoria = Processo.query.filter_by(status_atual="Processo oriundo de Ouvidoria").count()
 
     return render_template('dashboard_processos.html',
                            total_processos=total_processos,
@@ -160,7 +163,10 @@ def dashboard_processos():
                            total_em_atendimento=total_em_atendimento,
                            processos_sgia=processos_sgia,
                            processos_improcedentes=processos_improcedentes,
-                           devolvidos_ra=devolvidos_ra)
+                           devolvidos_ra=devolvidos_ra,
+                           processos_urgentes=processos_urgentes,
+                           processos_prazo_execucao=processos_prazo_execucao,
+                           processos_ouvidoria=processos_ouvidoria)
 
 # ================================
 # ROTA 6: Buscar Processo
@@ -301,8 +307,11 @@ def cadastro_processo():
     diretorias = [
         "Diretoria das Cidades - DC",
         "Diretoria de Obras - DO",
-        "Não tramita na Novacap"
+        "Diretoria de Planejamento e Projetos - DP",
+        "Não tramita na Novacap",
+        "Tramita via SGIA",
     ]
+
 
     return render_template(
         'cadastro_processo.html',
@@ -318,6 +327,7 @@ def cadastro_processo():
 # ================================
 @app.route('/listar-processos')
 def listar_processos():
+
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
@@ -504,7 +514,7 @@ def relatorios_gerenciais():
     )
 
 # ===================================
-# ROTA 17: Exportação de Tramitações
+# ROTA 17: Exportação de Tramitações (COM MODO_STATUS)
 # ===================================
 @app.route('/exportar-tramitacoes')
 def exportar_tramitacoes():
@@ -518,6 +528,7 @@ def exportar_tramitacoes():
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
     formato = request.args.get('formato', 'csv').lower()  # padrão: CSV
+    modo_status = request.args.get('modo_status')  # novo parâmetro
 
     # Consulta base
     query = db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo) \
@@ -525,13 +536,16 @@ def exportar_tramitacoes():
         .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada) \
         .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
 
-    # Filtros
+    # Aplicar filtros
+    if status:
+        if modo_status == 'atual':
+            query = query.filter(Processo.status_atual == status)
+        else:
+            query = query.filter(Movimentacao.novo_status == status)
     if ra:
         query = query.filter(EntradaProcesso.ra_origem == ra)
     if usuario:
         query = query.filter(Usuario.usuario == usuario)
-    if status:
-        query = query.filter(Movimentacao.novo_status == status)
     if inicio and fim:
         query = query.filter(Movimentacao.data.between(inicio, fim))
 
@@ -576,7 +590,7 @@ def exportar_tramitacoes():
         return "Formato inválido. Use 'csv' ou 'xlsx'.", 400
 
 # ================================
-# ROTA 18: Relatórios Avançados
+# ROTA 18: Relatórios Avançados (ATUALIZADA)
 # ================================
 @app.route('/relatorios-avancados')
 def relatorios_avancados():
@@ -594,6 +608,7 @@ def relatorios_avancados():
     usuario = request.args.get('usuario')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
+    modo_status = request.args.get('modo_status')  # novo parâmetro: "atual" ou "historico"
 
     # Consulta base
     query = db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo) \
@@ -601,9 +616,13 @@ def relatorios_avancados():
         .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada) \
         .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
 
-    # Aplicar filtros se fornecidos
+    # Aplicar filtros
     if status:
-        query = query.filter(Movimentacao.novo_status == status)
+        if modo_status == 'atual':
+            query = query.filter(Processo.status_atual == status)
+        else:
+            query = query.filter(Movimentacao.novo_status == status)
+
     if ra:
         query = query.filter(EntradaProcesso.ra_origem == ra)
     if usuario:
@@ -618,7 +637,8 @@ def relatorios_avancados():
         todos_status=todos_status,
         todas_ras=todas_ras,
         usuarios=usuarios,
-        resultados=resultados
+        resultados=resultados,
+        modo_status=modo_status  # passar para o template
     )
 
 # ================================

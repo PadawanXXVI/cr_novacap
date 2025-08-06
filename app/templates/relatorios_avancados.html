@@ -41,6 +41,14 @@
         </div>
 
         <div class="form-col">
+          <label for="modo_status">Tipo de Filtro de Status</label>
+          <select name="modo_status" id="modo_status">
+            <option value="historico" {% if modo_status != 'atual' %}selected{% endif %}>Qualquer movimentação</option>
+            <option value="atual" {% if modo_status == 'atual' %}selected{% endif %}>Somente status atual</option>
+          </select>
+        </div>
+
+        <div class="form-col">
           <label for="ra">Região Administrativa</label>
           <select name="ra" id="ra">
             <option value="">Todas</option>
@@ -89,6 +97,7 @@
         <input type="hidden" name="usuario" value="{{ request.args.get('usuario', '') }}">
         <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
         <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
+        <input type="hidden" name="modo_status" value="{{ request.args.get('modo_status', 'historico') }}">
         <input type="hidden" name="formato" value="csv">
         <button class="btn-secondary">Exportar para CSV</button>
       </form>
@@ -99,6 +108,7 @@
         <input type="hidden" name="usuario" value="{{ request.args.get('usuario', '') }}">
         <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
         <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
+        <input type="hidden" name="modo_status" value="{{ request.args.get('modo_status', 'historico') }}">
         <input type="hidden" name="formato" value="xlsx">
         <button class="btn-secondary">Exportar para Excel</button>
       </form>
@@ -140,6 +150,14 @@
     {% elif request.args %}
       <p style="margin-top: 2rem; text-align: center;">Nenhum resultado encontrado com os filtros selecionados.</p>
     {% endif %}
+
+    <!-- Botão de Voltar -->
+    <div style="text-align: center; margin-top: 3rem;">
+      <a href="{{ url_for('dashboard_processos') }}">
+        <button class="btn-secondary">⬅ Voltar ao Dashboard</button>
+      </a>
+    </div>
+
   </div>
 </body>
 </html>
