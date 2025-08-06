@@ -301,7 +301,7 @@ def cadastro_processo():
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
     demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
-    status = Status.query.order_by(Status.ordem_exibicao.asc()).all()
+    status = Status.query.order_by(Status.descricao.asc()).all()  # ✅ AGORA EM ORDEM ALFABÉTICA
     usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario.asc()).all()
 
     diretorias = [
@@ -312,7 +312,6 @@ def cadastro_processo():
         "Tramita via SGIA",
     ]
 
-
     return render_template(
         'cadastro_processo.html',
         regioes=regioes,
@@ -322,6 +321,7 @@ def cadastro_processo():
         usuarios=usuarios,
         diretorias=diretorias
     )
+
 # ================================
 # ROTA 9: Listar Processos
 # ================================
