@@ -1,3 +1,4 @@
+<!-- templates/relatorios_bi.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -5,67 +6,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel BI - Central de Relacionamento</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
   <style>
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    .filtro-form {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 1rem;
-      margin-top: 2rem;
+      margin: 2rem 0;
     }
 
-    .card {
-      background-color: #ffffff;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      text-align: center;
+    .filtro-form input[type="date"] {
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+      font-size: 1rem;
     }
 
-    .card h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-      color: #444;
+    .btn-print {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
     }
 
-    .card p {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #007bff;
+    .btn-print:hover {
+      background-color: #218838;
     }
 
-    .btn-group {
-      text-align: center;
-      margin-top: 2rem;
-    }
-
-    .btn-group a {
-      margin: 0 0.5rem;
+    @media print {
+      .btn-print, .filtro-form, .btn-group { display: none !important; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="area-pdf">
     <h1 style="text-align: center;">Painel Interativo de BI</h1>
+
+    <!-- Filtros por Período -->
+    <form method="get" action="{{ url_for('relatorios_bi') }}" class="filtro-form">
+      <input type="date" name="inicio" value="{{ request.args.get('inicio', '') }}">
+      <input type="date" name="fim" value="{{ request.args.get('fim', '') }}">
+      <button type="submit" class="btn-secondary">Filtrar</button>
+    </form>
 
     <!-- Cards de Métricas -->
     <div class="card-grid">
-      <div class="card">
-        <h3>Total de Processos</h3>
-        <p>{{ total_processos }}</p>
-      </div>
-      <div class="card">
-        <h3>Total de Tramitações</h3>
-        <p>{{ total_tramitacoes }}</p>
-      </div>
-      <div class="card">
-        <h3>Tempo Médio de Entrada na NOVACAP</h3>
-        <p>{{ tempo_medio_entrada }} dias</p>
-      </div>
-      <div class="card">
-        <h3>Tempo Médio de Atendimento</h3>
-        <p>{{ tempo_medio_atendimento }} dias</p>
-      </div>
+      <div class="card"><h3>Total de Processos</h3><p>{{ total_processos }}</p></div>
+      <div class="card"><h3>Total de Tramitações</h3><p>{{ total_tramitacoes }}</p></div>
+      <div class="card"><h3>Tempo Médio de Entrada</h3><p>{{ tempo_medio_entrada }} dias</p></div>
+      <div class="card"><h3>Tempo Médio de Atendimento</h3><p>{{ tempo_medio_atendimento }} dias</p></div>
     </div>
 
     <!-- Gráficos -->
@@ -73,38 +66,50 @@
     <div id="grafico-ra" style="margin-top: 3rem;"></div>
     <div id="grafico-diretorias" style="margin-top: 3rem;"></div>
 
+    <!-- Botões -->
     <div class="btn-group">
       <a href="{{ url_for('relatorios_avancados') }}"><button class="btn-secondary">Voltar</button></a>
       <a href="{{ url_for('logout') }}"><button class="btn-danger">Sair</button></a>
     </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+      <button class="btn-print" onclick="gerarPDF()">📄 Salvar como PDF</button>
+    </div>
   </div>
 
+  <!-- JavaScript para Plotly -->
   <script>
-    // Gráfico de Status
-    const dataStatus = [{
-      x: {{ grafico_status.labels | tojson | safe }},
-      y: {{ grafico_status.valores | tojson | safe }},
+    Plotly.newPlot('grafico-status', [{
+      x: {{ grafico_status.labels | tojson }},
+      y: {{ grafico_status.valores | tojson }},
       type: 'bar',
       marker: { color: '#007bff' }
-    }];
-    Plotly.newPlot('grafico-status', dataStatus, { title: 'Distribuição por Status' });
+    }], { title: 'Distribuição por Status' });
 
-    // Gráfico de RA
-    const dataRA = [{
-      labels: {{ grafico_ra.labels | tojson | safe }},
-      values: {{ grafico_ra.valores | tojson | safe }},
+    Plotly.newPlot('grafico-ra', [{
+      labels: {{ grafico_ra.labels | tojson }},
+      values: {{ grafico_ra.valores | tojson }},
       type: 'pie'
-    }];
-    Plotly.newPlot('grafico-ra', dataRA, { title: 'Processos por Região Administrativa' });
+    }], { title: 'Processos por RA' });
 
-    // Gráfico de Diretorias
-    const dataDir = [{
-      x: {{ grafico_diretoria.labels | tojson | safe }},
-      y: {{ grafico_diretoria.valores | tojson | safe }},
+    Plotly.newPlot('grafico-diretorias', [{
+      x: {{ grafico_diretoria.labels | tojson }},
+      y: {{ grafico_diretoria.valores | tojson }},
       type: 'bar',
       marker: { color: '#28a745' }
-    }];
-    Plotly.newPlot('grafico-diretorias', dataDir, { title: 'Distribuição por Diretoria' });
+    }], { title: 'Distribuição por Diretoria' });
+
+    function gerarPDF() {
+      const elemento = document.getElementById('area-pdf');
+      const opcoes = {
+        margin: 0.5,
+        filename: 'relatorio_bi.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opcoes).from(elemento).save();
+    }
   </script>
 </body>
 </html>

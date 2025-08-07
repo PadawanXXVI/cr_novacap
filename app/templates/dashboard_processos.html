@@ -5,60 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Processos</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  <style>
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-
-    .card {
-      background-color: #ffffff;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      text-align: center;
-    }
-
-    .card h3 {
-      margin-bottom: 0.5rem;
-      font-size: 1.1rem;
-      color: #555;
-    }
-
-    .card p {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #007bff;
-    }
-
-    .button-group {
-      text-align: center;
-      margin-top: 2rem;
-    }
-
-    .button-group a {
-      margin: 0.5rem;
-      display: inline-block;
-    }
-  </style>
 </head>
 <body>
   <div class="container">
-    <h1 style="text-align: center;">Dashboard – Processos</h1>
+    <h1>Dashboard – Processos</h1>
 
+    <h2>Totais</h2>
     <div class="card-grid">
       <div class="card"><h3>Total de Processos</h3><p>{{ total_processos }}</p></div>
-      <div class="card"><h3>Processos Atendidos</h3><p>{{ processos_atendidos }}</p></div>
+      <div class="card"><h3>Total em Atendimento</h3><p>{{ total_em_atendimento }}</p></div>
+    </div>
+
+    <h2>Origem</h2>
+    <div class="card-grid">
       <div class="card"><h3>Iniciados pela SECRE</h3><p>{{ processos_secre }}</p></div>
       <div class="card"><h3>Iniciados pela CR</h3><p>{{ processos_cr }}</p></div>
+    </div>
+
+    <h2>Tramitação</h2>
+    <div class="card-grid">
       <div class="card"><h3>Diretoria das Cidades</h3><p>{{ processos_dc }}</p></div>
       <div class="card"><h3>Diretoria de Obras</h3><p>{{ processos_do }}</p></div>
-      <div class="card"><h3>Total em Atendimento</h3><p>{{ total_em_atendimento }}</p></div>
-      <div class="card"><h3>Devolvidos à RA</h3><p>{{ devolvidos_ra }}</p></div>
+      <div class="card"><h3>Diretoria de Planejamento e Projetos</h3><p>{{ processos_dp }}</p></div>
       <div class="card"><h3>Processos SGIA</h3><p>{{ processos_sgia }}</p></div>
+    </div>
+
+    <h2>Resultados</h2>
+    <div class="card-grid">
+      <div class="card"><h3>Processos Atendidos</h3><p>{{ processos_atendidos }}</p></div>
+      <div class="card"><h3>Devolvidos à RA</h3><p>{{ devolvidos_ra }}</p></div>
       <div class="card"><h3>Improcedentes</h3><p>{{ processos_improcedentes }}</p></div>
+    </div>
+
+    <h2>Especiais</h2>
+    <div class="card-grid">
       <div class="card"><h3>Solicitação de Urgência</h3><p>{{ processos_urgencia }}</p></div>
       <div class="card"><h3>Solicitação de Prazo de Execução</h3><p>{{ processos_prazo }}</p></div>
       <div class="card"><h3>Oriundos da Ouvidoria</h3><p>{{ processos_ouvidoria }}</p></div>
@@ -75,15 +55,23 @@
 
       <a href="{{ url_for('visualizar_processo_form') }}">
         <button class="btn-secondary">Visualizar Processo</button>
-      </a>      
+      </a>
 
       {% if session.get('is_admin') %}
-        <a href="{{ url_for('painel_admin') }}"><button class="btn-warning">Painel Administrativo</button></a>
-        <a href="{{ url_for('relatorios_gerenciais') }}"><button class="btn-outline-gray">Relatórios Gerenciais</button></a>
-        <a href="{{ url_for('relatorios_avancados') }}"><button class="btn-outline-gray">Relatórios Avançados</button></a>
+        <a href="{{ url_for('painel_admin') }}">
+          <button class="btn-warning">Painel Administrativo</button>
+        </a>
+        <a href="{{ url_for('relatorios_gerenciais') }}">
+          <button class="btn-outline-gray">Relatórios Gerenciais</button>
+        </a>
+        <a href="{{ url_for('relatorios_avancados') }}">
+          <button class="btn-outline-gray">Relatórios Avançados</button>
+        </a>
       {% endif %}
 
-      <a href="{{ url_for('logout') }}"><button class="btn-danger">Sair</button></a>
+      <a href="{{ url_for('logout') }}">
+        <button class="btn-danger">Sair</button>
+      </a>
     </div>
   </div>
 </body>

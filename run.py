@@ -644,9 +644,9 @@ def relatorios_avancados():
 # ================================
 # ROTA 19: Relatórios BI Interativo
 # ================================
-from flask import render_template, session, redirect, url_for
-from app.models.modelos import Processo, EntradaProcesso, Movimentacao
+from flask import render_template, request, redirect, url_for, flash, session
 from app.ext import db
+from app.models.modelos import Processo, EntradaProcesso, Movimentacao
 from datetime import datetime
 
 @app.route('/relatorios-bi')
@@ -654,45 +654,83 @@ def relatorios_bi():
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
-    # Gráfico de Status
-    status_data = db.session.query(Processo.status_atual, db.func.count(Processo.id_processo)) \
-        .group_by(Processo.status_atual).all()
+    # ==== Filtros por período ====
+    inicio = request.args.get('inicio')
+    fim = request.args.get('fim')
+
+    try:
+        if inicio:
+            inicio_data = datetime.strptime(inicio, "%Y-%m-%d")
+        else:
+            inicio_data = None
+
+        if fim:
+            fim_data = datetime.strptime(fim, "%Y-%m-%d")
+        else:
+            fim_data = None
+    except ValueError:
+        flash("Formato de data inválido.", "error")
+        return redirect(url_for('relatorios_bi'))
+
+    # ==== Base para filtro ====
+    def filtrar_datas(query, campo_data):
+        if inicio_data and fim_data:
+            return query.filter(campo_data.between(inicio_data, fim_data))
+        return query
+
+    # ==== Gráfico de Status ====
+    status_query = db.session.query(Processo.status_atual, db.func.count(Processo.id_processo))
+    status_query = filtrar_datas(status_query.join(EntradaProcesso), EntradaProcesso.data_entrada_novacap)
+    status_data = status_query.group_by(Processo.status_atual).all()
     grafico_status = {
         "labels": [s[0] for s in status_data],
         "valores": [s[1] for s in status_data]
     }
 
-    # Gráfico de RA
-    ra_data = db.session.query(EntradaProcesso.ra_origem, db.func.count(EntradaProcesso.id_entrada)) \
-        .group_by(EntradaProcesso.ra_origem).all()
+    # ==== Gráfico de RA ====
+    ra_query = db.session.query(EntradaProcesso.ra_origem, db.func.count(EntradaProcesso.id_entrada))
+    ra_query = filtrar_datas(ra_query, EntradaProcesso.data_entrada_novacap)
+    ra_data = ra_query.group_by(EntradaProcesso.ra_origem).all()
     grafico_ra = {
         "labels": [r[0] for r in ra_data],
         "valores": [r[1] for r in ra_data]
     }
 
-    # Gráfico de Diretorias
-    dir_data = db.session.query(Processo.diretoria_destino, db.func.count(Processo.id_processo)) \
-        .group_by(Processo.diretoria_destino).all()
+    # ==== Gráfico de Diretorias ====
+    todas_diretorias = [
+        "Diretoria das Cidades - DC",
+        "Diretoria de Obras - DO",
+        "Diretoria de Planejamento e Projetos - DP",
+        "Não tramita na Novacap",
+        "Tramita via SGIA"
+    ]
+    dir_query = db.session.query(Processo.diretoria_destino, db.func.count(Processo.id_processo)) \
+        .join(EntradaProcesso)
+    dir_query = filtrar_datas(dir_query, EntradaProcesso.data_entrada_novacap)
+    dir_data = dir_query.group_by(Processo.diretoria_destino).all()
+    dir_dict = {d[0]: d[1] for d in dir_data}
     grafico_diretoria = {
-        "labels": [d[0] for d in dir_data],
-        "valores": [d[1] for d in dir_data]
+        "labels": todas_diretorias,
+        "valores": [dir_dict.get(d, 0) for d in todas_diretorias]
     }
 
-    # Tempo médio entre criação na RA e entrada na NOVACAP
-    entradas = EntradaProcesso.query.all()
+    # ==== Tempo médio de entrada ====
+    entradas = EntradaProcesso.query
+    entradas = filtrar_datas(entradas, EntradaProcesso.data_entrada_novacap).all()
     tempos_entrada = [
         (e.data_entrada_novacap - e.data_criacao_ra).days
         for e in entradas if e.data_criacao_ra and e.data_entrada_novacap
     ]
     tempo_medio_entrada = round(sum(tempos_entrada) / len(tempos_entrada), 1) if tempos_entrada else 0
 
-    # Tempo médio de atendimento
-    atendidos = Processo.query.filter_by(status_atual="Atendido").all()
+    # ==== Tempo médio de atendimento ====
+    processos_atendidos = Processo.query.filter_by(status_atual="Atendido").join(EntradaProcesso)
+    processos_atendidos = filtrar_datas(processos_atendidos, EntradaProcesso.data_entrada_novacap).all()
     tempos_atendimento = []
-    for p in atendidos:
+    for p in processos_atendidos:
         entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
         if entrada:
-            ultima_mov = db.session.query(Movimentacao).filter_by(id_entrada=entrada.id_entrada) \
+            ultima_mov = Movimentacao.query.filter_by(id_entrada=entrada.id_entrada) \
                 .order_by(Movimentacao.data.desc()).first()
             if ultima_mov and entrada.data_entrada_novacap:
                 dias = (ultima_mov.data.date() - entrada.data_entrada_novacap).days
@@ -700,8 +738,9 @@ def relatorios_bi():
 
     tempo_medio_atendimento = round(sum(tempos_atendimento) / len(tempos_atendimento), 1) if tempos_atendimento else 0
 
-    total_processos = Processo.query.count()
-    total_tramitacoes = Movimentacao.query.count()
+    # ==== Totais ====
+    total_processos = filtrar_datas(Processo.query.join(EntradaProcesso), EntradaProcesso.data_entrada_novacap).count()
+    total_tramitacoes = filtrar_datas(Movimentacao.query.join(EntradaProcesso), EntradaProcesso.data_entrada_novacap).count()
 
     return render_template(
         "relatorios_bi.html",

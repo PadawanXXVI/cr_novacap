@@ -12,12 +12,13 @@ body {
     line-height: 1.6;
     padding: 1rem;
     font-size: clamp(1rem, 2.5vw, 1.2rem);
+    overflow-x: hidden;
 }
 
 /* ==== Container Central ==== */
 .container {
-    max-width: 800px;
-    margin: 2rem auto; /* Reduzido de 3rem para 2rem */
+    max-width: 1200px;
+    margin: 2rem auto;
     padding: 2rem;
     background-color: #fff;
     border-radius: 1rem;
@@ -35,7 +36,36 @@ h1 {
 h2 {
     font-size: clamp(1.5rem, 3vw, 2.25rem);
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin: 2rem 0 1rem;
+}
+
+/* ==== Cards ==== */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.card p {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: #007bff;
 }
 
 /* ==== Inputs e Labels ==== */
@@ -54,7 +84,7 @@ textarea {
     padding: 0.75rem;
     border: 1px solid #ccc;
     border-radius: 0.5rem;
-    margin-bottom: 0.75rem; /* Reduzido de 1rem */
+    margin-bottom: 0.75rem;
     font-size: 1rem;
 }
 
@@ -123,63 +153,6 @@ input[type="submit"] {
     background-color: #e0a800;
 }
 
-/* ==== Botões lado a lado ==== */
-button + button {
-    margin-left: 0.5rem;
-}
-
-/* ==== Botões agrupados com flexbox (ex: login) ==== */
-.button-group {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-
-/* ==== Formulários dentro de <td> (painel admin) ==== */
-td form {
-    display: inline-block;
-}
-
-/* ==== Responsividade ==== */
-@media (max-width: 768px) {
-    .container {
-        padding: 1rem;
-        margin: 1rem;
-    }
-
-    button,
-    input[type="submit"] {
-        width: 100%;
-        margin-top: 1rem;
-    }
-
-    .button-group {
-        flex-direction: column;
-    }
-
-    button + button {
-        margin-left: 0;
-        margin-top: 0.5rem;
-    }
-}
-
-/* ==== Telas Grandes (Smart TVs, 4K) ==== */
-@media (min-width: 1400px) {
-    .container {
-        max-width: 1200px;
-        font-size: 1.3rem;
-        padding: 3rem;
-    }
-
-    button,
-    input[type="submit"] {
-        font-size: 1.25rem;
-        padding: 1rem 2rem;
-    }
-}
-
-/* ==== Botões com Borda Colorida ==== */
 .btn-outline-blue {
     padding: 0.4rem 0.8rem;
     background-color: transparent;
@@ -210,15 +183,74 @@ td form {
     color: white;
 }
 
+/* ==== Botões agrupados com flexbox ==== */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+button + button {
+    margin-left: 0.5rem;
+}
+
+/* ==== Responsividade ==== */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        margin: 1rem;
+    }
+
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    button,
+    input[type="submit"] {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    button + button {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+}
+
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1400px;
+        font-size: 1.3rem;
+        padding: 3rem;
+    }
+
+    button,
+    input[type="submit"] {
+        font-size: 1.25rem;
+        padding: 1rem 2rem;
+    }
+
+    .card-grid {
+        gap: 1.5rem;
+    }
+}
+
+/* ==== Formulários lado a lado ==== */
 .form-row {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 1rem;
-  }
-  
-  .form-col {
+}
+
+.form-col {
     flex: 1 1 48%;
     min-width: 240px;
-  }
-  
+}
