@@ -5,8 +5,8 @@ from app import create_app
 from app.ext import db
 from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa, Status, Usuario, Movimentacao, ProtocoloAtendimento, InteracaoAtendimento
 from datetime import datetime
-import pandas as pd
 from io import BytesIO
+import pandas as pd
 
 app = create_app()
 
@@ -308,6 +308,7 @@ def cadastro_processo():
         "Diretoria das Cidades - DC",
         "Diretoria de Obras - DO",
         "Diretoria de Planejamento e Projetos - DP",
+        "Diretoria de Suporte - DS",
         "Não tramita na Novacap",
         "Tramita via SGIA",
     ]
@@ -701,6 +702,7 @@ def relatorios_bi():
         "Diretoria das Cidades - DC",
         "Diretoria de Obras - DO",
         "Diretoria de Planejamento e Projetos - DP",
+        "Diretoria de Suporte - DS",
         "Não tramita na Novacap",
         "Tramita via SGIA"
     ]
