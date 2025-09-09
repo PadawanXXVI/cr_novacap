@@ -1,19 +1,22 @@
 @echo off
 setlocal
 
-:: Vai até a pasta do sistema
+:: ================================================
+:: INICIAR SISTEMA CR-NOVACAP (Flask + MySQL)
+:: Dependências devem estar instaladas via pip global
+:: Banco de dados: 10.233.208.22 (NOVACAPSV022)
+:: ================================================
+
 cd /d %~dp0
 
 echo ============================================
 echo  INICIANDO O SISTEMA CR-NOVACAP
 echo ============================================
 
-:: Instala/atualiza dependências
 echo Instalando dependências...
 pip install --upgrade pip
 pip install -r requirements.txt
 
-:: Inicia o sistema Flask
 echo.
 echo Iniciando aplicação...
 python run.py
