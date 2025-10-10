@@ -222,10 +222,14 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     criacao = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     doc.add_paragraph(f"Criado por {autor}, versão 1 em {criacao}.")
 
-    # ---------------------------------------------------------
-    # 8️⃣ Salvamento
-    # ---------------------------------------------------------
-    nome_arquivo = f"Relatorio_SEI_CPCR_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
-    doc.save(nome_arquivo)
+    import os
 
-    return nome_arquivo
+# ---------------------------------------------------------
+# 8️⃣ Salvamento
+# ---------------------------------------------------------
+# Diretório onde salvar (fora do app/)
+base_dir = os.path.abspath(os.path.dirname(__file__))
+output_path = os.path.join(base_dir, f"Relatorio_SEI_CPCR_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx")
+
+doc.save(output_path)
+return output_path
