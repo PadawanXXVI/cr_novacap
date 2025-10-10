@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, send_file, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, send_file, jsonify, abort
 from flask_login import login_required, login_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import create_app
@@ -7,6 +7,7 @@ from app.models.modelos import Processo, EntradaProcesso, Demanda, TipoDemanda, 
 from datetime import datetime
 from io import BytesIO
 import pandas as pd
+import os
 
 app = create_app()
 
@@ -42,7 +43,6 @@ def login():
             return "Erro: usuário bloqueado.", 403
 
         login_user(usuario)
-
         session['usuario'] = usuario.usuario
         session['is_admin'] = usuario.is_admin
         session['id_usuario'] = usuario.id_usuario
@@ -125,7 +125,7 @@ def trocar_senha():
     return render_template('trocar_senha.html')
 
 # ================================
-# ROTA 5: Dashboard de Processos (ATUALIZADA)
+# ROTA 5: Dashboard de Processos
 # ================================
 @app.route('/dashboard-processos')
 def dashboard_processos():
@@ -134,39 +134,18 @@ def dashboard_processos():
 
     total_processos = Processo.query.count()
     processos_atendidos = Processo.query.filter_by(status_atual='Atendido').count()
-    processos_secre = EntradaProcesso.query.filter_by(tramite_inicial='SECRE').count()
-    processos_cr = EntradaProcesso.query.filter_by(tramite_inicial='CR').count()
     processos_dc = Processo.query.filter_by(status_atual='Enviado à Diretoria das Cidades').count()
     processos_do = Processo.query.filter_by(status_atual='Enviado à Diretoria de Obras').count()
     total_em_atendimento = processos_dc + processos_do
-    processos_sgia = Processo.query.filter_by(status_atual='Improcedente – tramitação via SGIA').count()
-    processos_improcedentes = Processo.query.filter_by(status_atual='Improcedente – tramita por órgão diferente da NOVACAP').count()
-    devolvidos_ra = Processo.query.filter(
-        Processo.status_atual.in_([
-            "Devolvido à RA de origem – adequação de requisitos",
-            "Devolvido à RA de origem – parecer técnico de outro órgão",
-            "Devolvido à RA de origem – serviço com contrato de natureza continuada pela DC/DO",
-            "Devolvido à RA de origem – implantação"
-        ])
-    ).count()
-    processos_urgentes = Processo.query.filter_by(status_atual="Solicitação de urgência").count()
-    processos_prazo_execucao = Processo.query.filter_by(status_atual="Solicitação de prazo de execução").count()
-    processos_ouvidoria = Processo.query.filter_by(status_atual="Processo oriundo de Ouvidoria").count()
 
-    return render_template('dashboard_processos.html',
-                           total_processos=total_processos,
-                           processos_atendidos=processos_atendidos,
-                           processos_secre=processos_secre,
-                           processos_cr=processos_cr,
-                           processos_dc=processos_dc,
-                           processos_do=processos_do,
-                           total_em_atendimento=total_em_atendimento,
-                           processos_sgia=processos_sgia,
-                           processos_improcedentes=processos_improcedentes,
-                           devolvidos_ra=devolvidos_ra,
-                           processos_urgentes=processos_urgentes,
-                           processos_prazo_execucao=processos_prazo_execucao,
-                           processos_ouvidoria=processos_ouvidoria)
+    return render_template(
+        'dashboard_processos.html',
+        total_processos=total_processos,
+        processos_atendidos=processos_atendidos,
+        processos_dc=processos_dc,
+        processos_do=processos_do,
+        total_em_atendimento=total_em_atendimento
+    )
 
 # ================================
 # ROTA 6: Buscar Processo
@@ -180,80 +159,50 @@ def buscar_processo():
     processo = Processo.query.filter_by(numero_processo=numero).first()
 
     if not processo:
-        flash("❌ Processo não localizado. Deseja cadastrá-lo?", "error")
+        flash("❌ Processo não localizado.", "error")
         return render_template('visualizar_processo.html', processo=None)
 
     entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
     movimentacoes = []
 
     if entrada:
-        entrada.tipo = TipoDemanda.query.get(entrada.id_tipo)
-        entrada.responsavel = Usuario.query.get(entrada.usuario_responsavel)
         movimentacoes = db.session.query(Movimentacao).join(Usuario).filter(
             Movimentacao.id_entrada == entrada.id_entrada
         ).order_by(Movimentacao.data.asc()).all()
-
-    ultima_observacao = (
-        movimentacoes[-1].observacao if movimentacoes and movimentacoes[-1].observacao
-        else processo.observacoes
-    )
 
     return render_template(
         'visualizar_processo.html',
         processo=processo,
         entrada=entrada,
-        movimentacoes=movimentacoes,
-        ultima_observacao=ultima_observacao
+        movimentacoes=movimentacoes
     )
 
 # ================================
 # ROTA 7: Verificar Processo
 # ================================
-from flask import jsonify
-
 @app.route('/verificar-processo', methods=['POST'])
 def verificar_processo():
     data = request.get_json()
     numero = data.get('numero_processo')
-
     processo = Processo.query.filter_by(numero_processo=numero).first()
-
-    if processo:
-        return jsonify({"existe": True, "id": processo.id_processo})
-    else:
-        return jsonify({"existe": False})
-
+    return jsonify({"existe": bool(processo)})
 
 # ================================
 # ROTA 8: Cadastro de Processo
 # ================================
-from flask import render_template, request, redirect, url_for, flash, session
-from datetime import datetime
-from flask_login import login_required
-from app.models.modelos import (
-    Processo, EntradaProcesso, RegiaoAdministrativa,
-    TipoDemanda, Demanda, Status, Usuario
-)
-from app.ext import db
-
 @app.route('/cadastro-processo', methods=['GET', 'POST'])
 @login_required
 def cadastro_processo():
     if request.method == 'POST':
         numero = request.form.get('numero_processo').strip()
-
         processo_existente = Processo.query.filter_by(numero_processo=numero).first()
         if processo_existente:
-            flash("⚠️ Processo já cadastrado. Redirecionando para alteração...", "warning")
+            flash("⚠️ Processo já cadastrado.", "warning")
             return redirect(url_for('alterar_processo', id_processo=processo_existente.id_processo))
 
         try:
-            # Conversão de datas
-            data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
-            data_entrada_novacap = datetime.strptime(request.form.get('data_entrada_novacap'), "%Y-%m-%d").date()
             data_documento = datetime.strptime(request.form.get('data_documento'), "%Y-%m-%d").date()
 
-            # Processo e entrada
             novo_processo = Processo(
                 numero_processo=numero,
                 status_atual=request.form.get('status_inicial'),
@@ -265,10 +214,7 @@ def cadastro_processo():
 
             entrada = EntradaProcesso(
                 id_processo=novo_processo.id_processo,
-                data_criacao_ra=data_criacao_ra,
-                data_entrada_novacap=data_entrada_novacap,
                 data_documento=data_documento,
-                tramite_inicial=request.form.get('tramite_inicial'),
                 ra_origem=request.form.get('ra_origem'),
                 id_tipo=int(request.form.get('id_tipo')),
                 id_demanda=int(request.form.get('id_demanda')),
@@ -278,7 +224,6 @@ def cadastro_processo():
             db.session.add(entrada)
             db.session.flush()
 
-            # Primeira movimentação
             primeira_mov = Movimentacao(
                 id_entrada=entrada.id_entrada,
                 id_usuario=entrada.usuario_responsavel,
@@ -287,154 +232,58 @@ def cadastro_processo():
                 data=data_documento
             )
             db.session.add(primeira_mov)
-
             db.session.commit()
             flash("✅ Processo cadastrado com sucesso!", "success")
-            return redirect(url_for('cadastro_processo'))
-
         except Exception as e:
             db.session.rollback()
             flash(f"❌ Erro ao cadastrar processo: {str(e)}", "error")
-            return redirect(url_for('cadastro_processo'))
 
-    # 🔁 Se for GET, carrega os dados para o formulário
-    regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
-    tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
-    demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
-    status = Status.query.order_by(Status.descricao.asc()).all()  # ✅ AGORA EM ORDEM ALFABÉTICA
-    usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario.asc()).all()
-
-    diretorias = [
-        "Diretoria das Cidades - DC",
-        "Diretoria de Obras - DO",
-        "Diretoria de Planejamento e Projetos - DP",
-        "Diretoria de Suporte - DS",
-        "Não tramita na Novacap",
-        "Tramita via SGIA",
-    ]
-
-    return render_template(
-        'cadastro_processo.html',
-        regioes=regioes,
-        tipos=tipos,
-        demandas=demandas,
-        status=status,
-        usuarios=usuarios,
-        diretorias=diretorias
-    )
+    regioes = RegiaoAdministrativa.query.all()
+    tipos = TipoDemanda.query.all()
+    demandas = Demanda.query.all()
+    status = Status.query.all()
+    usuarios = Usuario.query.all()
+    return render_template('cadastro_processo.html', regioes=regioes, tipos=tipos, demandas=demandas, status=status, usuarios=usuarios)
 
 # ================================
 # ROTA 9: Listar Processos
 # ================================
 @app.route('/listar-processos')
 def listar_processos():
-
     if not session.get('usuario'):
         return redirect(url_for('login'))
-
-    # Filtros recebidos via GET
-    status_filtro = request.args.get('status')
-    ra = request.args.get('ra')
-    diretoria = request.args.get('diretoria')
-    inicio = request.args.get('inicio')
-    fim = request.args.get('fim')
-
-    # Base da query
-    query = db.session.query(Processo).join(EntradaProcesso)
-
-    if status_filtro:
-        query = query.filter(Processo.status_atual == status_filtro)
-    if ra:
-        query = query.filter(EntradaProcesso.ra_origem == ra)
-    if diretoria:
-        query = query.filter(Processo.diretoria_destino == diretoria)
-    if inicio and fim:
-        query = query.filter(EntradaProcesso.data_entrada_novacap.between(inicio, fim))
-
-    processos = query.order_by(Processo.id_processo.desc()).all()
-
-    # Enriquecimento com dados relacionados
-    for p in processos:
-        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
-        p.entrada = entrada
-
-        if entrada:
-            entrada.tipo = TipoDemanda.query.get(entrada.id_tipo)
-            entrada.movimentacoes = Movimentacao.query.filter_by(id_entrada=entrada.id_entrada).order_by(Movimentacao.data).all()
-
-            # Atribui a última movimentação (ou data do documento)
-            if entrada.movimentacoes:
-                p.ultima_data = entrada.movimentacoes[-1].data
-            else:
-                p.ultima_data = entrada.data_documento
-
-    # Dados para os filtros (selects)
-    todos_status = Status.query.order_by(Status.ordem_exibicao).all()
-    todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
-
-    return render_template("listar_processos.html",
-                           processos=processos,
-                           todos_status=todos_status,
-                           todas_ras=todas_ras)
+    processos = Processo.query.order_by(Processo.id_processo.desc()).all()
+    return render_template('listar_processos.html', processos=processos)
 
 # ================================
 # ROTA 10: Alterar Processo
 # ================================
 @app.route('/alterar-processo/<int:id_processo>', methods=['GET', 'POST'])
 def alterar_processo(id_processo):
-    if not session.get('usuario'):
-        return redirect(url_for('login'))
-
     processo = Processo.query.get_or_404(id_processo)
-
     if request.method == 'POST':
         novo_status = request.form.get('novo_status')
         observacao = request.form.get('observacao')
-        data_movimentacao = request.form.get('data_movimentacao')
+        data_movimentacao = datetime.strptime(request.form.get('data_movimentacao'), "%Y-%m-%d")
         id_usuario = int(request.form.get('responsavel_tecnico'))
 
-        if not (novo_status and observacao and data_movimentacao and id_usuario):
-            flash("❌ Todos os campos são obrigatórios.", "error")
-            return redirect(url_for('alterar_processo', id_processo=id_processo))
-
-        responsavel = Usuario.query.get(id_usuario)
-        if not responsavel:
-            flash("❌ Responsável técnico não encontrado.", "error")
-            return redirect(url_for('alterar_processo', id_processo=id_processo))
-
-        entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
-        if not entrada:
-            flash("❌ Entrada do processo não encontrada.", "error")
-            return redirect(url_for('alterar_processo', id_processo=id_processo))
-
-        try:
-            data = datetime.strptime(data_movimentacao, "%Y-%m-%d")
-        except ValueError:
-            flash("❌ Data inválida. Use o formato correto (aaaa-mm-dd).", "error")
-            return redirect(url_for('alterar_processo', id_processo=id_processo))
-
+        entrada = EntradaProcesso.query.filter_by(id_processo=id_processo).first()
         nova_mov = Movimentacao(
             id_entrada=entrada.id_entrada,
-            id_usuario=responsavel.id_usuario,
+            id_usuario=id_usuario,
             novo_status=novo_status,
             observacao=observacao,
-            data=data
+            data=data_movimentacao
         )
         db.session.add(nova_mov)
-
         processo.status_atual = novo_status
         db.session.commit()
-
         flash("✅ Processo alterado com sucesso!", "success")
         return redirect(url_for('dashboard_processos'))
 
-    status = Status.query.order_by(Status.ordem_exibicao).all()
-    usuarios = Usuario.query.order_by(Usuario.usuario).all()
-
-    return render_template("alterar_processo.html",
-                           processo=processo,
-                           status=status,
-                           usuarios=usuarios)
+    status = Status.query.all()
+    usuarios = Usuario.query.all()
+    return render_template('alterar_processo.html', processo=processo, status=status, usuarios=usuarios)
 
 # ================================
 # ROTA 11: Painel Administrativo
