@@ -879,7 +879,7 @@ def ver_atendimento(id):
 # ==================================================
 # ROTA 26: Gerar Relatório Institucional SEI (.docx)
 # ==================================================
-from scripts.gerar_relatorio_sei import gerar_relatorio_sei  # ✅ Import da função correta
+from gerar_relatorio_sei import gerar_relatorio_sei # ✅ Import da função correta
 
 @app.route('/gerar-relatorio-sei', methods=['GET'])
 @login_required
