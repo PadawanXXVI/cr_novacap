@@ -23,6 +23,7 @@
     }
     h1 {
       color: #003b8e;
+      text-align: center;
     }
     table {
       width: 100%;
@@ -67,7 +68,7 @@
     }
     .form-col {
       flex: 1 1 22%;
-      min-width: 200px;
+      min-width: 220px;
       margin-right: 1rem;
     }
     label {
@@ -81,15 +82,8 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
-    .checkbox-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 1rem;
-      margin-top: 0.5rem;
-    }
-    .checkbox-group label {
-      font-weight: normal;
-      margin-right: 0.8rem;
+    select[multiple] {
+      height: 130px;
     }
     .cards {
       display: flex;
@@ -117,7 +111,7 @@
 
 <body>
   <div class="container">
-    <h1 style="text-align:center;">📊 Relatórios Gerenciais Avançados</h1>
+    <h1>📊 Relatórios Gerenciais Avançados</h1>
     <hr>
 
     <!-- ============================= -->
@@ -128,20 +122,20 @@
       <div class="form-row">
         <div class="form-col">
           <label for="diretoria">Diretoria</label>
-          <select name="diretoria" id="diretoria">
-            <option value="">Todas</option>
+          <select name="diretoria" id="diretoria" multiple>
+            <option value="Todas">Todas</option>
             {% for d in diretorias %}
-              <option value="{{ d }}" {% if request.args.get('diretoria') == d %}selected{% endif %}>{{ d }}</option>
+              <option value="{{ d }}" {% if d in request.args.getlist('diretoria') %}selected{% endif %}>{{ d }}</option>
             {% endfor %}
           </select>
         </div>
 
         <div class="form-col">
           <label for="status">Status</label>
-          <select name="status" id="status">
-            <option value="">Todos</option>
+          <select name="status" id="status" multiple>
+            <option value="Todos">Todos</option>
             {% for s in todos_status %}
-              <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>{{ s.descricao }}</option>
+              <option value="{{ s.descricao }}" {% if s.descricao in request.args.getlist('status') %}selected{% endif %}>{{ s.descricao }}</option>
             {% endfor %}
           </select>
         </div>
@@ -156,10 +150,10 @@
 
         <div class="form-col">
           <label for="ra">Região Administrativa</label>
-          <select name="ra" id="ra">
-            <option value="">Todas</option>
+          <select name="ra" id="ra" multiple>
+            <option value="Todas">Todas</option>
             {% for r in todas_ras %}
-              <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>{{ r.descricao_ra }}</option>
+              <option value="{{ r.descricao_ra }}" {% if r.descricao_ra in request.args.getlist('ra') %}selected{% endif %}>{{ r.descricao_ra }}</option>
             {% endfor %}
           </select>
         </div>
@@ -167,11 +161,11 @@
 
       <div class="form-row">
         <div class="form-col">
-          <label for="usuario">Responsável Técnico</label>
-          <select name="usuario" id="usuario">
-            <option value="">Todos</option>
-            {% for u in usuarios %}
-              <option value="{{ u.usuario }}" {% if request.args.get('usuario') == u.usuario %}selected{% endif %}>{{ u.nome }} ({{ u.usuario }})</option>
+          <label for="servico">Demandas (Serviços)</label>
+          <select name="servico" id="servico" multiple>
+            <option value="Todas">Todas</option>
+            {% for d in todas_demandas %}
+              <option value="{{ d.descricao }}" {% if d.descricao in request.args.getlist('servico') %}selected{% endif %}>{{ d.descricao }}</option>
             {% endfor %}
           </select>
         </div>
@@ -187,59 +181,29 @@
         </div>
       </div>
 
-      <!-- CHECKBOXES DE DEMANDAS -->
-      <div class="form-col" style="margin-top:1rem;">
-        <label>Demandas (Serviços)</label>
-        <div class="checkbox-group">
-          {% for d in demandas %}
-            <label>
-              <input type="checkbox" name="demandas" value="{{ d }}" 
-                {% if d in request.args.getlist('demandas') %}checked{% endif %}> {{ d }}
-            </label>
-          {% endfor %}
-        </div>
-      </div>
-
       <div style="margin-top: 1rem; text-align: center;">
         <button type="submit" class="btn-primary">Filtrar Resultados</button>
       </div>
     </form>
 
     <!-- ============================= -->
-    <!-- CARDS DE RESUMO -->
-    <!-- ============================= -->
-    {% if totais %}
-    <div class="cards">
-      <div class="card bg-primary">Total: {{ totais.total }}</div>
-      <div class="card bg-success">Atendidos: {{ totais.atendidos }}</div>
-      <div class="card bg-warning">Devolvidos: {{ totais.devolvidos }}</div>
-      <div class="card bg-info">Em Tramitação: {{ totais.tramitando }}</div>
-      <div class="card bg-secondary">Improcedentes: {{ totais.improcedentes }}</div>
-    </div>
-    {% endif %}
-
-    <!-- ============================= -->
     <!-- BOTÕES DE EXPORTAÇÃO -->
     <!-- ============================= -->
     <div style="text-align:center; margin-top:2rem;">
-      <!-- Exportar CSV -->
       <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display:inline-block;">
         <input type="hidden" name="formato" value="csv">
         <button class="btn-secondary">Exportar para CSV</button>
       </form>
 
-      <!-- Exportar Excel -->
       <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display:inline-block;">
         <input type="hidden" name="formato" value="xlsx">
         <button class="btn-secondary">Exportar para Excel</button>
       </form>
 
-      <!-- Relatório SEI -->
       <form method="GET" action="{{ url_for('gerar_relatorio_sei_route') }}" target="_blank" style="display:inline-block;">
         <button class="btn-primary">Gerar Relatório SEI (.docx)</button>
       </form>
 
-      <!-- Painel BI -->
       <a href="{{ url_for('relatorios_bi') }}">
         <button class="btn-primary" style="margin-top:1rem;">Ver Painel Interativo (BI)</button>
       </a>
@@ -258,17 +222,21 @@
               <th>Número do Processo</th>
               <th>RA</th>
               <th>Status</th>
+              <th>Diretoria</th>
+              <th>Serviço</th>
               <th>Responsável</th>
               <th>Observação</th>
             </tr>
           </thead>
           <tbody>
-            {% for mov, user, entrada, processo in resultados %}
+            {% for mov, user, entrada, processo, demanda in resultados %}
               <tr>
                 <td>{{ mov.data.strftime('%d/%m/%Y %H:%M') }}</td>
                 <td>{{ processo.numero_processo }}</td>
                 <td>{{ entrada.ra_origem }}</td>
                 <td>{{ mov.novo_status }}</td>
+                <td>{{ processo.diretoria_destino }}</td>
+                <td>{{ demanda.descricao if demanda else '---' }}</td>
                 <td>{{ user.usuario }}</td>
                 <td>{{ mov.observacao or '---' }}</td>
               </tr>
