@@ -13,6 +13,38 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from datetime import datetime
 
 # -------------------------------------------------------------
+# Dicionário de responsabilidades por Diretoria
+# -------------------------------------------------------------
+MAPEAMENTO_DIRETORIAS = {
+    "Alambrado (Cercamento)": "DC",
+    "Doação de Mudas": "DC",
+    "Jardim": "DC",
+    "Mato Alto": "DC",
+    "Meio-fio": "DC",
+    "Parque Infantil": "DC",
+    "Pista de Skate": "DC",
+    "Poda / Supressão de Árvore": "DC",
+    "Ponto de Encontro Comunitário (PEC)": "DC",
+    "Praça": "DC",
+    "Quadra de Esporte": "DC",
+    "Tapa-buraco": "DC",
+
+    "Boca de Lobo": "DO",
+    "Bueiro": "DO",
+    "Calçada": "DO",
+    "Estacionamentos": "DO",
+    "Galeria de Águas Pluviais": "DO",
+    "Passagem Subterrânea": "DO",
+    "Passarela": "DO",
+    "Pisos Articulados": "DO",
+    "Rampa": "DO",
+    "Rua, Via ou Rodovia (Pista)": "DO",
+    "Limpeza de Resíduos da Novacap": "DO",
+    "Ciclovia ou Ciclofaixa (pista)": "DO",
+}
+
+
+# -------------------------------------------------------------
 # Função principal
 # -------------------------------------------------------------
 def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
@@ -27,14 +59,14 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     Retorna:
         Caminho do arquivo gerado (.docx)
     """
+
     # ---------------------------------------------------------
     # 1️⃣ Início do documento
     # ---------------------------------------------------------
     doc = Document()
 
-    # Define margens SEI (opcional)
-    sections = doc.sections
-    for section in sections:
+    # Define margens SEI
+    for section in doc.sections:
         section.top_margin = Inches(1)
         section.bottom_margin = Inches(1)
         section.left_margin = Inches(1.18)
@@ -56,13 +88,15 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     run = titulo.add_run("Comissão Permanente da Central de Relacionamento – CPCR")
     run.font.size = Pt(11)
 
-    doc.add_paragraph("\n")  # espaçamento
+    doc.add_paragraph("\n")
 
     # ---------------------------------------------------------
     # 3️⃣ Identificação e assunto
     # ---------------------------------------------------------
     numero_relatorio = datetime.now().strftime("%m/%Y")
-    doc.add_paragraph(f"Relatório nº {numero_relatorio} – NOVACAP/PRES/CPCR").bold = True
+    p_titulo = doc.add_paragraph()
+    p_titulo.add_run(f"Relatório nº {numero_relatorio} – NOVACAP/PRES/CPCR").bold = True
+
     data_br = datetime.now().strftime("%d de %B de %Y").capitalize()
     p_data = doc.add_paragraph(f"Brasília, {data_br}.")
     p_data.alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -72,6 +106,9 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
         assunto += f" – Status: {filtros['status']}"
     if filtros.get("ra"):
         assunto += f" – RA: {filtros['ra']}"
+    if filtros.get("diretoria"):
+        assunto += f" – Diretoria: {filtros['diretoria']}"
+
     doc.add_paragraph(f"\nAssunto: {assunto}")
     doc.add_paragraph("Ilmo. Sr. Diretor-Presidente da NOVACAP,\n")
 
@@ -121,6 +158,37 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
             doc.add_paragraph(
                 f"2.3. A distribuição por responsáveis técnicos indica {len(por_resp)} servidores distintos atuantes."
             )
+
+        # -----------------------------------------------------
+        # Agrupamento por Diretoria (automático via mapeamento)
+        # -----------------------------------------------------
+        if "Serviço" in df.columns:
+            df["Diretoria"] = df["Serviço"].map(MAPEAMENTO_DIRETORIAS)
+            grupos = df.groupby("Diretoria")
+
+            for diretoria, grupo in grupos:
+                if pd.isna(diretoria):
+                    continue
+
+                doc.add_paragraph(f"\n2.{diretoria} – Demandas sob responsabilidade da Diretoria {diretoria}").runs[0].bold = True
+                tabela = doc.add_table(rows=1, cols=5)
+                tabela.style = "Table Grid"
+                hdr = tabela.rows[0].cells
+                hdr[0].text = "Serviço"
+                hdr[1].text = "RA"
+                hdr[2].text = "Status"
+                hdr[3].text = "Responsável"
+                hdr[4].text = "Data"
+
+                for _, linha in grupo.iterrows():
+                    row = tabela.add_row().cells
+                    row[0].text = str(linha.get("Serviço", ""))
+                    row[1].text = str(linha.get("RA", ""))
+                    row[2].text = str(linha.get("Status", ""))
+                    row[3].text = str(linha.get("Responsável", ""))
+                    row[4].text = str(linha.get("Data", ""))
+
+                doc.add_paragraph("\n")
 
     # ---------------------------------------------------------
     # 6️⃣ SEÇÃO 3: CONCLUSÃO
