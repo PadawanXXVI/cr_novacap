@@ -17,6 +17,7 @@ from datetime import datetime
 # Dicionário de responsabilidades por Diretoria
 # -------------------------------------------------------------
 MAPEAMENTO_DIRETORIAS = {
+    # Diretoria das Cidades
     "Alambrado (Cercamento)": "DC",
     "Doação de Mudas": "DC",
     "Jardim": "DC",
@@ -30,6 +31,7 @@ MAPEAMENTO_DIRETORIAS = {
     "Quadra de Esporte": "DC",
     "Tapa-buraco": "DC",
 
+    # Diretoria de Obras
     "Boca de Lobo": "DO",
     "Bueiro": "DO",
     "Calçada": "DO",
@@ -172,9 +174,10 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
                 if pd.isna(diretoria):
                     continue
 
-                doc.add_paragraph(
+                par_titulo = doc.add_paragraph()
+                par_titulo.add_run(
                     f"\n2.{diretoria} – Demandas sob responsabilidade da Diretoria {diretoria}"
-                ).runs[0].bold = True
+                ).bold = True
 
                 tabela = doc.add_table(rows=1, cols=5)
                 tabela.style = "Table Grid"
@@ -218,6 +221,7 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
         "Sítio - www.novacap.df.gov.br"
     )
     doc.add_paragraph(rodape)
+
     linha = doc.add_paragraph("__________________________________________________________")
     linha.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
@@ -230,7 +234,7 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     # 8️⃣ Salvamento seguro em subpasta organizada
     # ---------------------------------------------------------
     pasta_relatorios = os.path.join(os.path.dirname(__file__), "relatorios_gerados")
-    os.makedirs(pasta_relatorios, exist_ok=True)  # cria a pasta, se não existir
+    os.makedirs(pasta_relatorios, exist_ok=True)
 
     nome_arquivo = f"Relatorio_SEI_CPCR_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
     caminho_completo = os.path.join(pasta_relatorios, nome_arquivo)
