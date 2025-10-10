@@ -591,33 +591,56 @@ def exportar_tramitacoes():
         return "Formato inválido. Use 'csv' ou 'xlsx'.", 400
 
 # ================================
-# ROTA 18: Relatórios Avançados (ATUALIZADA)
+# ROTA 18: Relatórios Avançados
 # ================================
 @app.route('/relatorios-avancados')
 def relatorios_avancados():
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
-    # Listas para filtros
+    # ==============================================
+    # 🔹 Listas para filtros
+    # ==============================================
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
     usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario).all()
+    todas_demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
 
-    # Parâmetros de filtro
+    # 🔹 Lista fixa de Diretorias
+    diretorias = [
+        "Diretoria das Cidades - DC",
+        "Diretoria de Obras - DO",
+        "Diretoria de Planejamento e Projetos - DP",
+        "Diretoria de Suporte - DS",
+        "Não tramita na Novacap",
+        "Tramita via SGIA",
+    ]
+
+    # ==============================================
+    # 🔹 Parâmetros de filtro recebidos via GET
+    # ==============================================
     status = request.args.get('status')
     ra = request.args.get('ra')
     usuario = request.args.get('usuario')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
-    modo_status = request.args.get('modo_status')  # novo parâmetro: "atual" ou "historico"
+    modo_status = request.args.get('modo_status')  # "atual" ou "historico"
+    diretoria = request.args.get('diretoria')
+    servico = request.args.get('servico')
 
-    # Consulta base
-    query = db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo) \
-        .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario) \
-        .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada) \
+    # ==============================================
+    # 🔹 Consulta base
+    # ==============================================
+    query = (
+        db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo)
+        .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
+        .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada)
         .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
+    )
 
-    # Aplicar filtros
+    # ==============================================
+    # 🔹 Aplicação dos filtros
+    # ==============================================
     if status:
         if modo_status == 'atual':
             query = query.filter(Processo.status_atual == status)
@@ -626,20 +649,35 @@ def relatorios_avancados():
 
     if ra:
         query = query.filter(EntradaProcesso.ra_origem == ra)
+
     if usuario:
         query = query.filter(Usuario.usuario == usuario)
+
+    if diretoria:
+        query = query.filter(Processo.diretoria_destino == diretoria)
+
+    if servico:
+        # Aqui, assumindo que Demanda ou TipoDemanda guarda o nome do serviço
+        query = query.join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
+        query = query.filter(Demanda.descricao == servico)
+
     if inicio and fim:
         query = query.filter(Movimentacao.data.between(inicio, fim))
 
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
+    # ==============================================
+    # 🔹 Renderiza o template com todos os filtros e resultados
+    # ==============================================
     return render_template(
         'relatorios_avancados.html',
         todos_status=todos_status,
         todas_ras=todas_ras,
         usuarios=usuarios,
+        diretorias=diretorias,
+        todas_demandas=todas_demandas,
         resultados=resultados,
-        modo_status=modo_status  # passar para o template
+        modo_status=modo_status,
     )
 
 # ================================
