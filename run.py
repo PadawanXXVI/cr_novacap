@@ -879,17 +879,21 @@ def ver_atendimento(id):
 # ==================================================
 # ROTA 26: Gerar Relatório Institucional SEI (.docx)
 # ==================================================
+from scripts.gerar_relatorio_sei import gerar_relatorio_sei  # ✅ Import da função correta
+
 @app.route('/gerar-relatorio-sei', methods=['GET'])
 @login_required
 def gerar_relatorio_sei_route():
     """
     Gera relatório institucional no formato SEI-GDF (.docx)
     com base nos filtros aplicados na página de Relatórios Avançados.
+    Emitido por: NOVACAP/PRES/CPCR
+    Destinado a: Diretorias DC, DO, DP e DS.
     """
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
-    # 🔹 Lê os filtros da query string
+    # 🔹 Lê filtros da query string (GET)
     filtros = request.args.to_dict()
     status = filtros.get('status')
     ra = filtros.get('ra')
@@ -898,17 +902,21 @@ def gerar_relatorio_sei_route():
     fim = filtros.get('fim')
     modo_status = filtros.get('modo_status', 'historico')
 
-    # 🔹 Consulta os mesmos dados da rota relatorios_avancados
-    query = db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo) \
-        .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario) \
-        .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada) \
+    # 🔹 Consulta replicando a base de relatorios_avancados
+    query = (
+        db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo)
+        .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
+        .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada)
         .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
+    )
 
+    # 🔹 Filtros aplicados
     if status:
-        if modo_status == 'atual':
-            query = query.filter(Processo.status_atual == status)
-        else:
-            query = query.filter(Movimentacao.novo_status == status)
+        query = (
+            query.filter(Processo.status_atual == status)
+            if modo_status == 'atual'
+            else query.filter(Movimentacao.novo_status == status)
+        )
     if ra:
         query = query.filter(EntradaProcesso.ra_origem == ra)
     if usuario:
@@ -918,27 +926,31 @@ def gerar_relatorio_sei_route():
 
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
-    # 🔹 Monta DataFrame
-    dados = []
-    for mov, user, entrada, processo in resultados:
-        dados.append({
+    # 🔹 Monta o DataFrame
+    dados = [
+        {
             "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
             "Número do Processo": processo.numero_processo,
             "RA": entrada.ra_origem,
             "Status": mov.novo_status,
             "Responsável": user.usuario,
-            "Observação": mov.observacao or ""
-        })
+            "Serviço": (
+                TipoDemanda.query.get(entrada.id_tipo).descricao
+                if entrada.id_tipo else ""
+            ),
+        }
+        for mov, user, entrada, processo in resultados
+    ]
     df = pd.DataFrame(dados)
 
-    # 🔹 Gera o relatório .docx institucional SEI
+    # 🔹 Gera o relatório institucional (SEI-GDF)
     caminho_arquivo = gerar_relatorio_sei(df, filtros=filtros, autor=session['usuario'])
 
-    # 🔹 Retorna o download direto
+    # 🔹 Retorna o .docx para download direto
     return send_file(
         caminho_arquivo,
         as_attachment=True,
-        download_name="Relatorio_Institucional_SEI.docx",
+        download_name=f"Relatorio_SEI_CPCR_{datetime.now().strftime('%Y%m%d')}.docx",
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
