@@ -591,7 +591,7 @@ def exportar_tramitacoes():
         return "Formato inválido. Use 'csv' ou 'xlsx'.", 400
 
 # ================================
-# ROTA 18: Relatórios Avançados
+# ROTA 18: Relatórios Avançados (MULTIFILTROS)
 # ================================
 @app.route('/relatorios-avancados')
 def relatorios_avancados():
@@ -603,10 +603,9 @@ def relatorios_avancados():
     # ==============================================
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
-    usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario).all()
     todas_demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
 
-    # 🔹 Lista fixa de Diretorias
+    # Diretoria fixa (lista usada nos filtros)
     diretorias = [
         "Diretoria das Cidades - DC",
         "Diretoria de Obras - DO",
@@ -617,63 +616,60 @@ def relatorios_avancados():
     ]
 
     # ==============================================
-    # 🔹 Parâmetros de filtro recebidos via GET
+    # 🔹 Parâmetros de filtro (múltiplos valores)
     # ==============================================
-    status = request.args.get('status')
-    ra = request.args.get('ra')
-    usuario = request.args.get('usuario')
+    status = request.args.getlist('status')  # pode ter vários
+    ras = request.args.getlist('ra')
+    diretorias_sel = request.args.getlist('diretoria')
+    demandas_sel = request.args.getlist('servico')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
-    modo_status = request.args.get('modo_status')  # "atual" ou "historico"
-    diretoria = request.args.get('diretoria')
-    servico = request.args.get('servico')
+    modo_status = request.args.get('modo_status', 'historico')
 
     # ==============================================
     # 🔹 Consulta base
     # ==============================================
     query = (
-        db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo)
+        db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo, Demanda)
         .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
         .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada)
         .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
+        .join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
     )
 
     # ==============================================
-    # 🔹 Aplicação dos filtros
+    # 🔹 Aplicação dos filtros combináveis
     # ==============================================
-    if status:
+    if status and "Todos" not in status:
         if modo_status == 'atual':
-            query = query.filter(Processo.status_atual == status)
+            query = query.filter(Processo.status_atual.in_(status))
         else:
-            query = query.filter(Movimentacao.novo_status == status)
+            query = query.filter(Movimentacao.novo_status.in_(status))
 
-    if ra:
-        query = query.filter(EntradaProcesso.ra_origem == ra)
+    if ras and "Todas" not in ras:
+        query = query.filter(EntradaProcesso.ra_origem.in_(ras))
 
-    if usuario:
-        query = query.filter(Usuario.usuario == usuario)
+    if diretorias_sel and "Todas" not in diretorias_sel:
+        query = query.filter(Processo.diretoria_destino.in_(diretorias_sel))
 
-    if diretoria:
-        query = query.filter(Processo.diretoria_destino == diretoria)
-
-    if servico:
-        # Aqui, assumindo que Demanda ou TipoDemanda guarda o nome do serviço
-        query = query.join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
-        query = query.filter(Demanda.descricao == servico)
+    if demandas_sel and "Todas" not in demandas_sel:
+        query = query.filter(Demanda.descricao.in_(demandas_sel))
 
     if inicio and fim:
         query = query.filter(Movimentacao.data.between(inicio, fim))
 
+    # ==============================================
+    # 🔹 Resultado ordenado
+    # ==============================================
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
     # ==============================================
-    # 🔹 Renderiza o template com todos os filtros e resultados
+    # 🔹 Renderização
     # ==============================================
     return render_template(
         'relatorios_avancados.html',
         todos_status=todos_status,
         todas_ras=todas_ras,
-        usuarios=usuarios,
         diretorias=diretorias,
         todas_demandas=todas_demandas,
         resultados=resultados,
@@ -917,7 +913,9 @@ def ver_atendimento(id):
 # ==================================================
 # ROTA 26: Gerar Relatório Institucional SEI (.docx)
 # ==================================================
-from gerar_relatorio_sei import gerar_relatorio_sei # ✅ Import da função correta
+from gerar_relatorio_sei import gerar_relatorio_sei  # ✅ Import correto
+from flask import abort
+import os
 
 @app.route('/gerar-relatorio-sei', methods=['GET'])
 @login_required
@@ -931,64 +929,87 @@ def gerar_relatorio_sei_route():
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
+    # -------------------------------------------------------------
     # 🔹 Lê filtros da query string (GET)
-    filtros = request.args.to_dict()
-    status = filtros.get('status')
-    ra = filtros.get('ra')
-    usuario = filtros.get('usuario')
-    inicio = filtros.get('inicio')
-    fim = filtros.get('fim')
-    modo_status = filtros.get('modo_status', 'historico')
+    # -------------------------------------------------------------
+    filtros = request.args.to_dict(flat=False)  # permite múltiplos valores
+    status = filtros.get('status', [])
+    ras = filtros.get('ra', [])
+    diretorias = filtros.get('diretoria', [])
+    demandas = filtros.get('servico', [])
+    inicio = request.args.get('inicio')
+    fim = request.args.get('fim')
+    modo_status = request.args.get('modo_status', 'historico')
 
-    # 🔹 Consulta replicando a base de relatorios_avancados
+    # -------------------------------------------------------------
+    # 🔹 Base da consulta
+    # -------------------------------------------------------------
     query = (
-        db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo)
+        db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo, Demanda)
         .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
         .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada)
         .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
+        .join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
     )
 
-    # 🔹 Filtros aplicados
-    if status:
-        query = (
-            query.filter(Processo.status_atual == status)
-            if modo_status == 'atual'
-            else query.filter(Movimentacao.novo_status == status)
-        )
-    if ra:
-        query = query.filter(EntradaProcesso.ra_origem == ra)
-    if usuario:
-        query = query.filter(Usuario.usuario == usuario)
+    # -------------------------------------------------------------
+    # 🔹 Aplicação dos filtros
+    # -------------------------------------------------------------
+    if status and "Todos" not in status:
+        if modo_status == 'atual':
+            query = query.filter(Processo.status_atual.in_(status))
+        else:
+            query = query.filter(Movimentacao.novo_status.in_(status))
+
+    if ras and "Todas" not in ras:
+        query = query.filter(EntradaProcesso.ra_origem.in_(ras))
+
+    if diretorias and "Todas" not in diretorias:
+        query = query.filter(Processo.diretoria_destino.in_(diretorias))
+
+    if demandas and "Todas" not in demandas:
+        query = query.filter(Demanda.descricao.in_(demandas))
+
     if inicio and fim:
         query = query.filter(Movimentacao.data.between(inicio, fim))
 
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
-    # 🔹 Monta o DataFrame
-    dados = [
-        {
+    # -------------------------------------------------------------
+    # 🔹 Montagem do DataFrame para o relatório
+    # -------------------------------------------------------------
+    dados = []
+    for mov, user, entrada, processo, demanda in resultados:
+        dados.append({
             "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
             "Número do Processo": processo.numero_processo,
             "RA": entrada.ra_origem,
             "Status": mov.novo_status,
             "Responsável": user.usuario,
-            "Serviço": (
-                TipoDemanda.query.get(entrada.id_tipo).descricao
-                if entrada.id_tipo else ""
-            ),
-        }
-        for mov, user, entrada, processo in resultados
-    ]
+            "Serviço": demanda.descricao if demanda else "",
+        })
+
     df = pd.DataFrame(dados)
 
-    # 🔹 Gera o relatório institucional (SEI-GDF)
-    caminho_arquivo = gerar_relatorio_sei(df, filtros=filtros, autor=session['usuario'])
+    # -------------------------------------------------------------
+    # 🔹 Geração do Relatório SEI-GDF (.docx)
+    # -------------------------------------------------------------
+    try:
+        caminho_arquivo = gerar_relatorio_sei(df, filtros=filtros, autor=session['usuario'])
+    except Exception as e:
+        print(f"Erro ao gerar relatório SEI: {e}")
+        abort(500, description="Erro interno ao gerar o relatório SEI-GDF.")
 
-    # 🔹 Retorna o .docx para download direto
+    # -------------------------------------------------------------
+    # 🔹 Retorno do arquivo para download
+    # -------------------------------------------------------------
+    if not os.path.exists(caminho_arquivo):
+        abort(404, description="Arquivo do relatório não encontrado no servidor.")
+
     return send_file(
         caminho_arquivo,
         as_attachment=True,
-        download_name=f"Relatorio_SEI_CPCR_{datetime.now().strftime('%Y%m%d')}.docx",
+        download_name=f"Relatorio_SEI_CPCR_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
