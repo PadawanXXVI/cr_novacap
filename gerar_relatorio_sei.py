@@ -56,11 +56,12 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     """
     Gera um relatório Word (.docx) no padrão SEI-GDF.
     Inclui cabeçalho institucional, resumo estatístico e gráfico de pizza.
-    
+
     Parâmetros:
         df (pd.DataFrame): DataFrame com os dados filtrados
         filtros (dict): dicionário com status, RA, diretoria, datas etc.
         autor (str): nome de usuário que gerou o relatório
+
     Retorna:
         Caminho absoluto do arquivo gerado (.docx)
     """
@@ -159,7 +160,7 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
             )
 
         # -----------------------------------------------------
-        # 5.1️⃣ Geração de gráfico de pizza (distribuição de status)
+        # 5.1️⃣ Gráfico de pizza (distribuição de status)
         # -----------------------------------------------------
         if len(por_status) > 0:
             pasta_relatorios = os.path.join(os.path.dirname(__file__), "relatorios_gerados")
@@ -179,10 +180,10 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
 
             doc.add_paragraph("\nGráfico 1 – Distribuição dos Status das Solicitações:")
             doc.add_picture(caminho_grafico, width=Inches(4.5))
-            os.remove(caminho_grafico)  # limpa o arquivo temporário
+            os.remove(caminho_grafico)
 
         # -----------------------------------------------------
-        # Agrupamento por Diretoria (automático via mapeamento)
+        # 5.2️⃣ Agrupamento por Diretoria (via mapeamento)
         # -----------------------------------------------------
         if "Serviço" in df.columns:
             df["Diretoria"] = df["Serviço"].map(MAPEAMENTO_DIRETORIAS)
@@ -248,7 +249,7 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     doc.add_paragraph(f"Criado por {autor}, versão 1 em {criacao}.")
 
     # ---------------------------------------------------------
-    # 8️⃣ Salvamento seguro em subpasta organizada
+    # 8️⃣ Salvamento seguro
     # ---------------------------------------------------------
     pasta_relatorios = os.path.join(os.path.dirname(__file__), "relatorios_gerados")
     os.makedirs(pasta_relatorios, exist_ok=True)
