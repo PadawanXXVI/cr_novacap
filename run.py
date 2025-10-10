@@ -705,118 +705,92 @@ def relatorios_avancados():
         modo_status=modo_status
     )
 
-# ================================
-# ROTA 19: Relatórios BI Interativo
-# ================================
-from flask import render_template, request, redirect, url_for, flash, session
-from app.ext import db
-from app.models.modelos import Processo, EntradaProcesso, Movimentacao
-from datetime import datetime
-
-@app.route('/relatorios-bi')
-def relatorios_bi():
+# ===========================================
+# ROTA 19: Exportar Relatório Avançado (CSV / Excel)
+# ===========================================
+@app.route('/exportar_tramitacoes')
+def exportar_tramitacoes():
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
-    # ==== Filtros por período ====
+    formato = request.args.get('formato', 'csv')
+
+    # Reaproveita todos os filtros da página
+    status_sel = request.args.getlist('status')
+    ras_sel = request.args.getlist('ra')
+    diretorias_sel = request.args.getlist('diretoria')
+    demandas_sel = request.args.getlist('servico')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
+    modo_status = request.args.get('modo_status', 'historico')
 
-    try:
-        if inicio:
-            inicio_data = datetime.strptime(inicio, "%Y-%m-%d")
-        else:
-            inicio_data = None
-
-        if fim:
-            fim_data = datetime.strptime(fim, "%Y-%m-%d")
-        else:
-            fim_data = None
-    except ValueError:
-        flash("Formato de data inválido.", "error")
-        return redirect(url_for('relatorios_bi'))
-
-    # ==== Base para filtro ====
-    def filtrar_datas(query, campo_data):
-        if inicio_data and fim_data:
-            return query.filter(campo_data.between(inicio_data, fim_data))
-        return query
-
-    # ==== Gráfico de Status ====
-    status_query = db.session.query(Processo.status_atual, db.func.count(Processo.id_processo))
-    status_query = filtrar_datas(status_query.join(EntradaProcesso), EntradaProcesso.data_entrada_novacap)
-    status_data = status_query.group_by(Processo.status_atual).all()
-    grafico_status = {
-        "labels": [s[0] for s in status_data],
-        "valores": [s[1] for s in status_data]
-    }
-
-    # ==== Gráfico de RA ====
-    ra_query = db.session.query(EntradaProcesso.ra_origem, db.func.count(EntradaProcesso.id_entrada))
-    ra_query = filtrar_datas(ra_query, EntradaProcesso.data_entrada_novacap)
-    ra_data = ra_query.group_by(EntradaProcesso.ra_origem).all()
-    grafico_ra = {
-        "labels": [r[0] for r in ra_data],
-        "valores": [r[1] for r in ra_data]
-    }
-
-    # ==== Gráfico de Diretorias ====
-    todas_diretorias = [
-        "Diretoria das Cidades - DC",
-        "Diretoria de Obras - DO",
-        "Diretoria de Planejamento e Projetos - DP",
-        "Diretoria de Suporte - DS",
-        "Não tramita na Novacap",
-        "Tramita via SGIA"
-    ]
-    dir_query = db.session.query(Processo.diretoria_destino, db.func.count(Processo.id_processo)) \
-        .join(EntradaProcesso)
-    dir_query = filtrar_datas(dir_query, EntradaProcesso.data_entrada_novacap)
-    dir_data = dir_query.group_by(Processo.diretoria_destino).all()
-    dir_dict = {d[0]: d[1] for d in dir_data}
-    grafico_diretoria = {
-        "labels": todas_diretorias,
-        "valores": [dir_dict.get(d, 0) for d in todas_diretorias]
-    }
-
-    # ==== Tempo médio de entrada ====
-    entradas = EntradaProcesso.query
-    entradas = filtrar_datas(entradas, EntradaProcesso.data_entrada_novacap).all()
-    tempos_entrada = [
-        (e.data_entrada_novacap - e.data_criacao_ra).days
-        for e in entradas if e.data_criacao_ra and e.data_entrada_novacap
-    ]
-    tempo_medio_entrada = round(sum(tempos_entrada) / len(tempos_entrada), 1) if tempos_entrada else 0
-
-    # ==== Tempo médio de atendimento ====
-    processos_atendidos = Processo.query.filter_by(status_atual="Atendido").join(EntradaProcesso)
-    processos_atendidos = filtrar_datas(processos_atendidos, EntradaProcesso.data_entrada_novacap).all()
-    tempos_atendimento = []
-    for p in processos_atendidos:
-        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
-        if entrada:
-            ultima_mov = Movimentacao.query.filter_by(id_entrada=entrada.id_entrada) \
-                .order_by(Movimentacao.data.desc()).first()
-            if ultima_mov and entrada.data_entrada_novacap:
-                dias = (ultima_mov.data.date() - entrada.data_entrada_novacap).days
-                tempos_atendimento.append(dias)
-
-    tempo_medio_atendimento = round(sum(tempos_atendimento) / len(tempos_atendimento), 1) if tempos_atendimento else 0
-
-    # ==== Totais ====
-    total_processos = filtrar_datas(Processo.query.join(EntradaProcesso), EntradaProcesso.data_entrada_novacap).count()
-    total_tramitacoes = filtrar_datas(Movimentacao.query.join(EntradaProcesso), EntradaProcesso.data_entrada_novacap).count()
-
-    return render_template(
-        "relatorios_bi.html",
-        grafico_status=grafico_status,
-        grafico_ra=grafico_ra,
-        grafico_diretoria=grafico_diretoria,
-        tempo_medio_entrada=tempo_medio_entrada,
-        tempo_medio_atendimento=tempo_medio_atendimento,
-        total_processos=total_processos,
-        total_tramitacoes=total_tramitacoes
+    # Query base
+    query = (
+        db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo, Demanda)
+        .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
+        .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada)
+        .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
+        .join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
     )
+
+    # Filtros idênticos aos da tela
+    if status_sel and "Todos" not in status_sel:
+        if modo_status == 'atual':
+            query = query.filter(Processo.status_atual.in_(status_sel))
+        else:
+            query = query.filter(Movimentacao.novo_status.in_(status_sel))
+
+    if ras_sel and "Todas" not in ras_sel:
+        query = query.filter(EntradaProcesso.ra_origem.in_(ras_sel))
+
+    if diretorias_sel and "Todas" not in diretorias_sel:
+        query = query.filter(Processo.diretoria_destino.in_(diretorias_sel))
+
+    if demandas_sel and "Todas" not in demandas_sel:
+        query = query.filter(Demanda.descricao.in_(demandas_sel))
+
+    if inicio and fim:
+        try:
+            inicio_dt = datetime.strptime(inicio, "%Y-%m-%d")
+            fim_dt = datetime.strptime(fim, "%Y-%m-%d")
+            query = query.filter(Movimentacao.data.between(inicio_dt, fim_dt))
+        except ValueError:
+            flash("Formato de data inválido. Use AAAA-MM-DD.", "error")
+
+    resultados = query.order_by(Movimentacao.data.desc()).all()
+
+    # Montagem do DataFrame exatamente igual à tabela HTML
+    dados = []
+    for mov, user, entrada, processo, demanda in resultados:
+        dados.append({
+            "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
+            "Número do Processo": processo.numero_processo,
+            "RA": entrada.ra_origem,
+            "Status": mov.novo_status,
+            "Diretoria": processo.diretoria_destino,
+            "Serviço": demanda.descricao if demanda else "",
+            "Responsável": user.usuario,
+            "Observação": mov.observacao or ""
+        })
+
+    df = pd.DataFrame(dados)
+
+    # Define nome e formato do arquivo
+    data_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    nome_base = f"Relatorio_Avancado_{data_str}"
+
+    # Cria diretório de exportações
+    pasta_export = os.path.join(os.path.dirname(__file__), "relatorios_gerados")
+    os.makedirs(pasta_export, exist_ok=True)
+
+    if formato == "xlsx":
+        caminho = os.path.join(pasta_export, f"{nome_base}.xlsx")
+        df.to_excel(caminho, index=False)
+        return send_file(caminho, as_attachment=True)
+    else:
+        caminho = os.path.join(pasta_export, f"{nome_base}.csv")
+        df.to_csv(caminho, index=False, sep=";", encoding="utf-8-sig")
+        return send_file(caminho, as_attachment=True)
 
 # ================================
 # ROTA 20: Visualizar Processo
