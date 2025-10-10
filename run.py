@@ -591,21 +591,17 @@ def exportar_tramitacoes():
         return "Formato inválido. Use 'csv' ou 'xlsx'.", 400
 
 # ================================
-# ROTA 18: Relatórios Avançados (MULTIFILTROS)
+# ROTA 18: Relatórios Avançados (MULTIFILTROS CORRIGIDA)
 # ================================
 @app.route('/relatorios-avancados')
 def relatorios_avancados():
     if not session.get('usuario'):
         return redirect(url_for('login'))
 
-    # ==============================================
-    # 🔹 Listas para filtros
-    # ==============================================
+    # ====== Listas para filtros ======
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
     todas_demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
-
-    # Diretoria fixa (lista usada nos filtros)
     diretorias = [
         "Diretoria das Cidades - DC",
         "Diretoria de Obras - DO",
@@ -615,20 +611,16 @@ def relatorios_avancados():
         "Tramita via SGIA",
     ]
 
-    # ==============================================
-    # 🔹 Parâmetros de filtro (múltiplos valores)
-    # ==============================================
-    status = request.args.getlist('status')  # pode ter vários
-    ras = request.args.getlist('ra')
+    # ====== Parâmetros de filtro (múltiplos valores) ======
+    status_sel = request.args.getlist('status')
+    ras_sel = request.args.getlist('ra')
     diretorias_sel = request.args.getlist('diretoria')
     demandas_sel = request.args.getlist('servico')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
     modo_status = request.args.get('modo_status', 'historico')
 
-    # ==============================================
-    # 🔹 Consulta base
-    # ==============================================
+    # ====== Query base ======
     query = (
         db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo, Demanda)
         .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
@@ -637,17 +629,15 @@ def relatorios_avancados():
         .join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
     )
 
-    # ==============================================
-    # 🔹 Aplicação dos filtros combináveis
-    # ==============================================
-    if status and "Todos" not in status:
+    # ====== Aplicação dos filtros ======
+    if status_sel and "Todos" not in status_sel:
         if modo_status == 'atual':
-            query = query.filter(Processo.status_atual.in_(status))
+            query = query.filter(Processo.status_atual.in_(status_sel))
         else:
-            query = query.filter(Movimentacao.novo_status.in_(status))
+            query = query.filter(Movimentacao.novo_status.in_(status_sel))
 
-    if ras and "Todas" not in ras:
-        query = query.filter(EntradaProcesso.ra_origem.in_(ras))
+    if ras_sel and "Todas" not in ras_sel:
+        query = query.filter(EntradaProcesso.ra_origem.in_(ras_sel))
 
     if diretorias_sel and "Todas" not in diretorias_sel:
         query = query.filter(Processo.diretoria_destino.in_(diretorias_sel))
@@ -656,24 +646,24 @@ def relatorios_avancados():
         query = query.filter(Demanda.descricao.in_(demandas_sel))
 
     if inicio and fim:
-        query = query.filter(Movimentacao.data.between(inicio, fim))
+        try:
+            inicio_dt = datetime.strptime(inicio, "%Y-%m-%d")
+            fim_dt = datetime.strptime(fim, "%Y-%m-%d")
+            query = query.filter(Movimentacao.data.between(inicio_dt, fim_dt))
+        except ValueError:
+            flash("Formato de data inválido. Use o formato AAAA-MM-DD.", "error")
 
-    # ==============================================
-    # 🔹 Resultado ordenado
-    # ==============================================
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
-    # ==============================================
-    # 🔹 Renderização
-    # ==============================================
+    # ====== Renderização ======
     return render_template(
         'relatorios_avancados.html',
         todos_status=todos_status,
         todas_ras=todas_ras,
-        diretorias=diretorias,
         todas_demandas=todas_demandas,
+        diretorias=diretorias,
         resultados=resultados,
-        modo_status=modo_status,
+        modo_status=modo_status
     )
 
 # ================================
