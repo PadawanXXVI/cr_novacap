@@ -3,9 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relatórios Avançados</title>
+  <title>Relatórios Avançados - NOVACAP</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 95%;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #003b8e;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -15,6 +33,7 @@
       padding: 0.75rem;
       border-bottom: 1px solid #ccc;
       text-align: left;
+      font-size: 0.9rem;
     }
     th {
       background-color: #f0f0f0;
@@ -62,25 +81,67 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-top: 0.5rem;
+    }
+    .checkbox-group label {
+      font-weight: normal;
+      margin-right: 0.8rem;
+    }
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-top: 2rem;
+    }
+    .card {
+      flex: 1 1 22%;
+      min-width: 200px;
+      margin: 0.5rem;
+      border-radius: 8px;
+      padding: 1rem;
+      color: white;
+      text-align: center;
+      font-weight: bold;
+    }
+    .bg-primary { background-color: #004aad; }
+    .bg-success { background-color: #2e8b57; }
+    .bg-warning { background-color: #ffb400; }
+    .bg-info { background-color: #17a2b8; }
+    .bg-secondary { background-color: #6c757d; }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <h1 style="text-align: center;">📊 Relatórios Gerenciais Avançados</h1>
+    <h1 style="text-align:center;">📊 Relatórios Gerenciais Avançados</h1>
+    <hr>
 
     <!-- ============================= -->
     <!-- FILTROS -->
     <!-- ============================= -->
     <form method="GET" action="{{ url_for('relatorios_avancados') }}" class="filtros">
+
       <div class="form-row">
+        <div class="form-col">
+          <label for="diretoria">Diretoria</label>
+          <select name="diretoria" id="diretoria">
+            <option value="">Todas</option>
+            {% for d in diretorias %}
+              <option value="{{ d }}" {% if request.args.get('diretoria') == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
         <div class="form-col">
           <label for="status">Status</label>
           <select name="status" id="status">
             <option value="">Todos</option>
             {% for s in todos_status %}
-              <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>
-                {{ s.descricao }}
-              </option>
+              <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>{{ s.descricao }}</option>
             {% endfor %}
           </select>
         </div>
@@ -98,21 +159,7 @@
           <select name="ra" id="ra">
             <option value="">Todas</option>
             {% for r in todas_ras %}
-              <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>
-                {{ r.descricao_ra }}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <div class="form-col">
-          <label for="usuario">Responsável Técnico</label>
-          <select name="usuario" id="usuario">
-            <option value="">Todos</option>
-            {% for u in usuarios %}
-              <option value="{{ u.usuario }}" {% if request.args.get('usuario') == u.usuario %}selected{% endif %}>
-                {{ u.nome }} ({{ u.usuario }})
-              </option>
+              <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>{{ r.descricao_ra }}</option>
             {% endfor %}
           </select>
         </div>
@@ -120,12 +167,36 @@
 
       <div class="form-row">
         <div class="form-col">
+          <label for="usuario">Responsável Técnico</label>
+          <select name="usuario" id="usuario">
+            <option value="">Todos</option>
+            {% for u in usuarios %}
+              <option value="{{ u.usuario }}" {% if request.args.get('usuario') == u.usuario %}selected{% endif %}>{{ u.nome }} ({{ u.usuario }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-col">
           <label for="inicio">Data Inicial</label>
           <input type="date" id="inicio" name="inicio" value="{{ request.args.get('inicio', '') }}">
         </div>
+
         <div class="form-col">
           <label for="fim">Data Final</label>
           <input type="date" id="fim" name="fim" value="{{ request.args.get('fim', '') }}">
+        </div>
+      </div>
+
+      <!-- CHECKBOXES DE DEMANDAS -->
+      <div class="form-col" style="margin-top:1rem;">
+        <label>Demandas (Serviços)</label>
+        <div class="checkbox-group">
+          {% for d in demandas %}
+            <label>
+              <input type="checkbox" name="demandas" value="{{ d }}" 
+                {% if d in request.args.getlist('demandas') %}checked{% endif %}> {{ d }}
+            </label>
+          {% endfor %}
         </div>
       </div>
 
@@ -135,47 +206,42 @@
     </form>
 
     <!-- ============================= -->
+    <!-- CARDS DE RESUMO -->
+    <!-- ============================= -->
+    {% if totais %}
+    <div class="cards">
+      <div class="card bg-primary">Total: {{ totais.total }}</div>
+      <div class="card bg-success">Atendidos: {{ totais.atendidos }}</div>
+      <div class="card bg-warning">Devolvidos: {{ totais.devolvidos }}</div>
+      <div class="card bg-info">Em Tramitação: {{ totais.tramitando }}</div>
+      <div class="card bg-secondary">Improcedentes: {{ totais.improcedentes }}</div>
+    </div>
+    {% endif %}
+
+    <!-- ============================= -->
     <!-- BOTÕES DE EXPORTAÇÃO -->
     <!-- ============================= -->
-    <div style="text-align: center; margin-top: 2rem;">
+    <div style="text-align:center; margin-top:2rem;">
       <!-- Exportar CSV -->
       <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display:inline-block;">
-        <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
-        <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
-        <input type="hidden" name="usuario" value="{{ request.args.get('usuario', '') }}">
-        <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
-        <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
-        <input type="hidden" name="modo_status" value="{{ request.args.get('modo_status', 'historico') }}">
         <input type="hidden" name="formato" value="csv">
         <button class="btn-secondary">Exportar para CSV</button>
       </form>
 
       <!-- Exportar Excel -->
       <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display:inline-block;">
-        <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
-        <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
-        <input type="hidden" name="usuario" value="{{ request.args.get('usuario', '') }}">
-        <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
-        <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
-        <input type="hidden" name="modo_status" value="{{ request.args.get('modo_status', 'historico') }}">
         <input type="hidden" name="formato" value="xlsx">
         <button class="btn-secondary">Exportar para Excel</button>
       </form>
 
-      <!-- NOVO BOTÃO: GERAR RELATÓRIO SEI -->
+      <!-- Relatório SEI -->
       <form method="GET" action="{{ url_for('gerar_relatorio_sei_route') }}" target="_blank" style="display:inline-block;">
-        <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
-        <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
-        <input type="hidden" name="usuario" value="{{ request.args.get('usuario', '') }}">
-        <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
-        <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
-        <input type="hidden" name="modo_status" value="{{ request.args.get('modo_status', 'historico') }}">
-        <button class="btn-primary" style="margin-left: 0.5rem;">Gerar Relatório SEI (.docx)</button>
+        <button class="btn-primary">Gerar Relatório SEI (.docx)</button>
       </form>
 
-      <!-- Painel Interativo -->
+      <!-- Painel BI -->
       <a href="{{ url_for('relatorios_bi') }}">
-        <button class="btn-primary" style="margin-top: 1rem;">Ver Painel Interativo (BI)</button>
+        <button class="btn-primary" style="margin-top:1rem;">Ver Painel Interativo (BI)</button>
       </a>
     </div>
 
@@ -183,7 +249,7 @@
     <!-- RESULTADOS -->
     <!-- ============================= -->
     {% if resultados %}
-      <div style="margin-top: 2rem;">
+      <div style="margin-top:2rem;">
         <h2>Resultados Encontrados: {{ resultados | length }}</h2>
         <table>
           <thead>
@@ -211,18 +277,17 @@
         </table>
       </div>
     {% elif request.args %}
-      <p style="margin-top: 2rem; text-align: center;">Nenhum resultado encontrado com os filtros selecionados.</p>
+      <p style="margin-top:2rem; text-align:center;">Nenhum resultado encontrado com os filtros selecionados.</p>
     {% endif %}
 
     <!-- ============================= -->
     <!-- BOTÃO DE VOLTAR -->
     <!-- ============================= -->
-    <div style="text-align: center; margin-top: 3rem;">
+    <div style="text-align:center; margin-top:3rem;">
       <a href="{{ url_for('dashboard_processos') }}">
         <button class="btn-secondary">⬅ Voltar ao Dashboard</button>
       </a>
     </div>
-
   </div>
 </body>
 </html>
