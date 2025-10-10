@@ -1,4 +1,4 @@
-# -- coding: utf-8 --
+# -*- coding: utf-8 -*-
 # run.py — aplicativo Flask completo (todas as rotas)
 
 import os
@@ -259,7 +259,7 @@ def cadastro_processo():
 
         processo_existente = Processo.query.filter_by(numero_processo=numero).first()
         if processo_existente:
-            flash("⚠ Processo já cadastrado. Redirecionando para alteração...", "warning")
+            flash("⚠️ Processo já cadastrado. Redirecionando para alteração...", "warning")
             return redirect(url_for('alterar_processo', id_processo=processo_existente.id_processo))
 
         try:
@@ -961,10 +961,8 @@ def gerar_relatorio_sei_route():
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
 
-
 # ==================================================
 # 27) Exportar Relatórios Avançados (CSV/XLSX)
-#     (EXATAMENTE a tabela da tela)
 # ==================================================
 @app.route('/exportar-tramitacoes', methods=['GET'])
 def exportar_tramitacoes():
@@ -979,25 +977,35 @@ def exportar_tramitacoes():
         return redirect(url_for('relatorios_avancados'))
 
     df = pd.DataFrame(dados)
+    nome_arquivo = f"Relatorio_Avancado_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
+    # === XLSX ===
     if formato == "xlsx":
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name='Relatório')
         output.seek(0)
-        return send_file(
-            output, as_attachment=True,
-            download_name=f"Relatorio_Avancado_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+        response = make_response(output.read())
+        response.headers["Content-Type"] = (
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+        response.headers["Content-Disposition"] = f"attachment; filename={nome_arquivo}.xlsx"
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+
+    # === CSV ===
     else:
         csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig')
         response = make_response(csv)
-        response.headers["Content-Disposition"] = \
-            f"attachment; filename=Relatorio_Avancado_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-        response.headers["Content-Type"] = "text/csv"
+        response.headers["Content-Disposition"] = f"attachment; filename={nome_arquivo}.csv"
+        response.headers["Content-Type"] = "text/csv; charset=utf-8"
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
         return response
-
 
 # ==================================================
 # 28) Relatório DC — Totais (Geral e por Serviço)
@@ -1177,6 +1185,6 @@ def exportar_dc():
 # ==================================================
 # Execução do servidor
 # ==================================================
-if __name__ == '_main_':
+if __name__ == '__main__':
     # debug=True só em ambiente de desenvolvimento
     app.run(debug=True, host='0.0.0.0', port=5000)
