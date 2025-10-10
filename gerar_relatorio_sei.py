@@ -65,7 +65,7 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     # ---------------------------------------------------------
     doc = Document()
 
-    # Define margens SEI
+    # Define margens SEI-GDF (25 mm = 0.98 in; usamos 1.18 in ≈ 30 mm)
     for section in doc.sections:
         section.top_margin = Inches(1)
         section.bottom_margin = Inches(1)
@@ -77,7 +77,7 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     # ---------------------------------------------------------
     titulo = doc.add_paragraph()
     titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = titulo.add_run("Governo do Distrito Federal\n")
+    run = titulo.add_run("GOVERNO DO DISTRITO FEDERAL\n")
     run.bold = True
     run.font.size = Pt(12)
 
