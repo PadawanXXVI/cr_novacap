@@ -79,7 +79,7 @@ def login():
 # ==================================================
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
-    if request.method == 'POST']:
+    if request.method == 'POST':
         nome = request.form.get('nome_completo')
         email = request.form.get('email')
         usuario = request.form.get('username')
@@ -1177,6 +1177,6 @@ def exportar_dc():
 # ==================================================
 # Execução do servidor
 # ==================================================
-if _name_ == '_main_':
+if __name__ == '_main_':
     # debug=True só em ambiente de desenvolvimento
     app.run(debug=True, host='0.0.0.0', port=5000)
