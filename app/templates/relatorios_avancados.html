@@ -19,13 +19,58 @@
     th {
       background-color: #f0f0f0;
     }
+    .btn-primary, .btn-secondary {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background-color: #004aad;
+      color: white;
+    }
+    .btn-secondary {
+      background-color: #e0e0e0;
+      color: #333;
+    }
+    .btn-primary:hover {
+      background-color: #003b8e;
+    }
+    .btn-secondary:hover {
+      background-color: #d5d5d5;
+    }
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .form-col {
+      flex: 1 1 22%;
+      min-width: 200px;
+      margin-right: 1rem;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+    select, input[type="date"] {
+      width: 100%;
+      padding: 0.4rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 style="text-align: center;">Relatórios Gerenciais Avançados</h1>
+    <h1 style="text-align: center;">📊 Relatórios Gerenciais Avançados</h1>
 
-    <!-- Filtros -->
+    <!-- ============================= -->
+    <!-- FILTROS -->
+    <!-- ============================= -->
     <form method="GET" action="{{ url_for('relatorios_avancados') }}" class="filtros">
       <div class="form-row">
         <div class="form-col">
@@ -89,9 +134,12 @@
       </div>
     </form>
 
-    <!-- Botões de Exportação -->
+    <!-- ============================= -->
+    <!-- BOTÕES DE EXPORTAÇÃO -->
+    <!-- ============================= -->
     <div style="text-align: center; margin-top: 2rem;">
-      <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display: inline-block;">
+      <!-- Exportar CSV -->
+      <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display:inline-block;">
         <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
         <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
         <input type="hidden" name="usuario" value="{{ request.args.get('usuario', '') }}">
@@ -102,7 +150,8 @@
         <button class="btn-secondary">Exportar para CSV</button>
       </form>
 
-      <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display: inline-block;">
+      <!-- Exportar Excel -->
+      <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display:inline-block;">
         <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
         <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
         <input type="hidden" name="usuario" value="{{ request.args.get('usuario', '') }}">
@@ -113,12 +162,26 @@
         <button class="btn-secondary">Exportar para Excel</button>
       </form>
 
+      <!-- NOVO BOTÃO: GERAR RELATÓRIO SEI -->
+      <form method="GET" action="{{ url_for('gerar_relatorio_sei_route') }}" target="_blank" style="display:inline-block;">
+        <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
+        <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
+        <input type="hidden" name="usuario" value="{{ request.args.get('usuario', '') }}">
+        <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
+        <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
+        <input type="hidden" name="modo_status" value="{{ request.args.get('modo_status', 'historico') }}">
+        <button class="btn-primary" style="margin-left: 0.5rem;">Gerar Relatório SEI (.docx)</button>
+      </form>
+
+      <!-- Painel Interativo -->
       <a href="{{ url_for('relatorios_bi') }}">
         <button class="btn-primary" style="margin-top: 1rem;">Ver Painel Interativo (BI)</button>
       </a>
     </div>
 
-    <!-- Resultados -->
+    <!-- ============================= -->
+    <!-- RESULTADOS -->
+    <!-- ============================= -->
     {% if resultados %}
       <div style="margin-top: 2rem;">
         <h2>Resultados Encontrados: {{ resultados | length }}</h2>
@@ -151,7 +214,9 @@
       <p style="margin-top: 2rem; text-align: center;">Nenhum resultado encontrado com os filtros selecionados.</p>
     {% endif %}
 
-    <!-- Botão de Voltar -->
+    <!-- ============================= -->
+    <!-- BOTÃO DE VOLTAR -->
+    <!-- ============================= -->
     <div style="text-align: center; margin-top: 3rem;">
       <a href="{{ url_for('dashboard_processos') }}">
         <button class="btn-secondary">⬅ Voltar ao Dashboard</button>

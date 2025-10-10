@@ -876,8 +876,74 @@ def ver_atendimento(id):
     interacoes = InteracaoAtendimento.query.filter_by(id_atendimento=id).order_by(InteracaoAtendimento.data_hora.asc()).all()
     return render_template('ver_atendimento.html', atendimento=atendimento, interacoes=interacoes)
 
-# ================================
+# ==================================================
+# ROTA 26: Gerar Relatório Institucional SEI (.docx)
+# ==================================================
+@app.route('/gerar-relatorio-sei', methods=['GET'])
+@login_required
+def gerar_relatorio_sei_route():
+    """
+    Gera relatório institucional no formato SEI-GDF (.docx)
+    com base nos filtros aplicados na página de Relatórios Avançados.
+    """
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+
+    # 🔹 Lê os filtros da query string
+    filtros = request.args.to_dict()
+    status = filtros.get('status')
+    ra = filtros.get('ra')
+    usuario = filtros.get('usuario')
+    inicio = filtros.get('inicio')
+    fim = filtros.get('fim')
+    modo_status = filtros.get('modo_status', 'historico')
+
+    # 🔹 Consulta os mesmos dados da rota relatorios_avancados
+    query = db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo) \
+        .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario) \
+        .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada) \
+        .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
+
+    if status:
+        if modo_status == 'atual':
+            query = query.filter(Processo.status_atual == status)
+        else:
+            query = query.filter(Movimentacao.novo_status == status)
+    if ra:
+        query = query.filter(EntradaProcesso.ra_origem == ra)
+    if usuario:
+        query = query.filter(Usuario.usuario == usuario)
+    if inicio and fim:
+        query = query.filter(Movimentacao.data.between(inicio, fim))
+
+    resultados = query.order_by(Movimentacao.data.desc()).all()
+
+    # 🔹 Monta DataFrame
+    dados = []
+    for mov, user, entrada, processo in resultados:
+        dados.append({
+            "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
+            "Número do Processo": processo.numero_processo,
+            "RA": entrada.ra_origem,
+            "Status": mov.novo_status,
+            "Responsável": user.usuario,
+            "Observação": mov.observacao or ""
+        })
+    df = pd.DataFrame(dados)
+
+    # 🔹 Gera o relatório .docx institucional SEI
+    caminho_arquivo = gerar_relatorio_sei(df, filtros=filtros, autor=session['usuario'])
+
+    # 🔹 Retorna o download direto
+    return send_file(
+        caminho_arquivo,
+        as_attachment=True,
+        download_name="Relatorio_Institucional_SEI.docx",
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
+# ==================================================
 # Execução do servidor
-# ================================
+# ==================================================
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
