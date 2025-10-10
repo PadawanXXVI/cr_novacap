@@ -4,10 +4,12 @@
 # Gera relatórios institucionais padronizados SEI-GDF (.docx)
 # Emitido por: NOVACAP/PRES/CPCR
 # Destinado a: Diretorias (DC, DO, DP, DS etc.)
+# Inclui gráfico de pizza com distribuição dos status.
 # ===========================================
 
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 from docx import Document
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -53,7 +55,7 @@ MAPEAMENTO_DIRETORIAS = {
 def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     """
     Gera um relatório Word (.docx) no padrão SEI-GDF.
-    Emitido pela NOVACAP/PRES/CPCR com base em filtros aplicados.
+    Inclui cabeçalho institucional, resumo estatístico e gráfico de pizza.
     
     Parâmetros:
         df (pd.DataFrame): DataFrame com os dados filtrados
@@ -156,12 +158,28 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
                 f"2.2. As Regiões Administrativas com maior número de solicitações são: {top_ra}."
             )
 
-        # Totais por responsável (opcional)
-        if "Responsável" in df.columns:
-            por_resp = df["Responsável"].value_counts().to_dict()
-            doc.add_paragraph(
-                f"2.3. A distribuição por responsáveis técnicos indica {len(por_resp)} servidores distintos atuantes."
+        # -----------------------------------------------------
+        # 5.1️⃣ Geração de gráfico de pizza (distribuição de status)
+        # -----------------------------------------------------
+        if len(por_status) > 0:
+            pasta_relatorios = os.path.join(os.path.dirname(__file__), "relatorios_gerados")
+            os.makedirs(pasta_relatorios, exist_ok=True)
+            caminho_grafico = os.path.join(pasta_relatorios, "grafico_status_temp.png")
+
+            plt.figure(figsize=(5, 5))
+            plt.pie(
+                por_status.values(),
+                labels=por_status.keys(),
+                autopct='%1.1f%%',
+                startangle=90
             )
+            plt.title("Distribuição dos Status das Solicitações")
+            plt.savefig(caminho_grafico, bbox_inches='tight')
+            plt.close()
+
+            doc.add_paragraph("\nGráfico 1 – Distribuição dos Status das Solicitações:")
+            doc.add_picture(caminho_grafico, width=Inches(4.5))
+            os.remove(caminho_grafico)  # limpa o arquivo temporário
 
         # -----------------------------------------------------
         # Agrupamento por Diretoria (automático via mapeamento)
@@ -174,10 +192,9 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
                 if pd.isna(diretoria):
                     continue
 
-                par_titulo = doc.add_paragraph()
-                par_titulo.add_run(
+                doc.add_paragraph(
                     f"\n2.{diretoria} – Demandas sob responsabilidade da Diretoria {diretoria}"
-                ).bold = True
+                ).runs[0].bold = True
 
                 tabela = doc.add_table(rows=1, cols=5)
                 tabela.style = "Table Grid"
@@ -185,16 +202,16 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
                 hdr[0].text = "Serviço"
                 hdr[1].text = "RA"
                 hdr[2].text = "Status"
-                hdr[3].text = "Responsável"
-                hdr[4].text = "Data"
+                hdr[3].text = "Data"
+                hdr[4].text = "Observações"
 
                 for _, linha in grupo.iterrows():
                     row = tabela.add_row().cells
                     row[0].text = str(linha.get("Serviço", ""))
                     row[1].text = str(linha.get("RA", ""))
                     row[2].text = str(linha.get("Status", ""))
-                    row[3].text = str(linha.get("Responsável", ""))
-                    row[4].text = str(linha.get("Data", ""))
+                    row[3].text = str(linha.get("Data", ""))
+                    row[4].text = str(linha.get("Observação", ""))
 
                 doc.add_paragraph("\n")
 
