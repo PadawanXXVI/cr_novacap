@@ -591,7 +591,7 @@ def exportar_tramitacoes():
         return "Formato inválido. Use 'csv' ou 'xlsx'.", 400
 
 # ================================
-# ROTA 18: Relatórios Avançados (MULTIFILTROS CORRIGIDA)
+# ROTA 18: Relatórios Avançados (MULTIFILTROS + TOTAIS POR DIRETORIA)
 # ================================
 @app.route('/relatorios-avancados')
 def relatorios_avancados():
@@ -655,6 +655,44 @@ def relatorios_avancados():
 
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
+    # ====== Cálculo de totais por diretoria ======
+    totais_por_diretoria = {
+        "DC": 0,
+        "DO": 0,
+        "DP": 0,
+        "DS": 0,
+        "SGIA": 0,
+        "OUTROS": 0
+    }
+
+    for mov, user, entrada, processo, demanda in resultados:
+        diretoria = (processo.diretoria_destino or "").strip()
+        if "Cidades" in diretoria:
+            totais_por_diretoria["DC"] += 1
+        elif "Obras" in diretoria:
+            totais_por_diretoria["DO"] += 1
+        elif "Planejamento" in diretoria:
+            totais_por_diretoria["DP"] += 1
+        elif "Suporte" in diretoria:
+            totais_por_diretoria["DS"] += 1
+        elif "SGIA" in diretoria:
+            totais_por_diretoria["SGIA"] += 1
+        else:
+            totais_por_diretoria["OUTROS"] += 1
+
+    # ====== Totais gerais ======
+    total_geral = len(resultados)
+
+    totais = {
+        "total": total_geral,
+        "dc": totais_por_diretoria["DC"],
+        "do": totais_por_diretoria["DO"],
+        "dp": totais_por_diretoria["DP"],
+        "ds": totais_por_diretoria["DS"],
+        "sgia": totais_por_diretoria["SGIA"],
+        "outros": totais_por_diretoria["OUTROS"],
+    }
+
     # ====== Renderização ======
     return render_template(
         'relatorios_avancados.html',
@@ -663,6 +701,7 @@ def relatorios_avancados():
         todas_demandas=todas_demandas,
         diretorias=diretorias,
         resultados=resultados,
+        totais=totais,
         modo_status=modo_status
     )
 
