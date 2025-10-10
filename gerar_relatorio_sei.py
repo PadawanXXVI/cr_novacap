@@ -6,6 +6,7 @@
 # Destinado a: Diretorias (DC, DO, DP, DS etc.)
 # ===========================================
 
+import os
 import pandas as pd
 from docx import Document
 from docx.shared import Pt, Inches
@@ -57,7 +58,7 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
         filtros (dict): dicionário com status, RA, diretoria, datas etc.
         autor (str): nome de usuário que gerou o relatório
     Retorna:
-        Caminho do arquivo gerado (.docx)
+        Caminho absoluto do arquivo gerado (.docx)
     """
 
     # ---------------------------------------------------------
@@ -65,7 +66,7 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     # ---------------------------------------------------------
     doc = Document()
 
-    # Define margens SEI-GDF (25 mm = 0.98 in; usamos 1.18 in ≈ 30 mm)
+    # Define margens SEI-GDF (≈ 30 mm)
     for section in doc.sections:
         section.top_margin = Inches(1)
         section.bottom_margin = Inches(1)
@@ -77,6 +78,7 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     # ---------------------------------------------------------
     titulo = doc.add_paragraph()
     titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
     run = titulo.add_run("GOVERNO DO DISTRITO FEDERAL\n")
     run.bold = True
     run.font.size = Pt(12)
@@ -170,7 +172,10 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
                 if pd.isna(diretoria):
                     continue
 
-                doc.add_paragraph(f"\n2.{diretoria} – Demandas sob responsabilidade da Diretoria {diretoria}").runs[0].bold = True
+                doc.add_paragraph(
+                    f"\n2.{diretoria} – Demandas sob responsabilidade da Diretoria {diretoria}"
+                ).runs[0].bold = True
+
                 tabela = doc.add_table(rows=1, cols=5)
                 tabela.style = "Table Grid"
                 hdr = tabela.rows[0].cells
@@ -218,18 +223,17 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
 
     doc.add_paragraph("Doc. SEI/GDF XXXXXXXX").alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
-    # Metadados finais
     criacao = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     doc.add_paragraph(f"Criado por {autor}, versão 1 em {criacao}.")
 
-    import os
+    # ---------------------------------------------------------
+    # 8️⃣ Salvamento seguro em subpasta organizada
+    # ---------------------------------------------------------
+    pasta_relatorios = os.path.join(os.path.dirname(__file__), "relatorios_gerados")
+    os.makedirs(pasta_relatorios, exist_ok=True)  # cria a pasta, se não existir
 
-# ---------------------------------------------------------
-# 8️⃣ Salvamento
-# ---------------------------------------------------------
-# Diretório onde salvar (fora do app/)
-base_dir = os.path.abspath(os.path.dirname(__file__))
-output_path = os.path.join(base_dir, f"Relatorio_SEI_CPCR_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx")
+    nome_arquivo = f"Relatorio_SEI_CPCR_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+    caminho_completo = os.path.join(pasta_relatorios, nome_arquivo)
 
-doc.save(output_path)
-return output_path
+    doc.save(caminho_completo)
+    return caminho_completo
