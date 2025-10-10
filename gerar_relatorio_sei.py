@@ -93,3 +93,71 @@ def gerar_relatorio_sei(df: pd.DataFrame, filtros: dict, autor: str) -> str:
     doc.add_paragraph("2. RELATO").runs[0].bold = True
 
     if df.empty:
+        doc.add_paragraph(
+            "2.1. Não foram encontrados registros para os parâmetros selecionados, "
+            "razão pela qual este relatório se limita à formalização da ausência de movimentações no período."
+        )
+    else:
+        total = len(df)
+        por_status = df["Status"].value_counts().to_dict()
+        principais_status = ", ".join([f"{k}: {v}" for k, v in por_status.items()])
+
+        doc.add_paragraph(
+            f"2.1. Foram processadas {total} solicitações conforme os filtros definidos. "
+            f"A distribuição por status é a seguinte: {principais_status}."
+        )
+
+        # Totais por RA (se houver)
+        if "RA" in df.columns:
+            por_ra = df["RA"].value_counts().to_dict()
+            top_ra = ", ".join([f"{k} ({v})" for k, v in list(por_ra.items())[:5]])
+            doc.add_paragraph(
+                f"2.2. As Regiões Administrativas com maior número de solicitações são: {top_ra}."
+            )
+
+        # Totais por responsável (opcional)
+        if "Responsável" in df.columns:
+            por_resp = df["Responsável"].value_counts().to_dict()
+            doc.add_paragraph(
+                f"2.3. A distribuição por responsáveis técnicos indica {len(por_resp)} servidores distintos atuantes."
+            )
+
+    # ---------------------------------------------------------
+    # 6️⃣ SEÇÃO 3: CONCLUSÃO
+    # ---------------------------------------------------------
+    doc.add_paragraph("3. CONCLUSÃO").runs[0].bold = True
+    doc.add_paragraph(
+        "3.1. Recomenda-se o acompanhamento periódico das solicitações, priorizando as demandas de "
+        "execução direta pelas Diretorias das Cidades (DC), Obras (DO), Planejamento (DP) e Suporte (DS), "
+        "bem como o reforço na comunicação entre a CPCR e as Regiões Administrativas, "
+        "com vistas à melhoria contínua do fluxo de atendimento e à redução de devoluções."
+    )
+
+    # ---------------------------------------------------------
+    # 7️⃣ Rodapé institucional
+    # ---------------------------------------------------------
+    doc.add_paragraph("\nAtenciosamente,\n\n")
+
+    rodape = (
+        "\"Brasília - Patrimônio Cultural da Humanidade\"\n"
+        "Setor de Áreas Públicas - Lote B - Bairro Guará - CEP 70075-900 - DF\n"
+        "Telefone(s): (61) XXXX-XXXX\n"
+        "Sítio - www.novacap.df.gov.br"
+    )
+    doc.add_paragraph(rodape)
+    linha = doc.add_paragraph("__________________________________________________________")
+    linha.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    doc.add_paragraph("Doc. SEI/GDF XXXXXXXX").alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+    # Metadados finais
+    criacao = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    doc.add_paragraph(f"Criado por {autor}, versão 1 em {criacao}.")
+
+    # ---------------------------------------------------------
+    # 8️⃣ Salvamento
+    # ---------------------------------------------------------
+    nome_arquivo = f"Relatorio_SEI_CPCR_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
+    doc.save(nome_arquivo)
+
+    return nome_arquivo
