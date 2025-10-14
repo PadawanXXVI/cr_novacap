@@ -1,16 +1,17 @@
+# app/__init__.py
 import os
+from datetime import timedelta
 from dotenv import load_dotenv
-from flask import Flask
-from flask_wtf.csrf import CSRFProtect
+from flask import Flask, redirect, url_for
 
 # 🔒 Carrega variáveis de ambiente do .env
 load_dotenv()
 
 # 🔧 Extensões principais
-from app.ext import db, migrate, login_manager
+from app.ext import db, migrate, login_manager, csrf
 from app.models.modelos import Usuario
 
-# 🔧 Importa os Blueprints
+# 🔧 Blueprints
 from app.main.routes import main_bp
 from app.processos.routes import processos_bp
 from app.protocolo.routes import protocolo_bp
@@ -28,7 +29,7 @@ def create_app():
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # sessão expira em 1h
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)  # sessão expira em 1h
 
     # ============================================================
     # 🚀 Inicialização das Extensões
@@ -36,7 +37,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    csrf = CSRFProtect(app)  # proteção contra CSRF nos formulários
+    csrf.init_app(app)  # proteção CSRF centralizada (vinda do ext.py)
 
     # ============================================================
     # 🔐 Configuração do Flask-Login
@@ -47,6 +48,7 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
+        """Carrega o usuário logado na sessão"""
         return Usuario.query.get(int(user_id))
 
     # ============================================================
@@ -59,10 +61,11 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
     # ============================================================
-    # 🔁 Rota padrão (caso alguém acesse raiz)
+    # 🔁 Rota padrão (acesso à raiz)
     # ============================================================
     @app.route('/')
     def home_redirect():
-        return "<script>window.location.href='/login';</script>"
+        """Redireciona automaticamente para o login"""
+        return redirect(url_for('main_bp.login'))
 
     return app
