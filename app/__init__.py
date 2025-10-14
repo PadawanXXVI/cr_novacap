@@ -67,5 +67,14 @@ def create_app():
     def home_redirect():
         """Redireciona automaticamente para o login"""
         return redirect(url_for('main_bp.login'))
+    
+    from datetime import datetime
+
+    # ============================================================
+    # 📅 Context Processor para o ano atual 
+    # ============================================================
+    @app.context_processor
+    def inject_year():
+        return {'current_year': datetime.now().year}
 
     return app
