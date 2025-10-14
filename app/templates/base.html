@@ -7,7 +7,7 @@
 
     <!-- Ícone e CSS -->
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
 
@@ -42,8 +42,7 @@
         {% endwith %}
 
         <!-- Bloco de Conteúdo Específico -->
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
     <!-- ========================= -->
@@ -54,8 +53,6 @@
         <p>Central de Relacionamento – Sistema de Controle de Processos</p>
     </footer>
 
-    <!-- Scripts adicionais -->
-    {% block scripts %}
-    {% endblock %}
+    {% block scripts %}{% endblock %}
 </body>
 </html>
