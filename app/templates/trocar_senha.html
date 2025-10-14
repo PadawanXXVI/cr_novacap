@@ -16,6 +16,9 @@
     {% endwith %}
 
     <form method="POST" action="{{ url_for('main_bp.trocar_senha') }}" style="text-align: left;">
+        <!-- 🔒 Token CSRF obrigatório -->
+        {{ csrf_token() }}
+
         <div class="form-group">
             <label for="nome_completo">Nome Completo</label>
             <input type="text" id="nome_completo" name="nome_completo" placeholder="Informe seu nome completo" required>
@@ -29,12 +32,12 @@
         <div class="form-row">
             <div class="form-col">
                 <label for="nova_senha">Nova Senha</label>
-                <input type="password" id="nova_senha" name="nova_senha" required>
+                <input type="password" id="nova_senha" name="nova_senha" placeholder="Digite a nova senha" required>
             </div>
 
             <div class="form-col">
                 <label for="confirmar_senha">Confirmar Nova Senha</label>
-                <input type="password" id="confirmar_senha" name="confirmar_senha" required>
+                <input type="password" id="confirmar_senha" name="confirmar_senha" placeholder="Confirme a nova senha" required>
             </div>
         </div>
 

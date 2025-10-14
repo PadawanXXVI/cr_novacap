@@ -16,6 +16,9 @@
     {% endwith %}
 
     <form method="POST" action="{{ url_for('main_bp.cadastro') }}" class="cadastro-form" style="text-align: left; margin-top: 1rem;">
+        <!-- 🔒 Token CSRF obrigatório -->
+        {{ csrf_token() }}
+
         <div class="form-group">
             <label for="nome_completo">Nome Completo</label>
             <input type="text" id="nome_completo" name="nome_completo" required placeholder="Informe seu nome completo">

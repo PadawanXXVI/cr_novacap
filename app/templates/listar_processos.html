@@ -44,9 +44,7 @@
         <input type="date" name="fim" value="{{ request.args.get('fim', '') }}">
 
         <button type="submit" class="btn-primary">Filtrar</button>
-        <a href="{{ url_for('processos_bp.listar_processos') }}">
-            <button type="button" class="btn-outline">Limpar</button>
-        </a>
+        <a href="{{ url_for('processos_bp.listar_processos') }}" class="btn-outline">Limpar</a>
     </form>
 
     <!-- ===================================================== -->
@@ -54,6 +52,7 @@
     <!-- ===================================================== -->
     {% if processos %}
     <form method="GET" class="exportar" style="margin-top: 1rem;">
+        {{ csrf_token() }}
         <!-- Mantém filtros ativos -->
         <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
         <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
@@ -65,21 +64,17 @@
             <button type="submit"
                     formaction="{{ url_for('processos_bp.exportar_tramitacoes') }}"
                     name="formato" value="csv"
-                    class="btn-outline">
-                Exportar CSV
-            </button>
+                    class="btn-outline">Exportar CSV</button>
+
             <button type="submit"
                     formaction="{{ url_for('processos_bp.exportar_tramitacoes') }}"
                     name="formato" value="xlsx"
-                    class="btn-outline">
-                Exportar XLSX
-            </button>
+                    class="btn-outline">Exportar XLSX</button>
+
             <button type="submit"
                     formaction="{{ url_for('processos_bp.exportar_tramitacoes') }}"
                     name="formato" value="pdf"
-                    class="btn-outline">
-                Exportar PDF
-            </button>
+                    class="btn-outline">Exportar PDF</button>
         </div>
     </form>
     {% endif %}
@@ -112,12 +107,8 @@
                     <td>{{ p.ultima_data.strftime('%d/%m/%Y %H:%M') if p.ultima_data else '---' }}</td>
                     <td>
                         <div class="button-group" style="gap: 0.4rem;">
-                            <a href="{{ url_for('processos_bp.buscar_processo') }}?numero_processo={{ p.numero_processo }}">
-                                <button class="btn-secondary">Visualizar</button>
-                            </a>
-                            <a href="{{ url_for('processos_bp.alterar_processo', id_processo=p.id_processo) }}">
-                                <button class="btn-primary">Alterar</button>
-                            </a>
+                            <a href="{{ url_for('processos_bp.buscar_processo') }}?numero_processo={{ p.numero_processo }}" class="btn-secondary">Visualizar</a>
+                            <a href="{{ url_for('processos_bp.alterar_processo', id_processo=p.id_processo) }}" class="btn-primary">Alterar</a>
                         </div>
                     </td>
                 </tr>
@@ -133,19 +124,13 @@
     <!-- ⚙️ RODAPÉ DE AÇÕES -->
     <!-- ===================================================== -->
     <div class="button-group" style="margin-top: 2rem;">
-        <a href="{{ url_for('processos_bp.dashboard_processos') }}">
-            <button class="btn-secondary">Voltar ao Dashboard</button>
-        </a>
+        <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn-secondary">Voltar ao Dashboard</a>
 
         {% if session.get('is_admin') %}
-        <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}">
-            <button class="btn-outline">Relatórios Avançados</button>
-        </a>
+        <a href="{{ url_for('relatorios_bp.relatorios_dc') }}" class="btn-outline">Relatórios Avançados</a>
         {% endif %}
 
-        <a href="{{ url_for('main_bp.logout') }}">
-            <button class="btn-danger">Sair</button>
-        </a>
+        <a href="{{ url_for('main_bp.logout') }}" class="btn-danger">Sair</a>
     </div>
 </section>
 {% endblock %}

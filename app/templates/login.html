@@ -16,6 +16,9 @@
     {% endwith %}
 
     <form method="POST" action="{{ url_for('main_bp.login') }}" class="login-form" style="margin-top: 1rem; text-align: left;">
+        <!-- 🔒 Token CSRF obrigatório -->
+        {{ csrf_token() }}
+
         <div class="form-group">
             <label for="username">Nome de Usuário</label>
             <input type="text" id="username" name="username" placeholder="ex: nome.sobrenome" required>

@@ -97,22 +97,26 @@
 
                   {% if not u.aprovado %}
                     <form method="POST" action="{{ url_for('admin_bp.aprovar_usuario', id_usuario=u.id_usuario) }}">
+                      {{ csrf_token() }}
                       <button type="submit" class="btn-success" title="Aprovar usuário">Aprovar</button>
                     </form>
                   {% endif %}
 
                   {% if not u.is_admin %}
                     <form method="POST" action="{{ url_for('admin_bp.atribuir_admin', id_usuario=u.id_usuario) }}">
+                      {{ csrf_token() }}
                       <button type="submit" class="btn-warning" title="Conceder permissão de administrador">Admin</button>
                     </form>
                   {% endif %}
 
                   {% if not u.bloqueado %}
                     <form method="POST" action="{{ url_for('admin_bp.bloquear_usuario', id_usuario=u.id_usuario) }}">
+                      {{ csrf_token() }}
                       <button type="submit" class="btn-danger" title="Bloquear usuário">Bloquear</button>
                     </form>
                   {% else %}
                     <form method="POST" action="{{ url_for('admin_bp.desbloquear_usuario', id_usuario=u.id_usuario) }}">
+                      {{ csrf_token() }}
                       <button type="submit" class="btn-outline-blue" title="Desbloquear usuário">Desbloquear</button>
                     </form>
                   {% endif %}
@@ -129,6 +133,5 @@
       Nenhum usuário encontrado ou pendente de aprovação.
     </p>
   {% endif %}
-
 </section>
 {% endblock %}

@@ -18,6 +18,9 @@
     {% endwith %}
 
     <form method="POST" action="{{ url_for('processos_bp.cadastro_processo') }}">
+        <!-- 🔒 Token CSRF obrigatório -->
+        {{ csrf_token() }}
+
         <!-- Número do Processo -->
         <div class="form-group">
             <label for="numero_processo">Número do Processo</label>
@@ -132,7 +135,7 @@
                 <button type="button" class="btn-secondary">Tela de Totais</button>
             </a>
 
-            <a href="{{ url_for('processos_bp.visualizar_processo_form') }}">
+            <a href="{{ url_for('processos_bp.buscar_processo') }}">
                 <button type="button" class="btn-outline-gray">Visualizar Processo</button>
             </a>
 
@@ -143,7 +146,7 @@
     </form>
 </section>
 
-<!-- ===== Verificação AJAX ===== -->
+<!-- ===== Verificação AJAX com CSRF ===== -->
 <script>
 document.getElementById('numero_processo').addEventListener('blur', function () {
     const numero = this.value.trim();
@@ -151,20 +154,25 @@ document.getElementById('numero_processo').addEventListener('blur', function () 
 
     fetch('{{ url_for("processos_bp.verificar_processo") }}', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            // Inclui o token CSRF no cabeçalho da requisição
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
         body: JSON.stringify({ numero_processo: numero })
     })
     .then(response => response.json())
     .then(data => {
         if (data.existe) {
             if (confirm("⚠️ Este número de processo já existe. Deseja alterá-lo?")) {
-                window.location.href = "/processos/alterar-processo/" + data.id;
+                window.location.href = "/processos/alterar/" + data.id;
             } else {
                 document.getElementById('numero_processo').value = "";
                 alert("Informe um novo número de processo.");
             }
         }
-    });
+    })
+    .catch(error => console.error('Erro na verificação do processo:', error));
 });
 </script>
 {% endblock %}
