@@ -1,85 +1,106 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Visualização do Processo</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
-</head>
-<body>
-  <div class="container">
-    <h1 style="text-align: center;">Visualizar Processo</h1>
+{% extends "base.html" %}
 
-    <!-- Formulário para busca -->
-    <form method="GET" action="{{ url_for('buscar_processo') }}" style="text-align: center; margin-bottom: 2rem;">
-      <label for="numero_processo">Digite o número do processo:</label>
-      <input type="text" name="numero_processo" id="numero_processo" required placeholder="00000-00000000/0000-00" />
-      <button type="submit" class="btn-primary">Buscar</button>
-    </form>
+{% block title %}Visualizar Processo - CR/NOVACAP{% endblock %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+{% block content %}
+<section class="container visualizar-processo-section">
+  <h1>Visualizar Processo</h1>
+  <p class="text-center" style="color: var(--text-muted); margin-bottom: 1rem;">
+    Consulte as informações detalhadas de um processo SEI.
+  </p>
 
-    {% if processo %}
-    <!-- Informações do Processo -->
-    <div class="card">
-      <h3>Informações do Processo</h3>
-      <p><strong>Número:</strong> {{ processo.numero_processo or '---' }}</p>
-      <p><strong>Status Atual:</strong> {{ processo.status_atual or '---' }}</p>
-      <p><strong>Diretoria de Destino:</strong> {{ processo.diretoria_destino or '---' }}</p>
-      <p><strong>Observações:</strong> {{ processo.observacoes or '---' }}</p>
-    </div>
+  <!-- ===================================================== -->
+  <!-- 🔍 FORMULÁRIO DE BUSCA -->
+  <!-- ===================================================== -->
+  <form method="GET" action="{{ url_for('processos_bp.buscar_processo') }}" class="text-center" style="margin-bottom: 2rem;">
+    <label for="numero_processo"><strong>Número do Processo:</strong></label>
+    <input type="text" name="numero_processo" id="numero_processo"
+           placeholder="00000-00000000/0000-00" required />
+    <button type="submit" class="btn-primary">Buscar</button>
+  </form>
 
-    {% if entrada %}
-    <!-- Dados de Entrada -->
-    <div class="card">
-      <h3>Informações da Entrada</h3>
-      <p><strong>RA de Origem:</strong> {{ entrada.ra_origem or '---' }}</p>
-      <p><strong>Tramitação Inicial:</strong> {{ entrada.tramite_inicial or '---' }}</p>
-      <p><strong>Data de Entrada na NOVACAP:</strong> {{ entrada.data_entrada_novacap.strftime('%d/%m/%Y') if entrada.data_entrada_novacap else '---' }}</p>
-      <p><strong>Data do Documento:</strong> {{ entrada.data_documento.strftime('%d/%m/%Y') if entrada.data_documento else '---' }}</p>
-      <p><strong>Tipo:</strong> {{ entrada.tipo.descricao if entrada.tipo else '---' }}</p>
-      <p><strong>Responsável Técnico:</strong>
-        {% if entrada.responsavel %}
-          {{ entrada.responsavel.nome or '---' }} ({{ entrada.responsavel.usuario or '---' }})
-        {% else %}
-          ---
-        {% endif %}
-      </p>
-    </div>
+  <!-- ===================================================== -->
+  <!-- ⚠️ MENSAGENS DE SISTEMA -->
+  <!-- ===================================================== -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
     {% endif %}
+  {% endwith %}
 
-    <!-- Histórico de Movimentações -->
-    <div class="card">
-      <h3>Histórico de Movimentações</h3>
-      {% if movimentacoes %}
-        <p><strong>Total de Tramitações:</strong> {{ movimentacoes|length }}</p>
-        <ul>
-          {% for mov in movimentacoes %}
-            <li>
-              <strong>{{ mov.data.strftime('%d/%m/%Y %H:%M') if mov.data else '---' }}</strong> —
-              Status: <strong>{{ mov.novo_status or '---' }}</strong> —
-              Por: <strong>{{ mov.usuario.usuario if mov.usuario else '---' }}</strong><br>
-              <em>{{ mov.observacao or '' }}</em>
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>Sem movimentações registradas.</p>
-      {% endif %}
-    </div>
-    {% endif %}
+  {% if processo %}
+  <!-- ===================================================== -->
+  <!-- 📄 INFORMAÇÕES DO PROCESSO -->
+  <!-- ===================================================== -->
+  <div class="card">
+    <h3>Informações do Processo</h3>
+    <p><strong>Número:</strong> {{ processo.numero_processo or '---' }}</p>
+    <p><strong>Status Atual:</strong> {{ processo.status_atual or '---' }}</p>
+    <p><strong>Diretoria de Destino:</strong> {{ processo.diretoria_destino or '---' }}</p>
+    <p><strong>Observações:</strong> {{ processo.observacoes or '---' }}</p>
 
-    <div style="text-align: center; margin-top: 2rem;">
-      <a href="{{ url_for('dashboard_processos') }}">
-        <button class="btn-secondary">Voltar ao Dashboard</button>
+    <div class="button-group" style="margin-top: 1rem;">
+      <a href="{{ url_for('processos_bp.exportar_processo_pdf', id_processo=processo.id_processo) }}">
+        <button class="btn-outline">Exportar em PDF</button>
       </a>
     </div>
   </div>
-</body>
-</html>
+
+  {% if entrada %}
+  <!-- ===================================================== -->
+  <!-- 📥 DADOS DE ENTRADA -->
+  <!-- ===================================================== -->
+  <div class="card">
+    <h3>Informações da Entrada</h3>
+    <p><strong>RA de Origem:</strong> {{ entrada.ra_origem or '---' }}</p>
+    <p><strong>Tramitação Inicial:</strong> {{ entrada.tramite_inicial or '---' }}</p>
+    <p><strong>Data de Entrada na NOVACAP:</strong>
+      {{ entrada.data_entrada_novacap.strftime('%d/%m/%Y') if entrada.data_entrada_novacap else '---' }}</p>
+    <p><strong>Data do Documento:</strong>
+      {{ entrada.data_documento.strftime('%d/%m/%Y') if entrada.data_documento else '---' }}</p>
+    <p><strong>Tipo:</strong> {{ entrada.tipo.descricao if entrada.tipo else '---' }}</p>
+    <p><strong>Responsável Técnico:</strong>
+      {% if entrada.responsavel %}
+        {{ entrada.responsavel.nome }} ({{ entrada.responsavel.usuario }})
+      {% else %}
+        ---
+      {% endif %}
+    </p>
+  </div>
+  {% endif %}
+
+  <!-- ===================================================== -->
+  <!-- 🔁 HISTÓRICO DE MOVIMENTAÇÕES -->
+  <!-- ===================================================== -->
+  <div class="card">
+    <h3>Histórico de Movimentações</h3>
+    {% if movimentacoes %}
+      <p><strong>Total de Tramitações:</strong> {{ movimentacoes|length }}</p>
+      <ul style="list-style: none; padding-left: 0;">
+        {% for mov in movimentacoes %}
+          <li style="margin-bottom: 0.75rem;">
+            <strong>{{ mov.data.strftime('%d/%m/%Y %H:%M') if mov.data else '---' }}</strong> — 
+            Status: <strong>{{ mov.novo_status or '---' }}</strong> — 
+            Por: <strong>{{ mov.usuario.usuario if mov.usuario else '---' }}</strong><br>
+            <em>{{ mov.observacao or '' }}</em>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Sem movimentações registradas.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- ===================================================== -->
+  <!-- ⏎ BOTÃO DE RETORNO -->
+  <!-- ===================================================== -->
+  <div class="button-group" style="margin-top: 2rem;">
+    <a href="{{ url_for('processos_bp.dashboard_processos') }}">
+      <button class="btn-secondary">Voltar ao Dashboard</button>
+    </a>
+  </div>
+</section>
+{% endblock %}

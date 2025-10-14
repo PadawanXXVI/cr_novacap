@@ -1,83 +1,55 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Redefinir Senha - Central de Relacionamento</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  <style>
-    .compact-form h1, .compact-form h2 {
-      margin-bottom: 0.5rem;
-    }
-    .compact-form p {
-      font-size: 0.9rem;
-      color: #555;
-      margin-top: 0.25rem;
-    }
-    .form-spacing {
-      margin-top: 1.25rem;
-      margin-bottom: 0.5rem;
-    }
-    .alert-success {
-      color: green;
-      margin-bottom: 1rem;
-    }
-    .alert-error {
-      color: red;
-      margin-bottom: 1rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="container compact-form">
-    <h1 style="text-align: center;">Central de Relacionamento</h1>
-    <h2 style="text-align: center;">Redefinir Senha</h2>
+{% extends "base.html" %}
 
-    <!-- Flash messages -->
+{% block title %}Redefinir Senha - Central de Relacionamento NOVACAP{% endblock %}
+
+{% block content %}
+<section class="senha-section" style="max-width: 600px; margin: 0 auto;">
+    <h1 style="text-align: center;">Central de Relacionamento</h1>
+    <h2 style="text-align: center; color: var(--primary-dark); margin-bottom: 1.5rem;">Redefinir Senha</h2>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert-{{ 'success' if category == 'success' else 'error' }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
     {% endwith %}
 
-    <form method="POST" action="{{ url_for('trocar_senha') }}">
-      <div class="form-spacing">
-        <label for="nome_completo">Nome Completo</label>
-        <input type="text" id="nome_completo" name="nome_completo" placeholder="Informe seu nome completo" required>
-      </div>
+    <form method="POST" action="{{ url_for('main_bp.trocar_senha') }}" style="text-align: left;">
+        <div class="form-group">
+            <label for="nome_completo">Nome Completo</label>
+            <input type="text" id="nome_completo" name="nome_completo" placeholder="Informe seu nome completo" required>
+        </div>
 
-      <div class="form-spacing">
-        <label for="email">E-mail Institucional</label>
-        <input type="email" id="email" name="email" placeholder="ex: nome.sobrenome@novacap.df.gov.br" required>
-      </div>
+        <div class="form-group">
+            <label for="email">E-mail Institucional</label>
+            <input type="email" id="email" name="email" placeholder="ex: nome.sobrenome@novacap.df.gov.br" required>
+        </div>
 
-      <div class="form-spacing">
-        <label for="nova_senha">Nova Senha</label>
-        <input type="password" id="nova_senha" name="nova_senha" required>
-      </div>
+        <div class="form-row">
+            <div class="form-col">
+                <label for="nova_senha">Nova Senha</label>
+                <input type="password" id="nova_senha" name="nova_senha" required>
+            </div>
 
-      <div class="form-spacing">
-        <label for="confirmar_senha">Confirmar Nova Senha</label>
-        <input type="password" id="confirmar_senha" name="confirmar_senha" required>
-      </div>
+            <div class="form-col">
+                <label for="confirmar_senha">Confirmar Nova Senha</label>
+                <input type="password" id="confirmar_senha" name="confirmar_senha" required>
+            </div>
+        </div>
 
-      <div class="button-group">
-        <button type="submit" class="btn-primary">Atualizar Senha</button>
-        <a href="{{ url_for('login') }}">
-          <button type="button" class="btn-secondary">Voltar ao Login</button>
-        </a>
-      </div>
-
-      <p style="text-align: center; font-size: 0.9rem; margin-top: 1rem;">
-        ⚠️ Para redefinir sua senha, os dados informados devem coincidir exatamente com os dados cadastrados.
-        <br>
-        Caso tenha dúvidas, entre em contato com o administrador do sistema.
-      </p>
+        <div class="button-group" style="margin-top: 2rem;">
+            <button type="submit" class="btn-primary">Atualizar Senha</button>
+            <a href="{{ url_for('main_bp.login') }}">
+                <button type="button" class="btn-secondary">Voltar ao Login</button>
+            </a>
+        </div>
     </form>
-  </div>
-</body>
-</html>
+
+    <p style="text-align: center; font-size: 0.95rem; color: var(--text-muted); margin-top: 1.5rem;">
+        ⚠️ Para redefinir sua senha, os dados informados devem coincidir exatamente com os cadastrados.  
+        <br>
+        Em caso de dúvidas, entre em contato com o administrador do sistema.
+    </p>
+</section>
+{% endblock %}

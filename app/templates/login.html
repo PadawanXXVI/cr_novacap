@@ -1,57 +1,54 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - Central de Relacionamento</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
-  <div class="container" style="text-align: center;">
-    <h1>Central de Relacionamento</h1>
-    <h2>Login</h2>
+{% extends "base.html" %}
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="alert-success" style="margin-bottom: 1rem; color: green;">
-          {{ messages[0] }}
-        </div>
-      {% endif %}
+{% block title %}Login - Central de Relacionamento NOVACAP{% endblock %}
+
+{% block content %}
+<section class="login-section" style="max-width: 500px; margin: 0 auto; text-align: center;">
+    <h1>Central de Relacionamento</h1>
+    <h2 style="color: var(--primary-dark); margin-bottom: 1.5rem;">Acesso ao Sistema</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
     {% endwith %}
 
-    <form method="POST" action="{{ url_for('login') }}">
-      <div style="max-width: 400px; margin: 0 auto;">
-        <label for="username">Nome de Usuário</label>
-        <input type="text" id="username" name="username" placeholder="ex: nome.sobrenome" required />
-      </div>
+    <form method="POST" action="{{ url_for('main_bp.login') }}" class="login-form" style="margin-top: 1rem; text-align: left;">
+        <div class="form-group">
+            <label for="username">Nome de Usuário</label>
+            <input type="text" id="username" name="username" placeholder="ex: nome.sobrenome" required>
+        </div>
 
-      <div style="max-width: 400px; margin: 0 auto;">
-        <label for="password">Senha</label>
-        <input type="password" id="password" name="password" required />
-      </div>
+        <div class="form-group">
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
+        </div>
 
-      <div style="max-width: 400px; margin: 0 auto;">
-        <label for="sistema">Escolha o sistema:</label>
-        <select id="sistema" name="sistema" required>
-          <option value="">Selecione</option>
-          <option value="tramite">Tramitação de Processos</option>
-          <option value="protocolo">Protocolo de Atendimento</option>
-        </select>
-      </div>
+        <div class="form-group">
+            <label for="sistema">Selecione o módulo:</label>
+            <select id="sistema" name="sistema" required>
+                <option value="">-- Escolha o módulo --</option>
+                <option value="tramite">Tramitação de Processos</option>
+                <option value="protocolo">Protocolo de Atendimento</option>
+            </select>
+        </div>
 
-      <div style="margin-top: 1.5rem;">
-        <button type="submit" class="btn-primary">Entrar no Sistema</button>
-      </div>
+        <div class="button-group" style="margin-top: 2rem;">
+            <button type="submit" class="btn-primary">Entrar no Sistema</button>
+        </div>
     </form>
 
-    <div style="margin-top: 1rem;">
-      <a href="{{ url_for('cadastro') }}">
-        <button class="btn-secondary">Solicitar Cadastro</button>
-      </a>
-      <a href="{{ url_for('trocar_senha') }}">
-        <button class="btn-secondary">Redefinir Senha</button>
-      </a>
+    <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border-color);">
+
+    <div class="button-group">
+        <a href="{{ url_for('main_bp.cadastro') }}">
+            <button class="btn-outline">Solicitar Cadastro</button>
+        </a>
+        <a href="{{ url_for('main_bp.trocar_senha') }}">
+            <button class="btn-outline">Redefinir Senha</button>
+        </a>
     </div>
-  </div>
-</body>
-</html>
+</section>
+{% endblock %}

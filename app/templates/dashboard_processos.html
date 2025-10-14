@@ -1,78 +1,124 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Processos</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
-  <div class="container">
-    <h1>Dashboard – Processos</h1>
+{% extends "base.html" %}
 
-    <h2>Totais</h2>
+{% block title %}Dashboard – Processos | Central de Relacionamento NOVACAP{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <h1 class="text-center">Painel de Controle – Processos</h1>
+    <p class="text-center" style="margin-bottom: 2rem; color: #666;">
+        Visualize rapidamente os principais indicadores de tramitação e atendimento de processos.
+    </p>
+
+    <!-- ===== Totais ===== -->
+    <h2>Totais Gerais</h2>
     <div class="card-grid">
-      <div class="card"><h3>Total de Processos</h3><p>{{ total_processos }}</p></div>
-      <div class="card"><h3>Total em Atendimento</h3><p>{{ total_em_atendimento }}</p></div>
+        <div class="card card-total">
+            <h3>Total de Processos</h3>
+            <p>{{ total_processos or 0 }}</p>
+        </div>
+        <div class="card card-info">
+            <h3>Em Atendimento</h3>
+            <p>{{ total_em_atendimento or 0 }}</p>
+        </div>
     </div>
 
+    <!-- ===== Origem ===== -->
     <h2>Origem</h2>
     <div class="card-grid">
-      <div class="card"><h3>Iniciados pela SECRE</h3><p>{{ processos_secre }}</p></div>
-      <div class="card"><h3>Iniciados pela CR</h3><p>{{ processos_cr }}</p></div>
+        <div class="card card-blue">
+            <h3>Iniciados pela SECRE</h3>
+            <p>{{ processos_secre or 0 }}</p>
+        </div>
+        <div class="card card-green">
+            <h3>Iniciados pela CR</h3>
+            <p>{{ processos_cr or 0 }}</p>
+        </div>
     </div>
 
+    <!-- ===== Tramitação ===== -->
     <h2>Tramitação</h2>
     <div class="card-grid">
-      <div class="card"><h3>Diretoria das Cidades</h3><p>{{ processos_dc }}</p></div>
-      <div class="card"><h3>Diretoria de Obras</h3><p>{{ processos_do }}</p></div>
-      <div class="card"><h3>Diretoria de Planejamento e Projetos</h3><p>{{ processos_dp }}</p></div>
-      <div class="card"><h3>Processos SGIA</h3><p>{{ processos_sgia }}</p></div>
+        <div class="card card-dc">
+            <h3>Diretoria das Cidades</h3>
+            <p>{{ processos_dc or 0 }}</p>
+        </div>
+        <div class="card card-do">
+            <h3>Diretoria de Obras</h3>
+            <p>{{ processos_do or 0 }}</p>
+        </div>
+        <div class="card card-dp">
+            <h3>Planejamento e Projetos</h3>
+            <p>{{ processos_dp or 0 }}</p>
+        </div>
+        <div class="card card-gray">
+            <h3>Processos via SGIA</h3>
+            <p>{{ processos_sgia or 0 }}</p>
+        </div>
     </div>
 
+    <!-- ===== Resultados ===== -->
     <h2>Resultados</h2>
     <div class="card-grid">
-      <div class="card"><h3>Processos Atendidos</h3><p>{{ processos_atendidos }}</p></div>
-      <div class="card"><h3>Devolvidos à RA</h3><p>{{ devolvidos_ra }}</p></div>
-      <div class="card"><h3>Improcedentes</h3><p>{{ processos_improcedentes }}</p></div>
+        <div class="card card-success">
+            <h3>Atendidos</h3>
+            <p>{{ processos_atendidos or 0 }}</p>
+        </div>
+        <div class="card card-warning">
+            <h3>Devolvidos à RA</h3>
+            <p>{{ devolvidos_ra or 0 }}</p>
+        </div>
+        <div class="card card-danger">
+            <h3>Improcedentes</h3>
+            <p>{{ processos_improcedentes or 0 }}</p>
+        </div>
     </div>
 
+    <!-- ===== Especiais ===== -->
     <h2>Especiais</h2>
     <div class="card-grid">
-      <div class="card"><h3>Solicitação de Urgência</h3><p>{{ processos_urgencia }}</p></div>
-      <div class="card"><h3>Solicitação de Prazo de Execução</h3><p>{{ processos_prazo }}</p></div>
-      <div class="card"><h3>Oriundos da Ouvidoria</h3><p>{{ processos_ouvidoria }}</p></div>
+        <div class="card card-urgencia">
+            <h3>Solicitação de Urgência</h3>
+            <p>{{ processos_urgentes or 0 }}</p>
+        </div>
+        <div class="card card-prazo">
+            <h3>Solicitação de Prazo</h3>
+            <p>{{ processos_prazo_execucao or 0 }}</p>
+        </div>
+        <div class="card card-ouvidoria">
+            <h3>Oriundos da Ouvidoria</h3>
+            <p>{{ processos_ouvidoria or 0 }}</p>
+        </div>
     </div>
 
-    <div class="button-group">
-      <a href="{{ url_for('cadastro_processo') }}">
-        <button class="btn-primary">Cadastrar Novo Processo</button>
-      </a>
-
-      <a href="{{ url_for('listar_processos') }}">
-        <button class="btn-secondary">Listar Processos</button>
-      </a>
-
-      <a href="{{ url_for('visualizar_processo_form') }}">
-        <button class="btn-secondary">Visualizar Processo</button>
-      </a>
-
-      {% if session.get('is_admin') %}
-        <a href="{{ url_for('painel_admin') }}">
-          <button class="btn-warning">Painel Administrativo</button>
+    <!-- ===== Ações ===== -->
+    <div class="button-group" style="margin-top: 3rem;">
+        <a href="{{ url_for('processos_bp.cadastro_processo') }}">
+            <button class="btn-primary">Cadastrar Novo Processo</button>
         </a>
-        <a href="{{ url_for('relatorios_gerenciais') }}">
-          <button class="btn-outline-gray">Relatórios Gerenciais</button>
-        </a>
-        <a href="{{ url_for('relatorios_avancados') }}">
-          <button class="btn-outline-gray">Relatórios Avançados</button>
-        </a>
-      {% endif %}
 
-      <a href="{{ url_for('logout') }}">
-        <button class="btn-danger">Sair</button>
-      </a>
+        <a href="{{ url_for('processos_bp.listar_processos') }}">
+            <button class="btn-secondary">Listar Processos</button>
+        </a>
+
+        <a href="{{ url_for('processos_bp.visualizar_processo_form') }}">
+            <button class="btn-secondary">Visualizar Processo</button>
+        </a>
+
+        {% if session.get('is_admin') %}
+            <a href="{{ url_for('admin_bp.painel_admin') }}">
+                <button class="btn-warning">Painel Administrativo</button>
+            </a>
+            <a href="{{ url_for('relatorios_bp.relatorios_gerenciais') }}">
+                <button class="btn-outline-blue">Relatórios Gerenciais</button>
+            </a>
+            <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}">
+                <button class="btn-outline-blue">Relatórios Avançados</button>
+            </a>
+        {% endif %}
+
+        <a href="{{ url_for('main_bp.logout') }}">
+            <button class="btn-danger">Sair</button>
+        </a>
     </div>
-  </div>
-</body>
-</html>
+</section>
+{% endblock %}

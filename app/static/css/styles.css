@@ -23,7 +23,7 @@ html, body {
 :root {
     --primary: #0060a8;      /* Azul institucional NOVACAP */
     --primary-dark: #00497e;
-    --accent: #00a86b;       /* Verde de aprovação/sucesso */
+    --accent: #00a86b;       /* Verde sucesso */
     --danger: #dc3545;
     --warning: #ffc107;
     --light-bg: #ffffff;
@@ -122,6 +122,25 @@ h2 {
     color: var(--primary);
 }
 
+/* ==== Cores específicas dos cards do dashboard ==== */
+.card-dc { border-top: 5px solid #007bff; }
+.card-do { border-top: 5px solid #17a2b8; }
+.card-dp { border-top: 5px solid #6f42c1; }
+.card-gray { border-top: 5px solid #6c757d; }
+.card-success { border-top: 5px solid #28a745; }
+.card-warning { border-top: 5px solid #ffc107; }
+.card-danger { border-top: 5px solid #dc3545; }
+.card-urgencia { border-top: 5px solid #ff3b3b; }
+.card-prazo { border-top: 5px solid #ff8c00; }
+.card-ouvidoria { border-top: 5px solid #20c997; }
+
+.card-total { border-top: 5px solid #0056b3; }
+.card-info { border-top: 5px solid #17a2b8; }
+.card-blue { border-top: 5px solid #007bff; }
+.card-green { border-top: 5px solid #28a745; }
+
+.text-center { text-align: center; }
+
 /* ==== Formulários ==== */
 label {
     display: block;
@@ -166,38 +185,30 @@ input[type="submit"],
     transition: all 0.2s ease-in-out;
 }
 
-.btn-primary {
-    background: var(--primary);
-    color: white;
-}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
 
-.btn-primary:hover {
-    background: var(--primary-dark);
-}
+.btn-success { background: var(--accent); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-warning { background: var(--warning); color: #212529; }
 
-.btn-success {
-    background: var(--accent);
-    color: white;
-}
-
-.btn-danger {
-    background: var(--danger);
-    color: white;
-}
-
-.btn-warning {
-    background: var(--warning);
-    color: #212529;
-}
-
-.btn-outline {
+.btn-outline-blue {
     background: transparent;
     border: 1px solid var(--primary);
     color: var(--primary);
 }
-
-.btn-outline:hover {
+.btn-outline-blue:hover {
     background: var(--primary);
+    color: white;
+}
+
+.btn-outline-gray {
+    background: transparent;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+}
+.btn-outline-gray:hover {
+    background: var(--text-muted);
     color: white;
 }
 
@@ -297,5 +308,10 @@ body.dark-mode table td {
 
     button, .btn {
         width: 100%;
+    }
+
+    .button-group {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 }

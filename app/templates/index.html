@@ -1,23 +1,24 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central de Relacionamento - NOVACAP</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
 
-    <div class="container" style="text-align: center;">
-        <h1>Central de Relacionamento</h1>
-        <h2>NOVACAP</h2>
-        <p>Bem-vindo ao sistema interno da Central de Relacionamento da NOVACAP.</p>
-        <p>Utilize o botão abaixo para acessar o sistema com suas credenciais.</p>
+{% block title %}Central de Relacionamento - NOVACAP{% endblock %}
 
-        <a href="{{ url_for('login') }}">
-            <button class="btn-primary" style="margin-top: 1.5rem;">Acessar o Sistema</button>
+{% block content %}
+<section class="home-intro" style="text-align:center; padding: 2rem 0;">
+    <h1>Central de Relacionamento</h1>
+    <h2 style="color: var(--primary-dark); margin-bottom: 1rem;">NOVACAP</h2>
+
+    <p style="max-width: 600px; margin: 0 auto; color: var(--text-muted);">
+        Bem-vindo ao sistema interno da Central de Relacionamento da NOVACAP.
+        Este ambiente permite o acompanhamento, registro e tramitação de processos internos,
+        garantindo transparência e eficiência na gestão das demandas.
+    </p>
+
+    <div style="margin-top: 2rem;">
+        <a href="{{ url_for('main_bp.login') }}">
+            <button class="btn-primary" style="padding: 0.9rem 2rem; font-size: 1.1rem;">
+                Acessar o Sistema
+            </button>
         </a>
     </div>
-
-</body>
-</html>
+</section>
+{% endblock %}

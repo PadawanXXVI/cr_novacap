@@ -2,11 +2,13 @@
 """
 Modelos do sistema CR-NOVACAP.
 Contém entidades de usuários, processos, protocolo, status, demandas, logs e alertas.
+Atualizado para incluir a hierarquia Diretoria → Departamento → Demanda.
 """
 
 from datetime import datetime
 from flask_login import UserMixin
-from app.ext import db  # ✅ importa o db corretamente (não o app)
+from app.ext import db
+
 
 # ==========================================================
 # 👤 USUÁRIOS DO SISTEMA
@@ -28,17 +30,38 @@ class Usuario(db.Model, UserMixin):
 
 
 # ==========================================================
-# 🧭 DIRETORIAS (nova tabela)
+# 🧭 DIRETORIAS
 # ==========================================================
 class Diretoria(db.Model):
     __tablename__ = 'diretorias'
 
     id_diretoria = db.Column(db.Integer, primary_key=True)
-    nome_diretoria = db.Column(db.String(100), unique=True, nullable=False)
-    sigla = db.Column(db.String(10), nullable=True)
+    nome_completo = db.Column(db.String(100), nullable=False, unique=True)
+    sigla = db.Column(db.String(10))
+    descricao_exibicao = db.Column(db.String(120))
+
+    # 🔁 Relação 1:N com Departamentos
+    departamentos = db.relationship('Departamento', backref='diretoria', lazy=True, cascade="all, delete")
 
     def __repr__(self):
-        return f"<Diretoria {self.nome_diretoria}>"
+        return f"<Diretoria {self.sigla or ''} - {self.nome_completo}>"
+
+
+# ==========================================================
+# 🏢 DEPARTAMENTOS
+# ==========================================================
+class Departamento(db.Model):
+    __tablename__ = 'departamentos'
+
+    id_departamento = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(150), nullable=False)
+    id_diretoria = db.Column(db.Integer, db.ForeignKey('diretorias.id_diretoria'), nullable=False)
+
+    # 🔁 Relação 1:N com Demandas
+    demandas = db.relationship('Demanda', backref='departamento', lazy=True)
+
+    def __repr__(self):
+        return f"<Departamento {self.nome}>"
 
 
 # ==========================================================
@@ -126,6 +149,7 @@ class EntradaProcesso(db.Model):
     data_documento = db.Column(db.Date, nullable=False)
     tramite_inicial = db.Column(db.String(10), nullable=False)
     ra_origem = db.Column(db.String(100), nullable=False)
+
     id_demanda = db.Column(db.Integer, db.ForeignKey('demandas.id_demanda'), nullable=False)
     id_tipo = db.Column(db.Integer, db.ForeignKey('tipos_demanda.id_tipo'), nullable=False)
     usuario_responsavel = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
@@ -184,6 +208,16 @@ class Demanda(db.Model):
     id_demanda = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.String(100), nullable=False)
 
+    # 🔗 Vinculações hierárquicas
+    id_diretoria = db.Column(db.Integer, db.ForeignKey('diretorias.id_diretoria'), nullable=True)
+    id_departamento = db.Column(db.Integer, db.ForeignKey('departamentos.id_departamento'), nullable=True)
+
+    diretoria = db.relationship("Diretoria", backref="demandas", lazy=True)
+    departamento = db.relationship("Departamento", backref="demandas_dep", lazy=True)
+
+    def __repr__(self):
+        return f"<Demanda {self.descricao}>"
+
 
 # ==========================================================
 # 🧩 TIPOS DE DEMANDA
@@ -219,4 +253,11 @@ class Alerta(db.Model):
 
     id_alerta = db.Column(db.Integer, primary_key=True)
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
-    tipo_alerta = db.Column(db.String(1_
+    tipo_alerta = db.Column(db.String(100), nullable=False)
+    numero_processo = db.Column(db.String(25), nullable=False)
+    id_entrada = db.Column(db.Integer, db.ForeignKey('entradas_processo.id_entrada'), nullable=False)
+    mensagem = db.Column(db.Text, nullable=False)
+    data_alerta = db.Column(db.DateTime, default=datetime.utcnow)
+    respondido = db.Column(db.Boolean, default=False)
+    data_resposta = db.Column(db.DateTime)
+    forma_resposta = db.Column(db.String(50))

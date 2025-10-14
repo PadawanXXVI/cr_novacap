@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema CR-NOVACAP{% endblock %}</title>
+
+    <!-- Ícone e CSS -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+    <!-- ========================= -->
+    <!-- Barra de Navegação -->
+    <!-- ========================= -->
+    <header class="navbar">
+        <h1>Sistema CR-NOVACAP</h1>
+
+        <nav>
+            <a href="{{ url_for('processos_bp.dashboard_processos') }}">Processos</a>
+            <a href="{{ url_for('relatorios_bp.relatorios_gerenciais') }}">Relatórios</a>
+            {% if session.get('is_admin') %}
+                <a href="{{ url_for('admin_bp.painel_admin') }}">Administração</a>
+            {% endif %}
+            <a href="{{ url_for('main_bp.logout') }}">Sair</a>
+        </nav>
+    </header>
+
+    <!-- ========================= -->
+    <!-- Conteúdo Principal -->
+    <!-- ========================= -->
+    <main class="container">
+
+        <!-- Mensagens Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Bloco de Conteúdo Específico -->
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- ========================= -->
+    <!-- Rodapé Institucional -->
+    <!-- ========================= -->
+    <footer>
+        <p>© {{ current_year or 2025 }} Companhia Urbanizadora da Nova Capital do Brasil – NOVACAP</p>
+        <p>Central de Relacionamento – Sistema de Controle de Processos</p>
+    </footer>
+
+    <!-- Scripts adicionais -->
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

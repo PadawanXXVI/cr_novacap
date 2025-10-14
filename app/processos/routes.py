@@ -1,7 +1,7 @@
 # app/processos/routes.py
 """
 Rotas do módulo de Processos (Tramitação SEI) — CR-NOVACAP.
-Inclui: dashboard, cadastro, listagem, busca, alteração e relatórios da DC.
+Inclui: dashboard, cadastro, listagem, busca, alteração, relatórios e exportações (CSV, XLSX, PDF).
 """
 
 from datetime import datetime
@@ -19,6 +19,12 @@ from app.models.modelos import (
     Status, Usuario, Movimentacao
 )
 from app.processos import processos_bp
+
+# Bibliotecas para PDF
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
 
 
 # ==========================================================
@@ -110,8 +116,8 @@ def cadastro_processo():
     """Cadastra um novo processo SEI"""
     if request.method == 'POST':
         numero = request.form.get('numero_processo', '').strip()
-
         existente = Processo.query.filter_by(numero_processo=numero).first()
+
         if existente:
             flash("⚠️ Processo já cadastrado. Redirecionando...", "warning")
             return redirect(url_for('processos_bp.alterar_processo', id_processo=existente.id_processo))
@@ -143,7 +149,6 @@ def cadastro_processo():
                 status_inicial=request.form.get('status_inicial')
             )
             db.session.add(entrada)
-            db.session.flush()
 
             primeira_mov = Movimentacao(
                 id_entrada=entrada.id_entrada,
@@ -186,7 +191,7 @@ def cadastro_processo():
 
 
 # ==========================================================
-# 4️⃣ Listar Processos
+# 4️⃣ Listar Processos + Exportações (CSV, XLSX, PDF)
 # ==========================================================
 @processos_bp.route('/listar')
 @login_required
@@ -223,162 +228,199 @@ def listar_processos():
 
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
+    diretorias = [
+        "Diretoria das Cidades - DC",
+        "Diretoria de Obras - DO",
+        "Diretoria de Planejamento e Projetos - DP",
+        "Diretoria de Suporte - DS",
+        "Não tramita na Novacap",
+        "Tramita via SGIA",
+    ]
 
     return render_template(
         "listar_processos.html",
         processos=processos,
         todos_status=todos_status,
-        todas_ras=todas_ras
+        todas_ras=todas_ras,
+        diretorias=diretorias
     )
 
 
 # ==========================================================
-# 5️⃣ Alterar Processo (nova movimentação)
+# 5️⃣ Exportar Tramitações (CSV / XLSX / PDF)
 # ==========================================================
-@processos_bp.route('/alterar/<int:id_processo>', methods=['GET', 'POST'])
+@processos_bp.route('/exportar-tramitacoes', methods=['GET'])
 @login_required
-def alterar_processo(id_processo):
-    """Adiciona nova movimentação e atualiza status"""
-    processo = Processo.query.get_or_404(id_processo)
-
-    if request.method == 'POST':
-        novo_status = request.form.get('novo_status')
-        observacao = request.form.get('observacao')
-        data_mov = request.form.get('data_movimentacao')
-        id_usuario = int(request.form.get('responsavel_tecnico'))
-
-        if not (novo_status and observacao and data_mov and id_usuario):
-            flash("Todos os campos são obrigatórios.", "error")
-            return redirect(url_for('processos_bp.alterar_processo', id_processo=id_processo))
-
-        entrada = EntradaProcesso.query.filter_by(id_processo=processo.id_processo).first()
-        if not entrada:
-            flash("Entrada do processo não encontrada.", "error")
-            return redirect(url_for('processos_bp.alterar_processo', id_processo=id_processo))
-
-        try:
-            data = datetime.strptime(data_mov, "%Y-%m-%d")
-        except ValueError:
-            flash("Data inválida (use AAAA-MM-DD).", "error")
-            return redirect(url_for('processos_bp.alterar_processo', id_processo=id_processo))
-
-        mov = Movimentacao(
-            id_entrada=entrada.id_entrada,
-            id_usuario=id_usuario,
-            novo_status=novo_status,
-            observacao=observacao,
-            data=data
-        )
-        db.session.add(mov)
-        processo.status_atual = novo_status
-        db.session.commit()
-
-        flash("✅ Processo atualizado com sucesso!", "success")
-        return redirect(url_for('processos_bp.dashboard_processos'))
-
-    status = Status.query.order_by(Status.ordem_exibicao).all()
-    usuarios = Usuario.query.order_by(Usuario.usuario).all()
-
-    return render_template("alterar_processo.html", processo=processo, status=status, usuarios=usuarios)
-
-
-# ==========================================================
-# 6️⃣ Relatório da Diretoria das Cidades (DC)
-# ==========================================================
-@processos_bp.route('/relatorios-dc')
-@login_required
-def relatorios_dc():
-    """Relatório filtrado das demandas da Diretoria das Cidades"""
+def exportar_tramitacoes():
+    """Exporta lista de tramitações filtradas"""
+    formato = request.args.get('formato', 'csv')
+    status = request.args.get('status')
+    ra = request.args.get('ra')
+    diretoria = request.args.get('diretoria')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
 
-    query = (
-        db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo, Demanda)
-        .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
-        .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada)
-        .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
-        .join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
-    )
-
+    query = Processo.query.join(EntradaProcesso, isouter=True)
+    if status:
+        query = query.filter(Processo.status_atual == status)
+    if ra:
+        query = query.filter(EntradaProcesso.ra_origem == ra)
+    if diretoria:
+        query = query.filter(Processo.diretoria_destino == diretoria)
     if inicio and fim:
-        try:
-            inicio_dt = datetime.strptime(inicio, "%Y-%m-%d")
-            fim_dt = datetime.strptime(fim, "%Y-%m-%d")
-            query = query.filter(Movimentacao.data.between(inicio_dt, fim_dt))
-        except ValueError:
-            flash("Formato de data inválido (AAAA-MM-DD).", "error")
+        query = query.filter(EntradaProcesso.data_entrada_novacap.between(inicio, fim))
 
-    DEMANDAS_DC = [
-        "Alambrado (Cercamento)", "Doação de Mudas", "Jardim", "Mato Alto",
-        "Meio-fio", "Parque Infantil", "Pista de Skate", "Poda / Supressão de Árvore",
-        "Ponto de Encontro Comunitário (PEC)", "Praça", "Quadra de Esporte", "Tapa-buraco"
-    ]
+    processos = query.all()
+    dados = []
+    for p in processos:
+        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
+        dados.append({
+            "Número do Processo": p.numero_processo,
+            "Status Atual": p.status_atual or "---",
+            "RA de Origem": entrada.ra_origem if entrada else "---",
+            "Tipo de Demanda": entrada.tipo.descricao if entrada and entrada.tipo else "---",
+            "Diretoria": p.diretoria_destino or "---",
+            "Última Movimentação": entrada.data_documento.strftime("%d/%m/%Y") if entrada else "---"
+        })
 
-    cond_dc = db.or_(
-        Processo.diretoria_destino.ilike('%Cidades%'),
-        Demanda.descricao.in_(DEMANDAS_DC)
-    )
-    resultados = query.filter(cond_dc).order_by(Movimentacao.data.desc()).all()
-
-    df = pd.DataFrame([{
-        "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
-        "Número do Processo": processo.numero_processo,
-        "RA": entrada.ra_origem,
-        "Status": mov.novo_status,
-        "Diretoria": processo.diretoria_destino,
-        "Serviço": demanda.descricao if demanda else "",
-        "Responsável": user.usuario,
-        "Observação": mov.observacao or ""
-    } for mov, user, entrada, processo, demanda in resultados])
-
-    total_geral = len(df)
-    totais_por_servico = df['Serviço'].value_counts().to_dict() if not df.empty else {}
-
-    session['dados_relatorio_dc'] = df.to_dict(orient='records')
-
-    return render_template(
-        'relatorios_dc.html',
-        resultados=resultados,
-        total_geral=total_geral,
-        totais_por_servico=totais_por_servico,
-        inicio=inicio,
-        fim=fim
-    )
-
-
-# ==========================================================
-# 7️⃣ Exportar Relatório DC
-# ==========================================================
-@processos_bp.route('/exportar-dc')
-@login_required
-def exportar_dc():
-    """Exporta relatório da DC em CSV ou XLSX"""
-    formato = request.args.get('formato', 'xlsx').lower()
-    dados = session.get('dados_relatorio_dc', [])
     df = pd.DataFrame(dados)
 
-    output = BytesIO()
-    if formato == 'xlsx':
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Base_DC')
-            if not df.empty:
-                totais = df.groupby('Serviço').size().reset_index(name='Total')
-            else:
-                totais = pd.DataFrame(columns=['Serviço', 'Total'])
-            totais.to_excel(writer, index=False, sheet_name='Totais_por_Servico')
-            resumo = pd.DataFrame([{'Total_Geral': len(df)}])
-            resumo.to_excel(writer, index=False, sheet_name='Resumo')
-
+    # CSV
+    if formato == 'csv':
+        output = BytesIO()
+        df.to_csv(output, index=False, sep=';', encoding='utf-8-sig')
         output.seek(0)
-        return send_file(
-            output,
-            as_attachment=True,
-            download_name=f"Relatorio_DC_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        return send_file(output, as_attachment=True, download_name='tramitacoes.csv', mimetype='text/csv')
+
+    # XLSX
+    elif formato == 'xlsx':
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Tramitacoes')
+        output.seek(0)
+        return send_file(output, as_attachment=True,
+                         download_name='tramitacoes.xlsx',
+                         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+    # PDF
+    elif formato == 'pdf':
+        output = BytesIO()
+        doc = SimpleDocTemplate(output, pagesize=landscape(A4))
+        elements = []
+        styles = getSampleStyleSheet()
+        title = Paragraph("Relatório de Tramitação de Processos", styles["Title"])
+        elements.append(title)
+        elements.append(Spacer(1, 12))
+        table_data = [list(df.columns)] + df.values.tolist()
+        table = Table(table_data, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0060a8')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.lightgrey])
+        ]))
+        elements.append(table)
+        doc.build(elements)
+        output.seek(0)
+        return send_file(output, as_attachment=True, download_name='tramitacoes.pdf', mimetype='application/pdf')
+
     else:
-        csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig')
-        response = make_response(csv)
-        response.headers["Content-Disposition"] = "attachment; filename=relatorio_dc.csv"
-        response.headers["Content-Type"] = "text/csv"
-        return response
+        return make_response("Formato inválido. Use csv, xlsx ou pdf.", 400)
+
+
+# ==========================================================
+# 6️⃣ Exportar PDF individual do Processo
+# ==========================================================
+@processos_bp.route('/exportar-processo/<int:id_processo>')
+@login_required
+def exportar_processo_pdf(id_processo):
+    """Gera e exporta um PDF detalhado de um processo"""
+    processo = Processo.query.get_or_404(id_processo)
+    entrada = EntradaProcesso.query.filter_by(id_processo=id_processo).first()
+    movimentacoes = (
+        db.session.query(Movimentacao)
+        .filter_by(id_entrada=entrada.id_entrada)
+        .order_by(Movimentacao.data.asc())
+        .all()
+        if entrada else []
+    )
+
+    output = BytesIO()
+    doc = SimpleDocTemplate(output, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    title = Paragraph("<b>Relatório Detalhado do Processo</b>", styles['Title'])
+    elements.append(title)
+    elements.append(Spacer(1, 12))
+
+    info_table = [
+        ["Número do Processo", processo.numero_processo],
+        ["Status Atual", processo.status_atual or "---"],
+        ["Diretoria de Destino", processo.diretoria_destino or "---"],
+        ["Observações", processo.observacoes or "---"],
+    ]
+    table = Table(info_table, colWidths=[160, 370])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0060a8")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 12))
+
+    if entrada:
+        entrada_table = [
+            ["RA de Origem", entrada.ra_origem or "---"],
+            ["Tramitação Inicial", entrada.tramite_inicial or "---"],
+            ["Data de Entrada na NOVACAP", entrada.data_entrada_novacap.strftime("%d/%m/%Y") if entrada.data_entrada_novacap else "---"],
+            ["Data do Documento", entrada.data_documento.strftime("%d/%m/%Y") if entrada.data_documento else "---"],
+            ["Tipo", entrada.tipo.descricao if entrada.tipo else "---"],
+            ["Responsável Técnico", f"{entrada.responsavel.nome} ({entrada.responsavel.usuario})" if entrada.responsavel else "---"]
+        ]
+        elements.append(Paragraph("<b>Informações da Entrada</b>", styles['Heading2']))
+        table = Table(entrada_table, colWidths=[200, 330])
+        table.setStyle(TableStyle([
+            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#f0f3f5")),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph("<b>Histórico de Movimentações</b>", styles['Heading2']))
+    if movimentacoes:
+        mov_table = [["Data", "Status", "Responsável", "Observação"]]
+        for mov in movimentacoes:
+            mov_table.append([
+                mov.data.strftime("%d/%m/%Y %H:%M") if mov.data else "---",
+                mov.novo_status or "---",
+                mov.usuario.usuario if mov.usuario else "---",
+                mov.observacao or "---"
+            ])
+
+        table = Table(mov_table, repeatRows=1, colWidths=[80, 120, 120, 210])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0060a8")),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.lightgrey]),
+        ]))
+        elements.append(table)
+    else:
+        elements.append(Paragraph("Nenhuma movimentação registrada.", styles['Normal']))
+
+    doc.build(elements)
+    output.seek(0)
+
+    nome_arquivo = f"Processo_{processo.numero_processo.replace('/', '_')}.pdf"
+    return send_file(output, as_attachment=True, download_name=nome_arquivo, mimetype='application/pdf')

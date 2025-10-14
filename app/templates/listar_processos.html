@@ -1,198 +1,151 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lista de Processos</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
-  <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1.5rem;
-    }
+{% extends "base.html" %}
 
-    th, td {
-      padding: 0.75rem;
-      border-bottom: 1px solid #ccc;
-      text-align: left;
-      vertical-align: top;
-    }
+{% block title %}Lista de Processos - CR/NOVACAP{% endblock %}
 
-    th {
-      background-color: #f0f0f0;
-    }
+{% block content %}
+<section class="listar-processos-section container">
+    <h1>Lista de Processos</h1>
+    <p class="text-center" style="color: var(--text-muted); margin-bottom: 1rem;">
+        Consulte, filtre e exporte os processos registrados no sistema.
+    </p>
 
-    form.filtros {
-      margin-bottom: 1rem;
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
+    <!-- ===================================================== -->
+    <!-- 🔍 FILTROS DE PESQUISA -->
+    <!-- ===================================================== -->
+    <form method="GET" action="{{ url_for('processos_bp.listar_processos') }}" class="filtros">
+        <select name="status">
+            <option value="">-- Filtrar por status --</option>
+            {% for s in todos_status %}
+                <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>
+                    {{ s.descricao }}
+                </option>
+            {% endfor %}
+        </select>
 
-    form input, form select {
-      padding: 0.5rem;
-      min-width: 200px;
-    }
+        <select name="ra">
+            <option value="">-- Filtrar por RA --</option>
+            {% for r in todas_ras %}
+                <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>
+                    {{ r.descricao_ra }}
+                </option>
+            {% endfor %}
+        </select>
 
-    .exportar {
-      margin: 1.5rem 0;
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
+        <select name="diretoria">
+            <option value="">-- Filtrar por Diretoria --</option>
+            {% for d in diretorias %}
+                <option value="{{ d }}" {% if request.args.get('diretoria') == d %}selected{% endif %}>
+                    {{ d }}
+                </option>
+            {% endfor %}
+        </select>
 
-    .botoes-acoes {
-      margin-top: 0.5rem;
-      display: flex;
-      gap: 0.5rem;
-    }
+        <input type="date" name="inicio" value="{{ request.args.get('inicio', '') }}">
+        <input type="date" name="fim" value="{{ request.args.get('fim', '') }}">
 
-    .btn-secondary, .btn-primary, .btn-outline-gray {
-      padding: 0.4rem 0.8rem;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .btn-secondary {
-      background-color: #6c757d;
-      color: white;
-    }
-
-    .btn-primary {
-      background-color: #007bff;
-      color: white;
-    }
-
-    .btn-outline-gray {
-      background-color: #f8f9fa;
-      border: 1px solid #ccc;
-      color: #333;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1 style="text-align: center;">Lista de Processos</h1>
-
-    <!-- Filtros -->
-    <form method="GET" action="{{ url_for('listar_processos') }}" class="filtros">
-      <select name="status">
-        <option value="">-- Filtrar por status --</option>
-        {% for s in todos_status %}
-          <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>
-            {{ s.descricao }}
-          </option>
-        {% endfor %}
-      </select>
-
-      <select name="ra">
-        <option value="">-- Filtrar por RA --</option>
-        {% for r in todas_ras %}
-          <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>
-            {{ r.descricao_ra }}
-          </option>
-        {% endfor %}
-      </select>
-
-      <select name="diretoria">
-        <option value="">-- Filtrar por Diretoria --</option>
-        <option value="Diretoria das Cidades - DC">Diretoria das Cidades - DC</option>
-        <option value="Diretoria de Obras - DO">Diretoria de Obras - DO</option>
-        <option value="Não tramita na Novacap">Não tramita na Novacap</option>
-      </select>
-
-      <input type="date" name="inicio" value="{{ request.args.get('inicio', '') }}">
-      <input type="date" name="fim" value="{{ request.args.get('fim', '') }}">
-
-      <button type="submit" class="btn-primary">Filtrar</button>
-    </form>
-
-    <!-- Exportar CSV/XLSX -->
-    {% if processos %}
-    <form method="GET" class="exportar">
-      <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
-      <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
-      <input type="hidden" name="diretoria" value="{{ request.args.get('diretoria', '') }}">
-      <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
-      <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
-
-      <button type="submit"
-              formaction="{{ url_for('exportar_tramitacoes') }}"
-              name="formato" value="csv"
-              class="btn-outline-gray">Exportar em CSV</button>
-
-      <button type="submit"
-              formaction="{{ url_for('exportar_tramitacoes') }}"
-              name="formato" value="xlsx"
-              class="btn-outline-gray">Exportar em XLSX</button>
-    </form>
-    {% endif %}
-
-    <!-- Tabela -->
-    {% if processos %}
-      <table>
-        <thead>
-          <tr>
-            <th>Número</th>
-            <th>Status Atual</th>
-            <th>RA de Origem</th>
-            <th>Tipo</th>
-            <th>Diretoria</th>
-            <th>Última Movimentação</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for p in processos %}
-            <tr>
-              <td>{{ p.numero_processo }}</td>
-              <td>{{ p.status_atual }}</td>
-              <td>{{ p.entrada.ra_origem if p.entrada else '---' }}</td>
-              <td>{{ p.entrada.tipo.descricao if p.entrada and p.entrada.tipo else '---' }}</td>
-              <td>{{ p.diretoria_destino or '---' }}</td>
-              <td>
-                {% if p.ultima_data %}
-                  {{ p.ultima_data.strftime('%d/%m/%Y %H:%M') }}
-                {% else %}
-                  ---
-                {% endif %}
-              </td>
-              <td>
-                <div class="botoes-acoes">
-                  <a href="{{ url_for('buscar_processo') }}?numero_processo={{ p.numero_processo }}">
-                    <button class="btn-secondary">Visualizar</button>
-                  </a>
-                  <a href="{{ url_for('alterar_processo', id_processo=p.id_processo) }}">
-                    <button class="btn-primary">Alterar</button>
-                  </a>
-                </div>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p style="margin-top: 2rem;">Nenhum processo encontrado com os critérios informados.</p>
-    {% endif %}
-
-    <div style="text-align: center; margin-top: 2rem;">
-      <a href="{{ url_for('dashboard_processos') }}">
-        <button class="btn-secondary">Voltar ao Dashboard</button>
-      </a>
-
-      {% if session.get('is_admin') %}
-        <a href="{{ url_for('relatorios_avancados') }}">
-          <button class="btn-outline-gray">Relatórios Avançados</button>
+        <button type="submit" class="btn-primary">Filtrar</button>
+        <a href="{{ url_for('processos_bp.listar_processos') }}">
+            <button type="button" class="btn-outline">Limpar</button>
         </a>
-      {% endif %}
+    </form>
 
-      <a href="{{ url_for('logout') }}">
-        <button class="btn-danger">Sair do Sistema</button>
-      </a>
+    <!-- ===================================================== -->
+    <!-- 📤 EXPORTAÇÕES -->
+    <!-- ===================================================== -->
+    {% if processos %}
+    <form method="GET" class="exportar" style="margin-top: 1rem;">
+        <!-- Mantém filtros ativos -->
+        <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
+        <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
+        <input type="hidden" name="diretoria" value="{{ request.args.get('diretoria', '') }}">
+        <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
+        <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
+
+        <div class="button-group" style="justify-content: flex-end;">
+            <button type="submit"
+                    formaction="{{ url_for('processos_bp.exportar_tramitacoes') }}"
+                    name="formato" value="csv"
+                    class="btn-outline">
+                Exportar CSV
+            </button>
+            <button type="submit"
+                    formaction="{{ url_for('processos_bp.exportar_tramitacoes') }}"
+                    name="formato" value="xlsx"
+                    class="btn-outline">
+                Exportar XLSX
+            </button>
+            <button type="submit"
+                    formaction="{{ url_for('processos_bp.exportar_tramitacoes') }}"
+                    name="formato" value="pdf"
+                    class="btn-outline">
+                Exportar PDF
+            </button>
+        </div>
+    </form>
+    {% endif %}
+
+    <!-- ===================================================== -->
+    <!-- 📋 TABELA DE PROCESSOS -->
+    <!-- ===================================================== -->
+    {% if processos %}
+    <div class="table-responsive" style="margin-top: 1.5rem;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Status Atual</th>
+                    <th>RA Origem</th>
+                    <th>Tipo</th>
+                    <th>Diretoria</th>
+                    <th>Última Movimentação</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in processos %}
+                <tr>
+                    <td>{{ p.numero_processo }}</td>
+                    <td>{{ p.status_atual or '---' }}</td>
+                    <td>{{ p.entrada.ra_origem if p.entrada else '---' }}</td>
+                    <td>{{ p.entrada.tipo.descricao if p.entrada and p.entrada.tipo else '---' }}</td>
+                    <td>{{ p.diretoria_destino or '---' }}</td>
+                    <td>{{ p.ultima_data.strftime('%d/%m/%Y %H:%M') if p.ultima_data else '---' }}</td>
+                    <td>
+                        <div class="button-group" style="gap: 0.4rem;">
+                            <a href="{{ url_for('processos_bp.buscar_processo') }}?numero_processo={{ p.numero_processo }}">
+                                <button class="btn-secondary">Visualizar</button>
+                            </a>
+                            <a href="{{ url_for('processos_bp.alterar_processo', id_processo=p.id_processo) }}">
+                                <button class="btn-primary">Alterar</button>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-  </div>
-</body>
-</html>
+    {% else %}
+    <p style="margin-top: 2rem; text-align: center;">Nenhum processo encontrado com os critérios informados.</p>
+    {% endif %}
+
+    <!-- ===================================================== -->
+    <!-- ⚙️ RODAPÉ DE AÇÕES -->
+    <!-- ===================================================== -->
+    <div class="button-group" style="margin-top: 2rem;">
+        <a href="{{ url_for('processos_bp.dashboard_processos') }}">
+            <button class="btn-secondary">Voltar ao Dashboard</button>
+        </a>
+
+        {% if session.get('is_admin') %}
+        <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}">
+            <button class="btn-outline">Relatórios Avançados</button>
+        </a>
+        {% endif %}
+
+        <a href="{{ url_for('main_bp.logout') }}">
+            <button class="btn-danger">Sair</button>
+        </a>
+    </div>
+</section>
+{% endblock %}

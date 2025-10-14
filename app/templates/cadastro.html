@@ -1,50 +1,58 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cadastro de Usuário - Central de Relacionamento</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
 
-  <div class="container" style="text-align: center;">
+{% block title %}Cadastro de Usuário - Central de Relacionamento NOVACAP{% endblock %}
+
+{% block content %}
+<section class="cadastro-section" style="max-width: 600px; margin: 0 auto; text-align: center;">
     <h1>Central de Relacionamento</h1>
-    <h2>Cadastro de Usuário</h2>
+    <h2 style="color: var(--primary-dark); margin-bottom: 1.5rem;">Cadastro de Usuário</h2>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="alert-success" style="color: green; margin-bottom: 1rem;">
-          {{ messages[0] }}
-        </div>
-      {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
     {% endwith %}
 
-    <form method="POST" action="{{ url_for('cadastro') }}">
-      <div style="text-align: left;">
-        <label for="nome_completo">Nome Completo</label>
-        <input type="text" id="nome_completo" name="nome_completo" required placeholder="Informe seu nome completo">
+    <form method="POST" action="{{ url_for('main_bp.cadastro') }}" class="cadastro-form" style="text-align: left; margin-top: 1rem;">
+        <div class="form-group">
+            <label for="nome_completo">Nome Completo</label>
+            <input type="text" id="nome_completo" name="nome_completo" required placeholder="Informe seu nome completo">
+        </div>
 
-        <label for="email">E-mail Institucional</label>
-        <input type="email" id="email" name="email" required placeholder="ex: email@novacap.df.gov.br">
+        <div class="form-group">
+            <label for="email">E-mail Institucional</label>
+            <input type="email" id="email" name="email" required placeholder="ex: nome.sobrenome@novacap.df.gov.br">
+        </div>
 
-        <label for="username">Nome de Usuário</label>
-        <input type="text" id="username" name="username" required placeholder="ex: nome.sobrenome">
+        <div class="form-group">
+            <label for="username">Nome de Usuário</label>
+            <input type="text" id="username" name="username" required placeholder="ex: nome.sobrenome">
+        </div>
 
-        <label for="senha">Senha</label>
-        <input type="password" id="senha" name="senha" required>
+        <div class="form-row">
+            <div class="form-col">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" name="senha" required placeholder="Digite sua senha">
+            </div>
 
-        <label for="confirmar_senha">Confirmar Senha</label>
-        <input type="password" id="confirmar_senha" name="confirmar_senha" required>
-      </div>
+            <div class="form-col">
+                <label for="confirmar_senha">Confirmar Senha</label>
+                <input type="password" id="confirmar_senha" name="confirmar_senha" required placeholder="Confirme sua senha">
+            </div>
+        </div>
 
-      <button type="submit" class="btn-primary" style="margin-top: 1rem;">Solicitar Cadastro</button>
+        <div class="button-group" style="margin-top: 2rem;">
+            <button type="submit" class="btn-primary">Solicitar Cadastro</button>
+            <a href="{{ url_for('main_bp.login') }}">
+                <button type="button" class="btn-secondary">Voltar ao Login</button>
+            </a>
+        </div>
     </form>
 
     <p style="margin-top: 2rem; font-size: 0.95rem; color: #555;">
-      ⚠️ O acesso ao sistema será concedido somente após autorização do administrador responsável pela Central de Relacionamento.
+        ⚠️ O acesso ao sistema será liberado somente após autorização do administrador responsável pela Central de Relacionamento.
     </p>
-  </div>
-
-</body>
-</html>
+</section>
+{% endblock %}

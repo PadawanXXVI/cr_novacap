@@ -1,11 +1,12 @@
 # app/admin/routes.py
 """
 Rotas do módulo administrativo — CR-NOVACAP.
-Inclui painel de usuários, aprovação, bloqueio e atribuição de permissões.
+Inclui painel de usuários, aprovação, bloqueio, desbloqueio e atribuição de permissões.
 """
 
-from flask import render_template, redirect, url_for, flash, session
+from flask import render_template, redirect, url_for, flash, session, request
 from flask_login import login_required
+from sqlalchemy import or_
 
 from app.ext import db
 from app.models.modelos import Usuario
@@ -18,12 +19,24 @@ from app.admin import admin_bp
 @admin_bp.route('/painel')
 @login_required
 def painel_admin():
-    """Exibe o painel com a lista de usuários cadastrados"""
+    """Exibe o painel com a lista de usuários cadastrados (com busca e filtro)"""
     if not session.get('is_admin'):
         flash("Acesso restrito ao administrador.", "error")
         return redirect(url_for('main_bp.login'))
 
-    usuarios = Usuario.query.order_by(Usuario.nome.asc()).all()
+    termo_busca = request.args.get('q', '').strip()
+    query = Usuario.query
+
+    if termo_busca:
+        query = query.filter(
+            or_(
+                Usuario.nome.ilike(f"%{termo_busca}%"),
+                Usuario.usuario.ilike(f"%{termo_busca}%"),
+                Usuario.email.ilike(f"%{termo_busca}%")
+            )
+        )
+
+    usuarios = query.order_by(Usuario.nome.asc()).all()
     return render_template('painel_admin.html', usuarios=usuarios)
 
 
@@ -39,10 +52,14 @@ def aprovar_usuario(id_usuario):
         return redirect(url_for('main_bp.login'))
 
     usuario = Usuario.query.get_or_404(id_usuario)
-    usuario.aprovado = True
-    db.session.commit()
 
-    flash(f"✅ Usuário '{usuario.usuario}' aprovado com sucesso.", "success")
+    if usuario.aprovado:
+        flash(f"ℹ️ O usuário '{usuario.usuario}' já está aprovado.", "info")
+    else:
+        usuario.aprovado = True
+        db.session.commit()
+        flash(f"✅ Usuário '{usuario.usuario}' aprovado com sucesso.", "success")
+
     return redirect(url_for('admin_bp.painel_admin'))
 
 
@@ -58,10 +75,14 @@ def bloquear_usuario(id_usuario):
         return redirect(url_for('main_bp.login'))
 
     usuario = Usuario.query.get_or_404(id_usuario)
-    usuario.bloqueado = True
-    db.session.commit()
 
-    flash(f"🚫 Usuário '{usuario.usuario}' bloqueado.", "warning")
+    if usuario.bloqueado:
+        flash(f"ℹ️ O usuário '{usuario.usuario}' já está bloqueado.", "info")
+    else:
+        usuario.bloqueado = True
+        db.session.commit()
+        flash(f"🚫 Usuário '{usuario.usuario}' bloqueado.", "warning")
+
     return redirect(url_for('admin_bp.painel_admin'))
 
 
@@ -77,10 +98,14 @@ def desbloquear_usuario(id_usuario):
         return redirect(url_for('main_bp.login'))
 
     usuario = Usuario.query.get_or_404(id_usuario)
-    usuario.bloqueado = False
-    db.session.commit()
 
-    flash(f"✅ Usuário '{usuario.usuario}' desbloqueado.", "success")
+    if not usuario.bloqueado:
+        flash(f"ℹ️ O usuário '{usuario.usuario}' já está desbloqueado.", "info")
+    else:
+        usuario.bloqueado = False
+        db.session.commit()
+        flash(f"✅ Usuário '{usuario.usuario}' desbloqueado com sucesso.", "success")
+
     return redirect(url_for('admin_bp.painel_admin'))
 
 
@@ -96,8 +121,12 @@ def atribuir_admin(id_usuario):
         return redirect(url_for('main_bp.login'))
 
     usuario = Usuario.query.get_or_404(id_usuario)
-    usuario.is_admin = True
-    db.session.commit()
 
-    flash(f"👑 Usuário '{usuario.usuario}' agora é administrador.", "success")
+    if usuario.is_admin:
+        flash(f"ℹ️ O usuário '{usuario.usuario}' já é administrador.", "info")
+    else:
+        usuario.is_admin = True
+        db.session.commit()
+        flash(f"👑 Usuário '{usuario.usuario}' agora é administrador.", "success")
+
     return redirect(url_for('admin_bp.painel_admin'))
