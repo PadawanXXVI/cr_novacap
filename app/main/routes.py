@@ -5,7 +5,7 @@ Inclui: tela inicial, login, cadastro, redefinição de senha e logout.
 """
 
 from flask import (
-    render_template, request, redirect, url_for, flash, session, jsonify
+    render_template, request, redirect, url_for, flash, session
 )
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -33,10 +33,11 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         senha = request.form.get('password')
-        sistema = request.form.get('sistema')
+        sistema = (request.form.get('sistema') or '').lower()
 
         usuario = Usuario.query.filter_by(usuario=username).first()
 
+        # Validações básicas
         if not usuario:
             flash("Usuário não encontrado.", "error")
             return redirect(url_for('main_bp.login'))
@@ -53,6 +54,7 @@ def login():
             flash("Usuário bloqueado. Contate o administrador.", "error")
             return redirect(url_for('main_bp.login'))
 
+        # Login bem-sucedido
         login_user(usuario)
         session['usuario'] = usuario.usuario
         session['is_admin'] = usuario.is_admin
@@ -60,12 +62,14 @@ def login():
 
         flash(f"Bem-vindo, {usuario.nome}!", "success")
 
+        # Direcionamento
         if sistema == 'tramite':
             return redirect(url_for('processos_bp.dashboard_processos'))
         elif sistema == 'protocolo':
-            return redirect(url_for('protocolo_bp.dashboard_protocolo'))
+            flash("⚙️ O módulo de Protocolo de Atendimentos será ativado na Fase 3.", "info")
+            return redirect(url_for('processos_bp.dashboard_processos'))
         else:
-            flash("Sistema inválido selecionado.", "error")
+            flash("Selecione um sistema válido para acessar.", "warning")
             return redirect(url_for('main_bp.login'))
 
     return render_template('login.html')
@@ -84,8 +88,13 @@ def cadastro():
         senha = request.form.get('senha')
         confirmar = request.form.get('confirmar_senha')
 
+        # Validações básicas
         if senha != confirmar:
             flash("As senhas não coincidem.", "error")
+            return redirect(url_for('main_bp.cadastro'))
+
+        if not email.endswith('@novacap.df.gov.br'):
+            flash("Utilize seu e-mail institucional (@novacap.df.gov.br).", "warning")
             return redirect(url_for('main_bp.cadastro'))
 
         existente = Usuario.query.filter(
@@ -95,6 +104,7 @@ def cadastro():
             flash("E-mail ou nome de usuário já cadastrado.", "error")
             return redirect(url_for('main_bp.cadastro'))
 
+        # Cria usuário pendente de aprovação
         novo_usuario = Usuario(
             nome=nome,
             email=email,
@@ -108,7 +118,7 @@ def cadastro():
         db.session.add(novo_usuario)
         db.session.commit()
 
-        flash("Cadastro enviado com sucesso. Aguarde aprovação do administrador.", "success")
+        flash("✅ Cadastro enviado com sucesso. Aguarde aprovação do administrador.", "success")
         return redirect(url_for('main_bp.login'))
 
     return render_template('cadastro.html')
