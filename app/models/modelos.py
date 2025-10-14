@@ -1,10 +1,16 @@
-from app import db
-from flask_login import UserMixin
-from datetime import datetime
+# app/models/modelos.py
+"""
+Modelos do sistema CR-NOVACAP.
+Contém entidades de usuários, processos, protocolo, status, demandas, logs e alertas.
+"""
 
-# ----------------------------
-# USUÁRIOS DO SISTEMA
-# ----------------------------
+from datetime import datetime
+from flask_login import UserMixin
+from app.ext import db  # ✅ importa o db corretamente (não o app)
+
+# ==========================================================
+# 👤 USUÁRIOS DO SISTEMA
+# ==========================================================
 class Usuario(db.Model, UserMixin):
     __tablename__ = 'usuarios'
 
@@ -20,9 +26,24 @@ class Usuario(db.Model, UserMixin):
     def get_id(self):
         return str(self.id_usuario)
 
-# ----------------------------
-# CANAIS DE ATENDIMENTO
-# ----------------------------
+
+# ==========================================================
+# 🧭 DIRETORIAS (nova tabela)
+# ==========================================================
+class Diretoria(db.Model):
+    __tablename__ = 'diretorias'
+
+    id_diretoria = db.Column(db.Integer, primary_key=True)
+    nome_diretoria = db.Column(db.String(100), unique=True, nullable=False)
+    sigla = db.Column(db.String(10), nullable=True)
+
+    def __repr__(self):
+        return f"<Diretoria {self.nome_diretoria}>"
+
+
+# ==========================================================
+# 📞 CANAIS DE ATENDIMENTO
+# ==========================================================
 class CanalAtendimento(db.Model):
     __tablename__ = 'canais_atendimento'
 
@@ -31,9 +52,10 @@ class CanalAtendimento(db.Model):
 
     atendimentos = db.relationship('ProtocoloAtendimento', backref='canal', lazy=True)
 
-# ----------------------------
-# PROTOCOLO DE ATENDIMENTO
-# ----------------------------
+
+# ==========================================================
+# 🗂️ PROTOCOLO DE ATENDIMENTO
+# ==========================================================
 class ProtocoloAtendimento(db.Model):
     __tablename__ = 'protocolo_atendimento'
 
@@ -60,39 +82,40 @@ class ProtocoloAtendimento(db.Model):
 
     interacoes = db.relationship('InteracaoAtendimento', backref='protocolo', cascade="all, delete-orphan")
 
-# ----------------------------
-# INTERAÇÕES DE ATENDIMENTO
-# ----------------------------
+
+# ==========================================================
+# 💬 INTERAÇÕES DE ATENDIMENTO
+# ==========================================================
 class InteracaoAtendimento(db.Model):
     __tablename__ = 'interacoes_atendimento'
 
     id = db.Column(db.Integer, primary_key=True)
     id_atendimento = db.Column(db.Integer, db.ForeignKey('protocolo_atendimento.id'), nullable=False)
-
     data_hora = db.Column(db.DateTime, default=datetime.utcnow)
     resposta = db.Column(db.Text, nullable=False)
 
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
-
     usuario = db.relationship("Usuario", backref="interacoes_protocolo", lazy=True)
 
-# ----------------------------
-# PROCESSOS
-# ----------------------------
+
+# ==========================================================
+# 📑 PROCESSOS
+# ==========================================================
 class Processo(db.Model):
     __tablename__ = 'processos'
 
     id_processo = db.Column(db.Integer, primary_key=True)
     numero_processo = db.Column(db.String(25), unique=True, nullable=False)
-    status_atual = db.Column(db.String(100), nullable=True)
+    status_atual = db.Column(db.String(100))
     observacoes = db.Column(db.Text)
     diretoria_destino = db.Column(db.String(100), nullable=False)
 
     entradas = db.relationship('EntradaProcesso', backref='processo', cascade="all, delete-orphan")
 
-# ----------------------------
-# ENTRADAS DE PROCESSO
-# ----------------------------
+
+# ==========================================================
+# 🔁 ENTRADAS DE PROCESSO
+# ==========================================================
 class EntradaProcesso(db.Model):
     __tablename__ = 'entradas_processo'
 
@@ -111,9 +134,10 @@ class EntradaProcesso(db.Model):
 
     movimentacoes = db.relationship('Movimentacao', backref='entrada', cascade="all, delete-orphan")
 
-# ----------------------------
-# MOVIMENTAÇÕES
-# ----------------------------
+
+# ==========================================================
+# 🔄 MOVIMENTAÇÕES DE PROCESSOS
+# ==========================================================
 class Movimentacao(db.Model):
     __tablename__ = 'movimentacoes'
 
@@ -126,9 +150,10 @@ class Movimentacao(db.Model):
 
     usuario = db.relationship("Usuario", backref="movimentacoes", lazy=True)
 
-# ----------------------------
-# STATUS
-# ----------------------------
+
+# ==========================================================
+# 🏷️ STATUS
+# ==========================================================
 class Status(db.Model):
     __tablename__ = 'status'
 
@@ -137,9 +162,10 @@ class Status(db.Model):
     ordem_exibicao = db.Column(db.Integer)
     finaliza_processo = db.Column(db.Boolean, default=False)
 
-# ----------------------------
-# REGIÕES ADMINISTRATIVAS
-# ----------------------------
+
+# ==========================================================
+# 🗺️ REGIÕES ADMINISTRATIVAS
+# ==========================================================
 class RegiaoAdministrativa(db.Model):
     __tablename__ = 'regioes_administrativas'
 
@@ -148,27 +174,30 @@ class RegiaoAdministrativa(db.Model):
     nome_ra = db.Column(db.String(100), nullable=False)
     descricao_ra = db.Column(db.String(150), nullable=False)
 
-# ----------------------------
-# DEMANDAS
-# ----------------------------
+
+# ==========================================================
+# 🧾 DEMANDAS
+# ==========================================================
 class Demanda(db.Model):
     __tablename__ = 'demandas'
 
     id_demanda = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.String(100), nullable=False)
 
-# ----------------------------
-# TIPOS DE DEMANDA
-# ----------------------------
+
+# ==========================================================
+# 🧩 TIPOS DE DEMANDA
+# ==========================================================
 class TipoDemanda(db.Model):
     __tablename__ = 'tipos_demanda'
 
     id_tipo = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.String(50), nullable=False)
 
-# ----------------------------
-# LOGS DE USUÁRIOS
-# ----------------------------
+
+# ==========================================================
+# 📋 LOGS DE USUÁRIOS
+# ==========================================================
 class LogUsuario(db.Model):
     __tablename__ = 'logs_usuarios'
 
@@ -181,19 +210,13 @@ class LogUsuario(db.Model):
     ip_origem = db.Column(db.String(45))
     data_hora = db.Column(db.DateTime, default=datetime.utcnow)
 
-# ----------------------------
-# ALERTAS
-# ----------------------------
+
+# ==========================================================
+# 🚨 ALERTAS
+# ==========================================================
 class Alerta(db.Model):
     __tablename__ = 'alertas'
 
     id_alerta = db.Column(db.Integer, primary_key=True)
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
-    tipo_alerta = db.Column(db.String(100), nullable=False)
-    numero_processo = db.Column(db.String(25), nullable=False)
-    id_entrada = db.Column(db.Integer, db.ForeignKey('entradas_processo.id_entrada'), nullable=False)
-    mensagem = db.Column(db.Text, nullable=False)
-    data_alerta = db.Column(db.DateTime, default=datetime.utcnow)
-    respondido = db.Column(db.Boolean, default=False)
-    data_resposta = db.Column(db.DateTime)
-    forma_resposta = db.Column(db.String(50))
+    tipo_alerta = db.Column(db.String(1_
