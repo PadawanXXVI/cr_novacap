@@ -1,6 +1,6 @@
 /* ==========================================================
    🌐 CR-NOVACAP - SISTEMA DE CONTROLE DE PROCESSOS
-   Versão: 2.0 | Design Moderno e Responsivo
+   Versão: 2.1 | Design Moderno e Responsivo (Fase 1)
    ========================================================== */
 
 /* ==== Reset & Base ==== */
@@ -53,6 +53,9 @@ html, body {
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--shadow);
+    position: sticky;     /* 🔧 fixa no topo */
+    top: 0;
+    z-index: 1000;
 }
 
 .navbar h1 {
@@ -86,6 +89,9 @@ h1 {
 h2 {
     font-size: clamp(1.5rem, 3vw, 2rem);
     color: var(--primary-dark);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.25rem;
+    margin-bottom: 1rem;
 }
 
 /* ==== Cards ==== */
@@ -102,13 +108,14 @@ h2 {
     border-radius: 0.75rem;
     padding: 1.5rem;
     text-align: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
 }
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 16px rgba(0, 96, 168, 0.15);
+    border-color: var(--primary);
 }
 
 .card h3 {
@@ -122,7 +129,7 @@ h2 {
     color: var(--primary);
 }
 
-/* ==== Cores específicas dos cards do dashboard ==== */
+/* ==== Cores específicas dos cards ==== */
 .card-dc { border-top: 5px solid #007bff; }
 .card-do { border-top: 5px solid #17a2b8; }
 .card-dp { border-top: 5px solid #6f42c1; }
@@ -176,7 +183,10 @@ textarea:focus {
 button,
 input[type="submit"],
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
     padding: 0.75rem 1.5rem;
     font-weight: 500;
     border: none;
@@ -185,6 +195,26 @@ input[type="submit"],
     transition: all 0.2s ease-in-out;
 }
 
+button i, .btn i {
+    font-size: 1.1rem;
+    vertical-align: middle;
+}
+
+button:hover, .btn:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+
+button:active, .btn:active {
+    transform: translateY(1px);
+}
+
+button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Botões coloridos */
 .btn-primary { background: var(--primary); color: white; }
 .btn-primary:hover { background: var(--primary-dark); }
 
@@ -266,31 +296,12 @@ footer {
     padding-top: 2rem;
 }
 
-/* ==== Modo Escuro (toggle futuro) ==== */
-body.dark-mode {
-    background: #1e1e1e;
-    color: #e0e0e0;
-}
-
-body.dark-mode .container {
-    background: #2b2b2b;
-    box-shadow: none;
-}
-
-body.dark-mode .card {
-    background: #2f2f2f;
-    border-color: #3a3a3a;
-}
-
-body.dark-mode table th {
-    background: #444;
-}
-
-body.dark-mode table td {
-    color: #ccc;
-}
-
 /* ==== Responsividade ==== */
+@media (max-width: 1100px) {
+    .container { padding: 1.5rem; margin: 1rem auto; }
+    .card-grid { gap: 1rem; }
+}
+
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;
@@ -316,94 +327,83 @@ body.dark-mode table td {
     }
 }
 
-/* ---------- Login (Auth) ---------- */
+/* ==== Login / Autenticação ==== */
 .auth-wrap {
-  display: grid;
-  place-items: start center;
-  padding: clamp(1rem, 3vw, 2rem) 1rem;
+    display: grid;
+    place-items: start center;
+    padding: clamp(1rem, 3vw, 2rem) 1rem;
 }
 
 .auth-card {
-  width: min(100%, 760px);
-  background: var(--light-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  padding: clamp(1rem, 3vw, 2rem);
-  margin-top: clamp(0.5rem, 3vh, 1.5rem);
+    width: min(100%, 760px);
+    background: var(--light-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: clamp(1rem, 3vw, 2rem);
+    margin-top: clamp(0.5rem, 3vh, 1.5rem);
 }
 
 .auth-header h1 {
-  text-align: center;
-  font-size: clamp(1.25rem, 2.6vw, 1.6rem);
-  margin-bottom: 0.25rem;
+    text-align: center;
+    font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+    margin-bottom: 0.25rem;
 }
 .auth-header p {
-  text-align: center;
-  color: var(--primary-dark);
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-/* Tira o excesso de altura no topo em telas pequenas */
-@media (max-width: 768px) {
-  .container { padding: 1rem; }
-  .navbar { padding: .75rem 1rem; }
+    text-align: center;
+    color: var(--primary-dark);
+    font-weight: 600;
+    margin-bottom: 1rem;
 }
 
 /* Campos com ícone */
 .input-with-icon {
-  position: relative;
+    position: relative;
 }
 .input-with-icon .icon {
-  width: 20px; height: 20px;
-  position: absolute; top: 50%; left: 12px;
-  transform: translateY(-50%);
-  fill: var(--text-muted);
-  pointer-events: none;
+    width: 20px; height: 20px;
+    position: absolute; top: 50%; left: 12px;
+    transform: translateY(-50%);
+    fill: var(--text-muted);
+    pointer-events: none;
 }
 .input-with-icon input,
 .input-with-icon select {
-  padding-left: 42px !important;
+    padding-left: 42px !important;
 }
 
-/* Tamanhos/espaçamento do form */
+/* Auth extras */
 .auth-form .form-group { margin-bottom: 1rem; }
 .btn-large { padding: 0.9rem 1.25rem; font-size: 1rem; }
 
-/* Links do rodapé do card */
 .auth-links {
-  display: flex; align-items: center; justify-content: center;
-  gap: .5rem; margin-top: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    gap: .5rem; margin-top: 1rem;
 }
 .auth-links .btn-link {
-  background: transparent; border: none; padding: .25rem .5rem;
-  color: var(--primary); cursor: pointer; font-weight: 600;
+    background: transparent; border: none; padding: .25rem .5rem;
+    color: var(--primary); cursor: pointer; font-weight: 600;
 }
 .auth-links .btn-link:hover { text-decoration: underline; }
 .auth-links .sep { color: var(--text-muted); }
 
-/* Navbar: melhora responsividade */
-@media (max-width: 840px) {
-  .navbar { flex-direction: column; align-items: flex-start; gap: .5rem; }
-  .navbar nav { display: flex; gap: .75rem; flex-wrap: wrap; }
+/* ==== Dark Mode (futuro) ==== */
+body.dark-mode {
+    background: #1e1e1e;
+    color: #e0e0e0;
 }
-
-/* Botões com micro-efeitos */
-button, .btn {
-  transform: translateZ(0);
+body.dark-mode .navbar {
+    background: #00365e;
 }
-button:hover, .btn:hover {
-  filter: brightness(1.03);
+body.dark-mode .container {
+    background: #2b2b2b;
+    box-shadow: none;
 }
-button:active, .btn:active {
-  transform: translateY(1px);
+body.dark-mode .card {
+    background: #2f2f2f;
+    border-color: #3a3a3a;
 }
-
-/* Cores de ações já existentes (aproveita a paleta) */
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-dark);
-}
-.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+body.dark-mode .card h3 { color: #cfe2ff; }
+body.dark-mode .btn-primary { background: #0074cc; }
+body.dark-mode table th { background: #444; }
+body.dark-mode table td { color: #ccc; }
