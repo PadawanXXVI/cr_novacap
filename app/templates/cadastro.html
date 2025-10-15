@@ -1,61 +1,94 @@
 {% extends "base.html" %}
 
-{% block title %}Cadastro de Usuário - Central de Relacionamento NOVACAP{% endblock %}
+{% block title %}Cadastro de Usuário – Central de Relacionamento NOVACAP{% endblock %}
 
 {% block content %}
-<section class="cadastro-section" style="max-width: 600px; margin: 0 auto; text-align: center;">
-    <h1>Central de Relacionamento</h1>
-    <h2 style="color: var(--primary-dark); margin-bottom: 1.5rem;">Cadastro de Usuário</h2>
+<section class="auth-wrap">
+  <div class="auth-card fade-in">
+    <header class="auth-header">
+      <h1>Central de Relacionamento</h1>
+      <p>Cadastro de Novo Usuário</p>
+    </header>
 
+    <!-- Mensagens de feedback -->
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
     {% endwith %}
 
-    <form method="POST" action="{{ url_for('main_bp.cadastro') }}" class="cadastro-form" style="text-align: left; margin-top: 1rem;">
-        <!-- 🔒 Token CSRF obrigatório -->
-        {{ csrf_token() }}
+    <form method="POST" action="{{ url_for('main_bp.cadastro') }}" class="auth-form" novalidate>
+      <!-- 🔒 CSRF -->
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-        <div class="form-group">
-            <label for="nome_completo">Nome Completo</label>
-            <input type="text" id="nome_completo" name="nome_completo" required placeholder="Informe seu nome completo">
+      <!-- Nome completo -->
+      <div class="form-group">
+        <label for="nome_completo">Nome Completo</label>
+        <div class="input-with-icon">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z"/></svg>
+          <input type="text" id="nome_completo" name="nome_completo" placeholder="Informe seu nome completo" required>
+        </div>
+      </div>
+
+      <!-- E-mail -->
+      <div class="form-group">
+        <label for="email">E-mail Institucional</label>
+        <div class="input-with-icon">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 2v.01L12 13 4 6.01V6h16zM4 18v-9.99l8 6 8-6V18H4z"/></svg>
+          <input type="email" id="email" name="email" placeholder="ex: nome.sobrenome@novacap.df.gov.br" required>
+        </div>
+      </div>
+
+      <!-- Nome de usuário -->
+      <div class="form-group">
+        <label for="username">Nome de Usuário</label>
+        <div class="input-with-icon">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z"/></svg>
+          <input type="text" id="username" name="username" placeholder="ex: nome.sobrenome" required>
+        </div>
+      </div>
+
+      <!-- Senhas -->
+      <div class="form-row">
+        <div class="form-col">
+          <label for="senha">Senha</label>
+          <div class="input-with-icon">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 17a2 2 0 1 0 .001-3.999A2 2 0 0 0 12 17zm6-7h-1V7a5 5 0 0 0-10 0v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zM9 7a3 3 0 0 1 6 0v3H9V7z"/></svg>
+            <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+          </div>
         </div>
 
-        <div class="form-group">
-            <label for="email">E-mail Institucional</label>
-            <input type="email" id="email" name="email" required placeholder="ex: nome.sobrenome@novacap.df.gov.br">
+        <div class="form-col">
+          <label for="confirmar_senha">Confirmar Senha</label>
+          <div class="input-with-icon">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 17a2 2 0 1 0 .001-3.999A2 2 0 0 0 12 17zm6-7h-1V7a5 5 0 0 0-10 0v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zM9 7a3 3 0 0 1 6 0v3H9V7z"/></svg>
+            <input type="password" id="confirmar_senha" name="confirmar_senha" placeholder="Confirme sua senha" required>
+          </div>
         </div>
+      </div>
 
-        <div class="form-group">
-            <label for="username">Nome de Usuário</label>
-            <input type="text" id="username" name="username" required placeholder="ex: nome.sobrenome">
-        </div>
-
-        <div class="form-row">
-            <div class="form-col">
-                <label for="senha">Senha</label>
-                <input type="password" id="senha" name="senha" required placeholder="Digite sua senha">
-            </div>
-
-            <div class="form-col">
-                <label for="confirmar_senha">Confirmar Senha</label>
-                <input type="password" id="confirmar_senha" name="confirmar_senha" required placeholder="Confirme sua senha">
-            </div>
-        </div>
-
-        <div class="button-group" style="margin-top: 2rem;">
-            <button type="submit" class="btn-primary">Solicitar Cadastro</button>
-            <a href="{{ url_for('main_bp.login') }}">
-                <button type="button" class="btn-secondary">Voltar ao Login</button>
-            </a>
-        </div>
+      <!-- Botões -->
+      <div class="button-group" style="margin-top: 1.75rem;">
+        <button type="submit" class="btn-primary btn-large">
+          <i class="fas fa-user-plus"></i> Solicitar Cadastro
+        </button>
+        <a href="{{ url_for('main_bp.login') }}">
+          <button type="button" class="btn-outline-gray">
+            <i class="fas fa-arrow-left"></i> Voltar ao Login
+          </button>
+        </a>
+      </div>
     </form>
 
-    <p style="margin-top: 2rem; font-size: 0.95rem; color: #555;">
-        ⚠️ O acesso ao sistema será liberado somente após autorização do administrador responsável pela Central de Relacionamento.
+    <!-- Rodapé informativo -->
+    <p style="margin-top: 2rem; font-size: 0.9rem; color: var(--text-muted); text-align:center;">
+      ⚠️ O acesso será liberado somente após autorização do administrador responsável pela Central de Relacionamento.
     </p>
+  </div>
 </section>
+
+<!-- Ícones (Font Awesome) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}

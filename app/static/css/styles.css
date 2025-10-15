@@ -407,3 +407,23 @@ body.dark-mode .card h3 { color: #cfe2ff; }
 body.dark-mode .btn-primary { background: #0074cc; }
 body.dark-mode table th { background: #444; }
 body.dark-mode table td { color: #ccc; }
+
+/* ===== Animação suave de entrada ===== */
+.home-intro {
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+    
+/* ===== Fade-in Animation ===== */
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}Login - Central de Relacionamento NOVACAP{% endblock %}
+{% block title %}Login – Central de Relacionamento NOVACAP{% endblock %}
 
 {% block content %}
 <section class="auth-wrap">
-  <div class="auth-card">
+  <div class="auth-card fade-in">
     <header class="auth-header">
       <h1>Central de Relacionamento</h1>
       <p>Acesso ao Sistema</p>
     </header>
 
+    <!-- Mensagens do sistema -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -19,32 +20,40 @@
     {% endwith %}
 
     <form method="POST" action="{{ url_for('main_bp.login') }}" class="auth-form" novalidate>
-      <!-- 🔒 CSRF correto (hidden) -->
+      <!-- 🔒 CSRF -->
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
+      <!-- Usuário -->
       <div class="form-group">
         <label for="username">Nome de Usuário</label>
         <div class="input-with-icon">
-          <!-- user icon -->
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z"/></svg>
-          <input type="text" id="username" name="username" placeholder="ex: nome.sobrenome" required autocomplete="username">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z"/>
+          </svg>
+          <input type="text" id="username" name="username" placeholder="ex: nome.sobrenome"
+                 required autocomplete="username">
         </div>
       </div>
 
+      <!-- Senha -->
       <div class="form-group">
         <label for="password">Senha</label>
         <div class="input-with-icon">
-          <!-- lock icon -->
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a2 2 0 1 0 .001-3.999A2 2 0 0 0 12 17zm6-7h-1V7a5 5 0 0 0-10 0v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zM9 7a3 3 0 0 1 6 0v3H9V7z"/></svg>
-          <input type="password" id="password" name="password" placeholder="Digite sua senha" required autocomplete="current-password">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 17a2 2 0 1 0 .001-3.999A2 2 0 0 0 12 17zm6-7h-1V7a5 5 0 0 0-10 0v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zM9 7a3 3 0 0 1 6 0v3H9V7z"/>
+          </svg>
+          <input type="password" id="password" name="password" placeholder="Digite sua senha"
+                 required autocomplete="current-password">
         </div>
       </div>
 
+      <!-- Seleção de módulo -->
       <div class="form-group">
         <label for="sistema">Selecione o módulo</label>
         <div class="input-with-icon">
-          <!-- grid icon -->
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
+          </svg>
           <select id="sistema" name="sistema" required>
             <option value="">-- Escolha o módulo --</option>
             <option value="tramite">Tramitação de Processos</option>
@@ -53,12 +62,14 @@
         </div>
       </div>
 
-      <div class="button-group mt-2">
+      <!-- Botão principal -->
+      <div class="button-group" style="margin-top: 1.5rem;">
         <button type="submit" class="btn-primary btn-large">
-          Entrar no Sistema
+          <i class="fas fa-sign-in-alt"></i> Entrar no Sistema
         </button>
       </div>
 
+      <!-- Links de suporte -->
       <div class="auth-links">
         <a class="btn-link" href="{{ url_for('main_bp.cadastro') }}">Solicitar Cadastro</a>
         <span class="sep">•</span>
@@ -67,4 +78,8 @@
     </form>
   </div>
 </section>
+
+<!-- Ícones (Font Awesome) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 {% endblock %}
