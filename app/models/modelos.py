@@ -2,7 +2,7 @@
 """
 Modelos do sistema CR-NOVACAP.
 Contém entidades de usuários, processos, protocolo, status, demandas, logs e alertas.
-Atualizado para incluir a hierarquia Diretoria → Departamento → Demanda.
+Atualizado para incluir a hierarquia Diretoria → Departamento → Demanda (corrigido).
 """
 
 from datetime import datetime
@@ -57,11 +57,41 @@ class Departamento(db.Model):
     nome = db.Column(db.String(150), nullable=False)
     id_diretoria = db.Column(db.Integer, db.ForeignKey('diretorias.id_diretoria'), nullable=False)
 
-    # 🔁 Relação 1:N com Demandas
-    demandas = db.relationship('Demanda', backref='departamento', lazy=True)
+    # 🔁 Relação 1:N com Demandas — corrigido para evitar conflito
+    demandas = db.relationship('Demanda', back_populates='departamento', cascade="all, delete-orphan", lazy=True)
 
     def __repr__(self):
         return f"<Departamento {self.nome}>"
+
+
+# ==========================================================
+# 🧾 DEMANDAS
+# ==========================================================
+class Demanda(db.Model):
+    __tablename__ = 'demandas'
+
+    id_demanda = db.Column(db.Integer, primary_key=True)
+    descricao = db.Column(db.String(100), nullable=False)
+
+    # 🔗 Vinculações hierárquicas
+    id_diretoria = db.Column(db.Integer, db.ForeignKey('diretorias.id_diretoria'), nullable=True)
+    id_departamento = db.Column(db.Integer, db.ForeignKey('departamentos.id_departamento'), nullable=True)
+
+    diretoria = db.relationship("Diretoria", backref="demandas", lazy=True)
+    departamento = db.relationship("Departamento", back_populates="demandas", lazy=True)
+
+    def __repr__(self):
+        return f"<Demanda {self.descricao}>"
+
+
+# ==========================================================
+# 🧩 TIPOS DE DEMANDA
+# ==========================================================
+class TipoDemanda(db.Model):
+    __tablename__ = 'tipos_demanda'
+
+    id_tipo = db.Column(db.Integer, primary_key=True)
+    descricao = db.Column(db.String(50), nullable=False)
 
 
 # ==========================================================
@@ -77,7 +107,7 @@ class CanalAtendimento(db.Model):
 
 
 # ==========================================================
-# 🗂️ PROTOCOLO DE ATENDIMENTO
+# 🗂️ PROTOCOLO DE ATENDIMENTO (CRM)
 # ==========================================================
 class ProtocoloAtendimento(db.Model):
     __tablename__ = 'protocolo_atendimento'
@@ -197,36 +227,6 @@ class RegiaoAdministrativa(db.Model):
     codigo_ra = db.Column(db.String(10), unique=True, nullable=False)
     nome_ra = db.Column(db.String(100), nullable=False)
     descricao_ra = db.Column(db.String(150), nullable=False)
-
-
-# ==========================================================
-# 🧾 DEMANDAS
-# ==========================================================
-class Demanda(db.Model):
-    __tablename__ = 'demandas'
-
-    id_demanda = db.Column(db.Integer, primary_key=True)
-    descricao = db.Column(db.String(100), nullable=False)
-
-    # 🔗 Vinculações hierárquicas
-    id_diretoria = db.Column(db.Integer, db.ForeignKey('diretorias.id_diretoria'), nullable=True)
-    id_departamento = db.Column(db.Integer, db.ForeignKey('departamentos.id_departamento'), nullable=True)
-
-    diretoria = db.relationship("Diretoria", backref="demandas", lazy=True)
-    departamento = db.relationship("Departamento", backref="demandas_dep", lazy=True)
-
-    def __repr__(self):
-        return f"<Demanda {self.descricao}>"
-
-
-# ==========================================================
-# 🧩 TIPOS DE DEMANDA
-# ==========================================================
-class TipoDemanda(db.Model):
-    __tablename__ = 'tipos_demanda'
-
-    id_tipo = db.Column(db.Integer, primary_key=True)
-    descricao = db.Column(db.String(50), nullable=False)
 
 
 # ==========================================================
