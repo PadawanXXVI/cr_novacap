@@ -20,7 +20,8 @@
   {% endwith %}
 
   <form method="POST" action="{{ url_for('processos_bp.cadastro_processo') }}" class="card" style="padding: 2rem; border-radius: 12px;">
-    {{ csrf_token() }}
+    <!-- 🔒 Token CSRF correto -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <!-- Número do Processo -->
     <div class="form-group">
@@ -144,11 +145,14 @@ document.getElementById('numero_processo').addEventListener('blur', function () 
   const numero = this.value.trim();
   if (numero.length < 10) return;
 
+  // 🔒 Obtém o token diretamente do campo hidden
+  const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
   fetch('{{ url_for("processos_bp.verificar_processo") }}', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRFToken': '{{ csrf_token() }}'
+      'X-CSRFToken': csrfToken
     },
     body: JSON.stringify({ numero_processo: numero })
   })

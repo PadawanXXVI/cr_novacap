@@ -424,3 +424,25 @@ def exportar_processo_pdf(id_processo):
 
     nome_arquivo = f"Processo_{processo.numero_processo.replace('/', '_')}.pdf"
     return send_file(output, as_attachment=True, download_name=nome_arquivo, mimetype='application/pdf')
+
+# ==========================================================
+# 🔍 Verificar se o processo já existe (AJAX)
+# ==========================================================
+from flask import jsonify
+
+@processos_bp.route("/verificar-processo", methods=["POST"])
+@login_required
+def verificar_processo():
+    """Verifica via AJAX se o número de processo já existe"""
+    data = request.get_json()
+    numero = data.get("numero_processo")
+
+    if not numero:
+        return jsonify({"erro": "Número do processo não informado."}), 400
+
+    processo = Processo.query.filter_by(numero_processo=numero).first()
+
+    if processo:
+        return jsonify({"existe": True, "id": processo.id_processo})
+    else:
+        return jsonify({"existe": False})
