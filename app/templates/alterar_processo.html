@@ -1,88 +1,92 @@
 {% extends "base.html" %}
 
-{% block title %}Alterar Processo - CR/NOVACAP{% endblock %}
+{% block title %}Alterar Processo – Central de Relacionamento NOVACAP{% endblock %}
 
 {% block content %}
-<section class="alterar-processo-section" style="max-width: 800px; margin: 0 auto;">
-    <h1>Alterar Processo</h1>
-    <p class="text-center" style="color: var(--text-muted); margin-bottom: 1rem;">
-        Atualize o status e as informações de movimentação deste processo.
+<section class="container fade-in alterar-processo-section">
+  <header class="text-center">
+    <h1><i class="fas fa-edit"></i> Alterar Processo</h1>
+    <p style="color: var(--text-muted); margin-bottom: 1rem;">
+      Atualize o status e as informações de movimentação deste processo.
     </p>
+  </header>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-    <form method="POST" action="{{ url_for('processos_bp.alterar_processo', id_processo=processo.id_processo) }}">
-        <!-- 🔒 Token CSRF obrigatório -->
-        {{ csrf_token() }}
+  <form method="POST" action="{{ url_for('processos_bp.alterar_processo', id_processo=processo.id_processo) }}" class="card" style="padding: 2rem; border-radius: 12px;">
+    {{ csrf_token() }}
 
-        <!-- Número do Processo -->
-        <div class="form-group">
-            <label for="numero_processo">Número do Processo</label>
-            <input type="text" id="numero_processo" name="numero_processo"
-                   value="{{ processo.numero_processo }}" readonly
-                   style="background-color: #f9f9f9; border: 1px solid #ddd;">
-        </div>
+    <!-- Número do Processo -->
+    <div class="form-group">
+      <label for="numero_processo"><i class="fas fa-hashtag"></i> Número do Processo</label>
+      <input type="text" id="numero_processo" name="numero_processo"
+             value="{{ processo.numero_processo }}" readonly
+             style="background-color: #f9f9f9; border: 1px solid #ddd;">
+    </div>
 
-        <!-- Status Atual -->
-        <div class="form-group">
-            <label for="status_atual">Status Atual</label>
-            <input type="text" id="status_atual" name="status_atual"
-                   value="{{ processo.status_atual or '---' }}" readonly
-                   style="background-color: #f9f9f9; border: 1px solid #ddd;">
-        </div>
+    <!-- Status Atual -->
+    <div class="form-group">
+      <label for="status_atual"><i class="fas fa-info-circle"></i> Status Atual</label>
+      <input type="text" id="status_atual" name="status_atual"
+             value="{{ processo.status_atual or '---' }}" readonly
+             style="background-color: #f9f9f9; border: 1px solid #ddd;">
+    </div>
 
-        <!-- Novo Status -->
-        <div class="form-group">
-            <label for="novo_status">Novo Status</label>
-            <select id="novo_status" name="novo_status" required>
-                <option value="">Selecione</option>
-                {% for s in status %}
-                    <option value="{{ s.descricao }}">{{ s.descricao }}</option>
-                {% endfor %}
-            </select>
-        </div>
+    <!-- Novo Status -->
+    <div class="form-group">
+      <label for="novo_status"><i class="fas fa-flag"></i> Novo Status</label>
+      <select id="novo_status" name="novo_status" required>
+        <option value="">Selecione</option>
+        {% for s in status %}
+          <option value="{{ s.descricao }}">{{ s.descricao }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
-        <!-- Observação -->
-        <div class="form-group">
-            <label for="observacao">Observação</label>
-            <textarea id="observacao" name="observacao" rows="4" placeholder="Descreva a alteração realizada..." required></textarea>
-        </div>
+    <!-- Observação -->
+    <div class="form-group">
+      <label for="observacao"><i class="fas fa-comment-dots"></i> Observação</label>
+      <textarea id="observacao" name="observacao" rows="4" placeholder="Descreva a alteração realizada..." required></textarea>
+    </div>
 
-        <!-- Data da Movimentação -->
-        <div class="form-group">
-            <label for="data_movimentacao">Data da Movimentação</label>
-            <input type="date" id="data_movimentacao" name="data_movimentacao" required>
-        </div>
+    <!-- Data da Movimentação -->
+    <div class="form-group">
+      <label for="data_movimentacao"><i class="fas fa-calendar-alt"></i> Data da Movimentação</label>
+      <input type="date" id="data_movimentacao" name="data_movimentacao" required>
+    </div>
 
-        <!-- Responsável Técnico -->
-        <div class="form-group">
-            <label for="responsavel_tecnico">Responsável Técnico</label>
-            <select id="responsavel_tecnico" name="responsavel_tecnico" required>
-                <option value="">Selecione</option>
-                {% for u in usuarios %}
-                    <option value="{{ u.id_usuario }}">{{ u.nome }} ({{ u.usuario }})</option>
-                {% endfor %}
-            </select>
-        </div>
+    <!-- Responsável Técnico -->
+    <div class="form-group">
+      <label for="responsavel_tecnico"><i class="fas fa-user-tie"></i> Responsável Técnico</label>
+      <select id="responsavel_tecnico" name="responsavel_tecnico" required>
+        <option value="">Selecione</option>
+        {% for u in usuarios %}
+          <option value="{{ u.id_usuario }}">{{ u.nome }} ({{ u.usuario }})</option>
+        {% endfor %}
+      </select>
+    </div>
 
-        <!-- Botões -->
-        <div class="button-group" style="margin-top: 2rem;">
-            <button type="submit" class="btn-primary">Salvar Alteração</button>
+    <!-- Botões -->
+    <div class="button-group" style="margin-top: 2rem;">
+      <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Salvar Alteração</button>
 
-            <a href="{{ url_for('processos_bp.dashboard_processos') }}">
-                <button type="button" class="btn-secondary">Tela de Totais</button>
-            </a>
+      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn-secondary">
+        <i class="fas fa-chart-bar"></i> Tela de Totais
+      </a>
 
-            <a href="{{ url_for('main_bp.logout') }}">
-                <button type="button" class="btn-danger">Sair do Sistema</button>
-            </a>
-        </div>
-    </form>
+      <a href="{{ url_for('main_bp.logout') }}" class="btn-danger">
+        <i class="fas fa-sign-out-alt"></i> Sair do Sistema
+      </a>
+    </div>
+  </form>
 </section>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}
