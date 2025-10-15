@@ -315,3 +315,95 @@ body.dark-mode table td {
         gap: 0.5rem;
     }
 }
+
+/* ---------- Login (Auth) ---------- */
+.auth-wrap {
+  display: grid;
+  place-items: start center;
+  padding: clamp(1rem, 3vw, 2rem) 1rem;
+}
+
+.auth-card {
+  width: min(100%, 760px);
+  background: var(--light-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: clamp(1rem, 3vw, 2rem);
+  margin-top: clamp(0.5rem, 3vh, 1.5rem);
+}
+
+.auth-header h1 {
+  text-align: center;
+  font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+  margin-bottom: 0.25rem;
+}
+.auth-header p {
+  text-align: center;
+  color: var(--primary-dark);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Tira o excesso de altura no topo em telas pequenas */
+@media (max-width: 768px) {
+  .container { padding: 1rem; }
+  .navbar { padding: .75rem 1rem; }
+}
+
+/* Campos com ícone */
+.input-with-icon {
+  position: relative;
+}
+.input-with-icon .icon {
+  width: 20px; height: 20px;
+  position: absolute; top: 50%; left: 12px;
+  transform: translateY(-50%);
+  fill: var(--text-muted);
+  pointer-events: none;
+}
+.input-with-icon input,
+.input-with-icon select {
+  padding-left: 42px !important;
+}
+
+/* Tamanhos/espaçamento do form */
+.auth-form .form-group { margin-bottom: 1rem; }
+.btn-large { padding: 0.9rem 1.25rem; font-size: 1rem; }
+
+/* Links do rodapé do card */
+.auth-links {
+  display: flex; align-items: center; justify-content: center;
+  gap: .5rem; margin-top: 1rem;
+}
+.auth-links .btn-link {
+  background: transparent; border: none; padding: .25rem .5rem;
+  color: var(--primary); cursor: pointer; font-weight: 600;
+}
+.auth-links .btn-link:hover { text-decoration: underline; }
+.auth-links .sep { color: var(--text-muted); }
+
+/* Navbar: melhora responsividade */
+@media (max-width: 840px) {
+  .navbar { flex-direction: column; align-items: flex-start; gap: .5rem; }
+  .navbar nav { display: flex; gap: .75rem; flex-wrap: wrap; }
+}
+
+/* Botões com micro-efeitos */
+button, .btn {
+  transform: translateZ(0);
+}
+button:hover, .btn:hover {
+  filter: brightness(1.03);
+}
+button:active, .btn:active {
+  transform: translateY(1px);
+}
+
+/* Cores de ações já existentes (aproveita a paleta) */
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-dark);
+}
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
