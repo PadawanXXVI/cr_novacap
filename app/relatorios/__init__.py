@@ -19,7 +19,7 @@ from flask import Blueprint
 # ==========================================================
 relatorios_bp = Blueprint(
     'relatorios_bp',
-    _name_,
+    __name__,
     template_folder='../templates',
     static_folder='../static'
 )

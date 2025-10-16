@@ -19,7 +19,7 @@ from flask import Blueprint
 # ==========================================================
 protocolo_bp = Blueprint(
     'protocolo_bp',
-    _name_,
+    __name__,
     template_folder='../templates',
     static_folder='../static'
 )

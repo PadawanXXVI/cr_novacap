@@ -11,7 +11,7 @@ from flask import Blueprint
 # ==========================================================
 processos_bp = Blueprint(
     'processos_bp',
-    _name_,
+    __name__,
     template_folder='../templates',
     static_folder='../static',
     url_prefix='/processos'  # 🔗 define o prefixo direto no blueprint
