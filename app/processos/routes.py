@@ -363,3 +363,130 @@ def verificar_processo():
     if processo:
         return jsonify({"existe": True, "id": processo.id_processo})
     return jsonify({"existe": False})
+
+# ==========================================================
+# 7️⃣ Exportar lista de Processos (CSV / XLSX / PDF)
+# ==========================================================
+@processos_bp.route('/exportar-tramitacoes', methods=['GET'])
+@login_required
+def exportar_tramitacoes():
+    """Exporta a lista de processos filtrados (CSV, XLSX ou PDF)"""
+
+    formato = request.args.get('formato', 'csv')
+    status = request.args.get('status')
+    ra = request.args.get('ra')
+    diretoria = request.args.get('diretoria')
+    tipo = request.args.get('tipo')
+    demanda = request.args.get('demanda')
+    inicio = request.args.get('inicio')
+    fim = request.args.get('fim')
+
+    query = Processo.query.join(EntradaProcesso, isouter=True)
+
+    # Aplicação dos filtros (iguais à consulta principal)
+    if status:
+        query = query.filter(Processo.status_atual == status)
+    if ra:
+        query = query.filter(EntradaProcesso.ra_origem == ra)
+    if diretoria:
+        query = query.filter(Processo.diretoria_destino == diretoria)
+    if tipo:
+        query = query.filter(EntradaProcesso.id_tipo == tipo)
+    if demanda:
+        query = query.filter(EntradaProcesso.id_demanda == demanda)
+    if inicio and fim:
+        try:
+            inicio_dt = datetime.strptime(inicio, "%Y-%m-%d")
+            fim_dt = datetime.strptime(fim, "%Y-%m-%d")
+            query = query.filter(EntradaProcesso.data_entrada_novacap.between(inicio_dt, fim_dt))
+        except Exception:
+            pass
+
+    processos = query.order_by(Processo.id_processo.desc()).all()
+    if not processos:
+        flash("Nenhum processo encontrado para exportação.", "warning")
+        return redirect(url_for('processos_bp.consultar_processos'))
+
+    # Montagem dos dados para exportação
+    dados = []
+    for p in processos:
+        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
+        dados.append({
+            "Número do Processo": p.numero_processo,
+            "Status Atual": p.status_atual or "---",
+            "RA de Origem": entrada.ra_origem if entrada else "---",
+            "Tipo de Demanda": TipoDemanda.query.get(entrada.id_tipo).descricao if entrada else "---",
+            "Demanda": Demanda.query.get(entrada.id_demanda).descricao if entrada else "---",
+            "Diretoria": p.diretoria_destino or "---",
+            "Última Movimentação": (
+                Movimentacao.query.filter_by(id_entrada=entrada.id_entrada)
+                .order_by(Movimentacao.data.desc())
+                .first()
+                .data.strftime("%d/%m/%Y")
+                if entrada and Movimentacao.query.filter_by(id_entrada=entrada.id_entrada).first()
+                else "---"
+            )
+        })
+
+    df = pd.DataFrame(dados)
+
+    # === CSV ===
+    if formato == 'csv':
+        output = BytesIO()
+        df.to_csv(output, index=False, sep=';', encoding='utf-8-sig')
+        output.seek(0)
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name='tramitacoes.csv',
+            mimetype='text/csv'
+        )
+
+    # === XLSX ===
+    elif formato == 'xlsx':
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Tramitacoes')
+        output.seek(0)
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name='tramitacoes.xlsx',
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+
+    # === PDF ===
+    elif formato == 'pdf':
+        output = BytesIO()
+        doc = SimpleDocTemplate(output, pagesize=landscape(A4))
+        elements = []
+        styles = getSampleStyleSheet()
+
+        elements.append(Paragraph("<b>Relatório de Processos Filtrados</b>", styles["Title"]))
+        elements.append(Spacer(1, 12))
+
+        table_data = [list(df.columns)] + df.values.tolist()
+        table = Table(table_data, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0060a8')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.lightgrey]),
+            ('FONTSIZE', (0, 0), (-1, -1), 8)
+        ]))
+
+        elements.append(table)
+        doc.build(elements)
+        output.seek(0)
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name='tramitacoes.pdf',
+            mimetype='application/pdf'
+        )
+
+    # === Erro ===
+    flash("Formato inválido. Utilize CSV, XLSX ou PDF.", "danger")
+    return redirect(url_for('processos_bp.consultar_processos'))
