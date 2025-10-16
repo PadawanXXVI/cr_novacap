@@ -35,7 +35,7 @@ from app.admin import admin_bp
 # ==========================================================
 def create_app():
     """Cria e configura a aplicação Flask principal."""
-    app = Flask(_name_)
+    app = Flask(__name__)
 
     # ------------------------------------------------------
     # 🔧 Configurações básicas do sistema
