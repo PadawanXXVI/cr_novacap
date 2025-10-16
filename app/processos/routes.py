@@ -360,13 +360,23 @@ def exportar_processo_pdf(id_processo):
 @processos_bp.route("/verificar-processo", methods=["POST"])
 @login_required
 def verificar_processo():
+    """Verifica se um número de processo SEI já existe (AJAX)"""
     data = request.get_json()
-    numero = data.get("numero_processo")
+    numero = data.get("numero_processo", "").strip()
+
     if not numero:
         return jsonify({"erro": "Número do processo não informado."}), 400
-    processo = Processo.query.filter_by(numero_processo=numero).first()
-    if processo:
-        return jsonify({"existe": True, "id": processo.id_processo})
+
+    # Normaliza: remove tudo que não é número (padrão interno)
+    numero_limpo = ''.join(filter(str.isdigit, numero))
+
+    # Busca ignorando máscara, comparando apenas dígitos
+    processos = Processo.query.all()
+    for p in processos:
+        existente = ''.join(filter(str.isdigit, p.numero_processo or ''))
+        if existente == numero_limpo:
+            return jsonify({"existe": True, "id": p.id_processo})
+
     return jsonify({"existe": False})
 
 # ==========================================================
