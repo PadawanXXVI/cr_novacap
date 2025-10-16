@@ -72,12 +72,17 @@ def dashboard_processos():
 def cadastro_processo():
     """Cadastra um novo processo SEI"""
     if request.method == 'POST':
-        numero = request.form.get('numero_processo', '').strip()
-        existente = Processo.query.filter_by(numero_processo=numero).first()
+        # Limpa e normaliza o número do processo SEI
+        numero = request.form.get('numero_processo', '').strip().replace(' ', '').replace('\u200b', '')
+
+        # Busca caso já exista no banco
+        existente = Processo.query.filter(
+            db.func.replace(Processo.numero_processo, ' ', '') == numero
+        ).first()
 
         if existente:
-            flash("⚠ Processo já cadastrado. Redirecionando...", "warning")
-            return redirect(url_for('processos_bp.alterar_processo', id_processo=existente.id_processo))
+            flash(f"⚠ O processo {numero} já está cadastrado no sistema.", "warning")
+            return redirect(url_for('processos_bp.consultar_processos', numero_processo=numero))
 
         try:
             data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
@@ -118,7 +123,7 @@ def cadastro_processo():
             db.session.add(primeira_mov)
             db.session.commit()
 
-            flash("✅ Processo cadastrado com sucesso!", "success")
+            flash(f"✅ Processo {numero} cadastrado com sucesso!", "success")
             return redirect(url_for('processos_bp.cadastro_processo'))
 
         except Exception as e:
@@ -126,6 +131,7 @@ def cadastro_processo():
             flash(f"❌ Erro ao cadastrar processo: {str(e)}", "error")
             return redirect(url_for('processos_bp.cadastro_processo'))
 
+    # Carrega listas para o formulário
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
     demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
@@ -142,7 +148,6 @@ def cadastro_processo():
         usuarios=usuarios,
         diretorias=[d.nome_completo for d in diretorias]
     )
-
 
 # ==========================================================
 # 3️⃣ Alterar Processo
