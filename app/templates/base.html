@@ -1,58 +1,162 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Sistema CR-NOVACAP{% endblock %}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Sistema CR-NOVACAP{% endblock %}</title>
 
-    <!-- Ícone e CSS -->
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <!-- 🔗 Ícone e Folhas de Estilo -->
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- 🔵 Paleta institucional GDF -->
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background-color: #f7f9fb;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    /* =========================
+       🟦 CABEÇALHO INSTITUCIONAL
+    ========================== */
+    header.navbar {
+      background-color: #002d62;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 2rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    header.navbar img.logo-gdf {
+      height: 60px;
+      width: auto;
+    }
+
+    header.navbar h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: #ffc107;
+    }
+
+    /* =========================
+       ⚙ CONTEÚDO PRINCIPAL
+    ========================== */
+    main.container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 1rem 2rem;
+    }
+
+    .alert {
+      padding: 0.9rem 1.2rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .alert-success { background-color: #d4edda; color: #155724; }
+    .alert-warning { background-color: #fff3cd; color: #856404; }
+    .alert-error { background-color: #f8d7da; color: #721c24; }
+
+    /* =========================
+       🟡 RODAPÉ
+    ========================== */
+    footer {
+      background-color: #002d62;
+      color: white;
+      text-align: center;
+      padding: 1.5rem 0;
+      margin-top: 3rem;
+      font-size: 0.9rem;
+    }
+
+    footer p {
+      margin: 0.3rem 0;
+    }
+
+    @media (max-width: 768px) {
+      header.navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      nav {
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <!-- ========================= -->
+  <!-- 🟦 Cabeçalho Institucional -->
+  <!-- ========================= -->
+  <header class="navbar">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <img src="{{ url_for('static', filename='../images/ico-logo-gdf.svg') }}" alt="GDF" class="logo-gdf">
+      <h1>Central de Relacionamento – NOVACAP</h1>
+    </div>
 
-    <!-- ========================= -->
-    <!-- Barra de Navegação -->
-    <!-- ========================= -->
-    <header class="navbar">
-        <h1>Sistema CR-NOVACAP</h1>
+    <nav>
+      <a href="{{ url_for('processos_bp.dashboard_processos') }}"><i class="fas fa-chart-pie"></i> Painel</a>
+      <a href="{{ url_for('processos_bp.listar_processos') }}"><i class="fas fa-folder-open"></i> Processos</a>
+      <a href="{{ url_for('relatorios_bp.relatorios_gerenciais') }}"><i class="fas fa-file-alt"></i> Relatórios</a>
+      {% if session.get('is_admin') %}
+        <a href="{{ url_for('admin_bp.painel_admin') }}"><i class="fas fa-user-cog"></i> Administração</a>
+      {% endif %}
+      <a href="{{ url_for('main_bp.logout') }}"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </nav>
+  </header>
 
-        <nav>
-            <a href="{{ url_for('processos_bp.dashboard_processos') }}">Processos</a>
-            <a href="{{ url_for('relatorios_bp.relatorios_gerenciais') }}">Relatórios</a>
-            {% if session.get('is_admin') %}
-                <a href="{{ url_for('admin_bp.painel_admin') }}">Administração</a>
-            {% endif %}
-            <a href="{{ url_for('main_bp.logout') }}">Sair</a>
-        </nav>
-    </header>
+  <!-- ========================= -->
+  <!-- 📋 Conteúdo Principal -->
+  <!-- ========================= -->
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
-    <!-- ========================= -->
-    <!-- Conteúdo Principal -->
-    <!-- ========================= -->
-    <main class="container">
+    {% block content %}{% endblock %}
+  </main>
 
-        <!-- Mensagens Flash -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+  <!-- ========================= -->
+  <!-- 🟡 Rodapé Institucional -->
+  <!-- ========================= -->
+  <footer>
+    <p>Governo do Distrito Federal — Companhia Urbanizadora da Nova Capital do Brasil (NOVACAP)</p>
+    <p>Central de Relacionamento — Sistema de Controle de Processos SEI</p>
+    <p>© {{ current_year or 2025 }}</p>
+  </footer>
 
-        <!-- Bloco de Conteúdo Específico -->
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- ========================= -->
-    <!-- Rodapé Institucional -->
-    <!-- ========================= -->
-    <footer>
-        <p>© {{ current_year or 2025 }} Companhia Urbanizadora da Nova Capital do Brasil – NOVACAP</p>
-        <p>Central de Relacionamento – Sistema de Controle de Processos</p>
-    </footer>
-
-    {% block scripts %}{% endblock %}
+  {% block scripts %}{% endblock %}
 </body>
 </html>

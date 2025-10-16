@@ -1,6 +1,6 @@
 /* ==========================================================
    🌐 CR-NOVACAP - SISTEMA DE CONTROLE DE PROCESSOS
-   Versão: 2.2 | Design Moderno e Responsivo (Fase 1 Final)
+   Versão: 2.3 | Design Institucional GDF (Unificação Consulta)
    ========================================================== */
 
 /* ==== Reset & Base ==== */
@@ -21,7 +21,7 @@ html, body {
 
 /* ==== Paleta de Cores Institucional ==== */
 :root {
-  --primary: #0060a8;      /* Azul institucional NOVACAP */
+  --primary: #0060a8;      /* Azul institucional GDF/NOVACAP */
   --primary-dark: #00497e;
   --accent: #00a86b;       /* Verde sucesso */
   --danger: #dc3545;
@@ -302,19 +302,6 @@ footer {
 .auth-links .btn-link:hover { text-decoration: underline; }
 .auth-links .sep { color: var(--text-muted); }
 
-/* ==== Dark Mode (futuro) ==== */
-body.dark-mode {
-  background: #1e1e1e;
-  color: #e0e0e0;
-}
-body.dark-mode .navbar { background: #00365e; }
-body.dark-mode .container { background: #2b2b2b; box-shadow: none; }
-body.dark-mode .card { background: #2f2f2f; border-color: #3a3a3a; }
-body.dark-mode .card h3 { color: #cfe2ff; }
-body.dark-mode .btn-primary { background: #0074cc; }
-body.dark-mode table th { background: #444; }
-body.dark-mode table td { color: #ccc; }
-
 /* ==== Animações ==== */
 .fade-in {
   animation: fadeIn 0.6s ease-in-out;
@@ -335,4 +322,93 @@ body.dark-mode table td { color: #ccc; }
   table th, table td { font-size: 0.9rem; }
   button, .btn { width: 100%; }
   .button-group { flex-direction: column; gap: 0.5rem; }
+}
+
+/* ==========================================================
+   🔍 CONSULTA DE PROCESSOS – Padrão GDF (versão institucional)
+   ========================================================== */
+header img {
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+}
+header h1 {
+  color: var(--primary-dark);
+  letter-spacing: 0.3px;
+}
+header p {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  margin-top: 0.4rem;
+}
+form.card label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+form.card input, form.card select { background-color: #fdfdfd; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+/* 🔹 Tabela + Exportações */
+.export-bar button {
+  font-size: 0.9rem;
+  padding: 0.55rem 1rem;
+}
+.export-bar span { color: var(--text-muted); }
+.table-responsive {
+  background: white;
+  border-radius: 10px;
+  overflow-x: auto;
+  box-shadow: var(--shadow);
+}
+table th {
+  background: var(--primary);
+  color: white;
+  text-align: center;
+}
+table td {
+  vertical-align: middle;
+  text-align: center;
+  color: #333;
+}
+table td strong { color: var(--primary-dark); }
+
+/* 🔹 Badges */
+.badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.badge.success { background-color: #d1e7dd; color: #0f5132; }
+.badge.warning { background-color: #fff3cd; color: #664d03; }
+.badge.danger  { background-color: #f8d7da; color: #842029; }
+.badge.neutral { background-color: #e2e3e5; color: #343a40; }
+
+/* 🔹 Ações */
+.table-hover td a.btn-outline-blue {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+/* 🔹 Rodapé e Botões */
+.button-group .btn-secondary {
+  background: #f1f3f5;
+  color: var(--primary-dark);
+  border: 1px solid #cfd8dc;
+}
+.button-group .btn-secondary:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* 🔹 Responsividade */
+@media (max-width: 768px) {
+  header img { height: 50px; }
+  table th, table td { font-size: 0.85rem; padding: 0.5rem; }
+  .form-grid { grid-template-columns: 1fr; }
 }

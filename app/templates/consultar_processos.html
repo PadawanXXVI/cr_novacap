@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}Consulta de Processos – Central de Relacionamento NOVACAP{% endblock %}
+
+{% block content %}
+<section class="container fade-in" style="max-width: 1200px; margin: 2rem auto;">
+
+  <!-- 🔹 Cabeçalho Institucional -->
+  <header class="text-center" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: center; align-items: center; gap: 1rem;">
+      <img src="{{ url_for('static', filename='../images/ico-logo-gdf.svg') }}" alt="GDF" height="70">
+      <h1 style="color: #002d62; font-size: 1.9rem; font-weight: 700;">Consulta de Processos – Central de Relacionamento</h1>
+    </div>
+    <p style="color: #555; max-width: 780px; margin: 0.8rem auto 0;">
+      Consulte, filtre, exporte ou visualize processos SEI tramitando pela NOVACAP.
+    </p>
+  </header>
+
+  <!-- 🔍 FILTROS DE PESQUISA -->
+  <form method="GET" action="{{ url_for('processos_bp.consultar_processos') }}" class="card" style="padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
+    {{ csrf_token() }}
+
+    <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+      <!-- Número SEI -->
+      <div>
+        <label for="numero_processo"><i class="fas fa-hashtag"></i> Nº Processo SEI</label>
+        <input type="text" name="numero_processo" id="numero_processo" placeholder="00000-00000000/0000-00" value="{{ request.args.get('numero_processo', '') }}">
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label for="status"><i class="fas fa-flag"></i> Status</label>
+        <select name="status" id="status">
+          <option value="">Todos</option>
+          {% for s in todos_status %}
+            <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>
+              {{ s.descricao }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Diretoria -->
+      <div>
+        <label for="diretoria"><i class="fas fa-building"></i> Diretoria de Destino</label>
+        <select name="diretoria" id="diretoria">
+          <option value="">Todas</option>
+          {% for d in diretorias %}
+            <option value="{{ d }}" {% if request.args.get('diretoria') == d %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- RA -->
+      <div>
+        <label for="ra"><i class="fas fa-map-marker-alt"></i> Região Administrativa</label>
+        <select name="ra" id="ra">
+          <option value="">Todas</option>
+          {% for r in todas_ras %}
+            <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>{{ r.descricao_ra }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Tipo de Demanda -->
+      <div>
+        <label for="tipo"><i class="fas fa-tag"></i> Tipo de Demanda</label>
+        <select name="tipo" id="tipo">
+          <option value="">Todos</option>
+          {% for t in tipos %}
+            <option value="{{ t.id_tipo }}" {% if request.args.get('tipo') == t.id_tipo|string %}selected{% endif %}>{{ t.descricao }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Demanda -->
+      <div>
+        <label for="demanda"><i class="fas fa-list-ul"></i> Demanda</label>
+        <select name="demanda" id="demanda">
+          <option value="">Todas</option>
+          {% for d in demandas %}
+            <option value="{{ d.id_demanda }}" {% if request.args.get('demanda') == d.id_demanda|string %}selected{% endif %}>{{ d.descricao }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Datas -->
+      <div>
+        <label for="inicio"><i class="fas fa-calendar-plus"></i> Data Início</label>
+        <input type="date" id="inicio" name="inicio" value="{{ request.args.get('inicio', '') }}">
+      </div>
+      <div>
+        <label for="fim"><i class="fas fa-calendar-alt"></i> Data Fim</label>
+        <input type="date" id="fim" name="fim" value="{{ request.args.get('fim', '') }}">
+      </div>
+    </div>
+
+    <div class="button-group" style="margin-top: 1.2rem; justify-content: center; flex-wrap: wrap; gap: 0.8rem;">
+      <button type="submit" class="btn-primary"><i class="fas fa-search"></i> Consultar</button>
+      <a href="{{ url_for('processos_bp.consultar_processos') }}" class="btn-outline-gray"><i class="fas fa-undo"></i> Limpar</a>
+    </div>
+  </form>
+
+  <!-- 📊 RESULTADOS -->
+  {% if processos %}
+  <div class="export-bar" style="text-align: right; margin-bottom: 0.5rem;">
+    <form method="GET">
+      {{ csrf_token() }}
+      <input type="hidden" name="status" value="{{ request.args.get('status', '') }}">
+      <input type="hidden" name="ra" value="{{ request.args.get('ra', '') }}">
+      <input type="hidden" name="diretoria" value="{{ request.args.get('diretoria', '') }}">
+      <input type="hidden" name="inicio" value="{{ request.args.get('inicio', '') }}">
+      <input type="hidden" name="fim" value="{{ request.args.get('fim', '') }}">
+
+      <span style="margin-right: 0.5rem; font-weight: 500;">Exportar:</span>
+      <button formaction="{{ url_for('processos_bp.exportar_tramitacoes') }}" name="formato" value="csv" class="btn-outline-blue">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+      <button formaction="{{ url_for('processos_bp.exportar_tramitacoes') }}" name="formato" value="xlsx" class="btn-outline-blue">
+        <i class="fas fa-file-excel"></i> XLSX
+      </button>
+      <button formaction="{{ url_for('processos_bp.exportar_tramitacoes') }}" name="formato" value="pdf" class="btn-outline-blue">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+    </form>
+  </div>
+
+  <!-- TABELA DE RESULTADOS -->
+  <div class="table-responsive">
+    <table class="table-hover">
+      <thead>
+        <tr>
+          <th>Nº Processo</th>
+          <th>RA Origem</th>
+          <th>Tipo</th>
+          <th>Diretoria</th>
+          <th>Status Atual</th>
+          <th>Última Movimentação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in processos %}
+        <tr>
+          <td><strong>{{ p.numero_processo }}</strong></td>
+          <td>{{ p.entrada.ra_origem if p.entrada else '---' }}</td>
+          <td>{{ p.entrada.tipo.descricao if p.entrada and p.entrada.tipo else '---' }}</td>
+          <td>{{ p.diretoria_destino or '---' }}</td>
+          <td>
+            {% if "Atendido" in p.status_atual %}
+              <span class="badge success">{{ p.status_atual }}</span>
+            {% elif "Devolvido" in p.status_atual %}
+              <span class="badge warning">{{ p.status_atual }}</span>
+            {% elif "Improcedente" in p.status_atual %}
+              <span class="badge danger">{{ p.status_atual }}</span>
+            {% else %}
+              <span class="badge neutral">{{ p.status_atual or "---" }}</span>
+            {% endif %}
+          </td>
+          <td>{{ p.ultima_data.strftime('%d/%m/%Y') if p.ultima_data else '---' }}</td>
+          <td>
+            <a href="{{ url_for('processos_bp.exportar_processo_pdf', id_processo=p.id_processo) }}" class="btn-outline-blue" title="Gerar PDF">
+              <i class="fas fa-file-pdf"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <p style="margin-top: 2rem; text-align: center; color: #777;">
+    Nenhum processo encontrado com os filtros aplicados.
+  </p>
+  {% endif %}
+
+  <!-- ⚙ RODAPÉ -->
+  <div class="button-group" style="margin-top: 2.5rem; justify-content:center;">
+    <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn-secondary">
+      <i class="fas fa-chart-bar"></i> Voltar ao Dashboard
+    </a>
+    <a href="{{ url_for('main_bp.logout') }}" class="btn-danger">
+      <i class="fas fa-sign-out-alt"></i> Sair
+    </a>
+  </div>
+
+</section>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{% endblock %}

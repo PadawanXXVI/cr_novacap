@@ -1,25 +1,34 @@
 {% extends "base.html" %}
-
 {% block title %}Alterar Processo – Central de Relacionamento NOVACAP{% endblock %}
 
 {% block content %}
-<section class="container fade-in alterar-processo-section">
-  <header class="text-center">
-    <h1><i class="fas fa-edit"></i> Alterar Processo</h1>
-    <p style="color: var(--text-muted); margin-bottom: 1rem;">
-      Atualize o status e as informações de movimentação deste processo.
+<section class="container fade-in" style="max-width: 880px; margin: 3rem auto;">
+
+  <!-- Cabeçalho institucional -->
+  <header class="text-center" style="margin-bottom: 2rem;">
+    <img src="{{ url_for('static', filename='../images/ico-logo-gdf.svg') }}" alt="GDF" height="80" style="margin-bottom: 1rem;">
+    <h1 style="color: #002d62; font-size: 2rem; margin-bottom: 0.3rem;">
+      <i class="fas fa-edit"></i> Alterar Processo
+    </h1>
+    <p style="color: #666; max-width: 720px; margin: 0 auto;">
+      Atualize o status, responsável e observações referentes à movimentação deste processo.
     </p>
   </header>
 
+  <!-- Mensagens do sistema -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
-        <div class="alert alert-{{ category }}">{{ message }}</div>
+        <div class="alert alert-{{ category }}" style="margin-bottom: 1rem;">{{ message }}</div>
       {% endfor %}
     {% endif %}
   {% endwith %}
 
-  <form method="POST" action="{{ url_for('processos_bp.alterar_processo', id_processo=processo.id_processo) }}" class="card" style="padding: 2rem; border-radius: 12px;">
+  <!-- Formulário -->
+  <form method="POST"
+        action="{{ url_for('processos_bp.alterar_processo', id_processo=processo.id_processo) }}"
+        class="card"
+        style="padding: 2rem; border-radius: 10px; background-color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
     {{ csrf_token() }}
 
     <!-- Número do Processo -->
@@ -27,7 +36,7 @@
       <label for="numero_processo"><i class="fas fa-hashtag"></i> Número do Processo</label>
       <input type="text" id="numero_processo" name="numero_processo"
              value="{{ processo.numero_processo }}" readonly
-             style="background-color: #f9f9f9; border: 1px solid #ddd;">
+             style="background-color: #f5f6fa; border: 1px solid #d0d0d0;">
     </div>
 
     <!-- Status Atual -->
@@ -35,7 +44,7 @@
       <label for="status_atual"><i class="fas fa-info-circle"></i> Status Atual</label>
       <input type="text" id="status_atual" name="status_atual"
              value="{{ processo.status_atual or '---' }}" readonly
-             style="background-color: #f9f9f9; border: 1px solid #ddd;">
+             style="background-color: #f5f6fa; border: 1px solid #d0d0d0;">
     </div>
 
     <!-- Novo Status -->
@@ -52,39 +61,46 @@
     <!-- Observação -->
     <div class="form-group">
       <label for="observacao"><i class="fas fa-comment-dots"></i> Observação</label>
-      <textarea id="observacao" name="observacao" rows="4" placeholder="Descreva a alteração realizada..." required></textarea>
+      <textarea id="observacao" name="observacao" rows="4" placeholder="Descreva brevemente a movimentação..." required></textarea>
     </div>
 
-    <!-- Data da Movimentação -->
-    <div class="form-group">
-      <label for="data_movimentacao"><i class="fas fa-calendar-alt"></i> Data da Movimentação</label>
-      <input type="date" id="data_movimentacao" name="data_movimentacao" required>
-    </div>
-
-    <!-- Responsável Técnico -->
-    <div class="form-group">
-      <label for="responsavel_tecnico"><i class="fas fa-user-tie"></i> Responsável Técnico</label>
-      <select id="responsavel_tecnico" name="responsavel_tecnico" required>
-        <option value="">Selecione</option>
-        {% for u in usuarios %}
-          <option value="{{ u.id_usuario }}">{{ u.nome }} ({{ u.usuario }})</option>
-        {% endfor %}
-      </select>
+    <!-- Data da Movimentação e Responsável -->
+    <div class="form-row">
+      <div class="form-col">
+        <label for="data_movimentacao"><i class="fas fa-calendar-alt"></i> Data da Movimentação</label>
+        <input type="date" id="data_movimentacao" name="data_movimentacao" required>
+      </div>
+      <div class="form-col">
+        <label for="responsavel_tecnico"><i class="fas fa-user-tie"></i> Responsável Técnico</label>
+        <select id="responsavel_tecnico" name="responsavel_tecnico" required>
+          <option value="">Selecione</option>
+          {% for u in usuarios %}
+            <option value="{{ u.id_usuario }}">{{ u.nome }} ({{ u.usuario }})</option>
+          {% endfor %}
+        </select>
+      </div>
     </div>
 
     <!-- Botões -->
-    <div class="button-group" style="margin-top: 2rem;">
-      <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Salvar Alteração</button>
+    <div class="button-group" style="margin-top: 2rem; text-align: center;">
+      <button type="submit" class="btn-primary" style="margin-right: 0.5rem;">
+        <i class="fas fa-save"></i> Salvar Alteração
+      </button>
 
-      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn-secondary">
+      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn-secondary" style="margin-right: 0.5rem;">
         <i class="fas fa-chart-bar"></i> Tela de Totais
       </a>
 
       <a href="{{ url_for('main_bp.logout') }}" class="btn-danger">
-        <i class="fas fa-sign-out-alt"></i> Sair do Sistema
+        <i class="fas fa-sign-out-alt"></i> Sair
       </a>
     </div>
   </form>
+
+  <!-- Rodapé institucional -->
+  <div class="text-center" style="margin-top: 2rem; color: #777; font-size: 0.9rem;">
+    <p>© {{ current_year or 2025 }} Governo do Distrito Federal – Companhia Urbanizadora da Nova Capital do Brasil (NOVACAP)</p>
+  </div>
 </section>
 
 <!-- Font Awesome -->
