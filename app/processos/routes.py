@@ -9,11 +9,12 @@ from io import BytesIO
 import pandas as pd
 
 from flask import (
-    render_template, request, redirect, url_for, flash, session, make_response, send_file
+    render_template, request, redirect, url_for, flash, session,
+    make_response, send_file, jsonify
 )
 from flask_login import login_required, current_user
 
-from app.ext import db
+from app.ext import db, csrf
 from app.models.modelos import (
     Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa,
     Status, Usuario, Movimentacao
@@ -35,11 +36,16 @@ from reportlab.lib.styles import getSampleStyleSheet
 def dashboard_processos():
     """Exibe estatísticas gerais dos processos"""
     total_processos = Processo.query.count()
+
+    # Totais consolidados por status (última movimentação)
     processos_atendidos = Processo.query.filter_by(status_atual='Atendido').count()
-    processos_dc = Processo.query.filter_by(status_atual='Enviado à Diretoria das Cidades').count()
-    processos_do = Processo.query.filter_by(status_atual='Enviado à Diretoria de Obras').count()
+    processos_dc = Processo.query.filter_by(diretoria_destino='Diretoria das Cidades - DC').count()
+    processos_do = Processo.query.filter_by(diretoria_destino='Diretoria de Obras - DO').count()
+    processos_dp = Processo.query.filter_by(diretoria_destino='Diretoria de Planejamento e Projetos - DP').count()
     processos_sgia = Processo.query.filter_by(status_atual='Improcedente – tramitação via SGIA').count()
-    processos_improcedentes = Processo.query.filter_by(status_atual='Improcedente – tramita por órgão diferente da NOVACAP').count()
+    processos_improcedentes = Processo.query.filter_by(
+        status_atual='Improcedente – tramita por órgão diferente da NOVACAP'
+    ).count()
 
     devolvidos_ra = Processo.query.filter(
         Processo.status_atual.in_([
@@ -60,6 +66,7 @@ def dashboard_processos():
         processos_atendidos=processos_atendidos,
         processos_dc=processos_dc,
         processos_do=processos_do,
+        processos_dp=processos_dp,
         processos_sgia=processos_sgia,
         processos_improcedentes=processos_improcedentes,
         devolvidos_ra=devolvidos_ra,
@@ -123,10 +130,12 @@ def cadastro_processo():
             return redirect(url_for('processos_bp.alterar_processo', id_processo=existente.id_processo))
 
         try:
+            # 🗓️ Conversões de datas
             data_criacao_ra = datetime.strptime(request.form.get('data_criacao_ra'), "%Y-%m-%d").date()
             data_entrada_novacap = datetime.strptime(request.form.get('data_entrada_novacap'), "%Y-%m-%d").date()
             data_documento = datetime.strptime(request.form.get('data_documento'), "%Y-%m-%d").date()
 
+            # 🧱 Criação do processo principal
             novo = Processo(
                 numero_processo=numero,
                 status_atual=request.form.get('status_inicial'),
@@ -134,8 +143,9 @@ def cadastro_processo():
                 diretoria_destino=request.form.get('diretoria_destino')
             )
             db.session.add(novo)
-            db.session.flush()
+            db.session.flush()  # 🔥 Garante que id_processo esteja disponível
 
+            # 🧩 Entrada inicial (registro de origem)
             entrada = EntradaProcesso(
                 id_processo=novo.id_processo,
                 data_criacao_ra=data_criacao_ra,
@@ -149,7 +159,9 @@ def cadastro_processo():
                 status_inicial=request.form.get('status_inicial')
             )
             db.session.add(entrada)
+            db.session.flush()
 
+            # 🔁 Primeira movimentação do processo
             primeira_mov = Movimentacao(
                 id_entrada=entrada.id_entrada,
                 id_usuario=entrada.usuario_responsavel,
@@ -158,8 +170,8 @@ def cadastro_processo():
                 data=data_documento
             )
             db.session.add(primeira_mov)
-            db.session.commit()
 
+            db.session.commit()
             flash("✅ Processo cadastrado com sucesso!", "success")
             return redirect(url_for('processos_bp.cadastro_processo'))
 
@@ -168,6 +180,7 @@ def cadastro_processo():
             flash(f"❌ Erro ao cadastrar processo: {str(e)}", "error")
             return redirect(url_for('processos_bp.cadastro_processo'))
 
+    # 🔽 Dados auxiliares
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
     demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
@@ -185,13 +198,68 @@ def cadastro_processo():
 
     return render_template(
         'cadastro_processo.html',
-        regioes=regioes, tipos=tipos, demandas=demandas,
-        status=status, usuarios=usuarios, diretorias=diretorias
+        regioes=regioes,
+        tipos=tipos,
+        demandas=demandas,
+        status=status,
+        usuarios=usuarios,
+        diretorias=diretorias
     )
 
 
 # ==========================================================
-# 4️⃣ Listar Processos + Exportações (CSV, XLSX, PDF)
+# 4️⃣ Alterar Processo (Atualizar Status / Registrar Movimentação)
+# ==========================================================
+@processos_bp.route('/alterar/<int:id_processo>', methods=['GET', 'POST'])
+@login_required
+def alterar_processo(id_processo):
+    """Atualiza o status de um processo e registra nova movimentação"""
+    processo = Processo.query.get_or_404(id_processo)
+    entrada = EntradaProcesso.query.filter_by(id_processo=id_processo).first()
+
+    if request.method == 'POST':
+        try:
+            novo_status = request.form.get('novo_status')
+            observacao = request.form.get('observacao')
+            data_movimentacao = datetime.strptime(request.form.get('data_movimentacao'), "%Y-%m-%d")
+            responsavel_id = int(request.form.get('responsavel_tecnico'))
+
+            # 🔁 Registra nova movimentação
+            nova_mov = Movimentacao(
+                id_entrada=entrada.id_entrada,
+                id_usuario=responsavel_id,
+                novo_status=novo_status,
+                observacao=observacao,
+                data=data_movimentacao
+            )
+            db.session.add(nova_mov)
+
+            # 🏷️ Atualiza status atual do processo (mantém diretoria)
+            processo.status_atual = novo_status
+            db.session.commit()
+
+            flash("✅ Processo atualizado e movimentação registrada com sucesso!", "success")
+            return redirect(url_for('processos_bp.buscar_processo', numero_processo=processo.numero_processo))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"❌ Erro ao atualizar o processo: {str(e)}", "error")
+            return redirect(url_for('processos_bp.alterar_processo', id_processo=id_processo))
+
+    # GET → renderiza formulário
+    usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario.asc()).all()
+    status = Status.query.order_by(Status.descricao.asc()).all()
+
+    return render_template(
+        'alterar_processo.html',
+        processo=processo,
+        usuarios=usuarios,
+        status=status
+    )
+
+
+# ==========================================================
+# 5️⃣ Listar Processos + Exportações (CSV, XLSX, PDF)
 # ==========================================================
 @processos_bp.route('/listar')
 @login_required
@@ -216,6 +284,7 @@ def listar_processos():
 
     processos = query.order_by(Processo.id_processo.desc()).all()
 
+    # 🔁 Complementa com dados auxiliares
     for p in processos:
         entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
         p.entrada = entrada
@@ -247,7 +316,7 @@ def listar_processos():
 
 
 # ==========================================================
-# 5️⃣ Exportar Tramitações (CSV / XLSX / PDF)
+# 6️⃣ Exportar Tramitações (CSV / XLSX / PDF)
 # ==========================================================
 @processos_bp.route('/exportar-tramitacoes', methods=['GET'])
 @login_required
@@ -327,109 +396,13 @@ def exportar_tramitacoes():
         output.seek(0)
         return send_file(output, as_attachment=True, download_name='tramitacoes.pdf', mimetype='application/pdf')
 
-    else:
-        return make_response("Formato inválido. Use csv, xlsx ou pdf.", 400)
+    return make_response("Formato inválido. Use csv, xlsx ou pdf.", 400)
 
 
 # ==========================================================
-# 6️⃣ Exportar PDF individual do Processo
+# 7️⃣ Verificar se o processo já existe (AJAX)
 # ==========================================================
-@processos_bp.route('/exportar-processo/<int:id_processo>')
-@login_required
-def exportar_processo_pdf(id_processo):
-    """Gera e exporta um PDF detalhado de um processo"""
-    processo = Processo.query.get_or_404(id_processo)
-    entrada = EntradaProcesso.query.filter_by(id_processo=id_processo).first()
-    movimentacoes = (
-        db.session.query(Movimentacao)
-        .filter_by(id_entrada=entrada.id_entrada)
-        .order_by(Movimentacao.data.asc())
-        .all()
-        if entrada else []
-    )
-
-    output = BytesIO()
-    doc = SimpleDocTemplate(output, pagesize=A4)
-    elements = []
-    styles = getSampleStyleSheet()
-
-    title = Paragraph("<b>Relatório Detalhado do Processo</b>", styles['Title'])
-    elements.append(title)
-    elements.append(Spacer(1, 12))
-
-    info_table = [
-        ["Número do Processo", processo.numero_processo],
-        ["Status Atual", processo.status_atual or "---"],
-        ["Diretoria de Destino", processo.diretoria_destino or "---"],
-        ["Observações", processo.observacoes or "---"],
-    ]
-    table = Table(info_table, colWidths=[160, 370])
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0060a8")),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-    ]))
-    elements.append(table)
-    elements.append(Spacer(1, 12))
-
-    if entrada:
-        entrada_table = [
-            ["RA de Origem", entrada.ra_origem or "---"],
-            ["Tramitação Inicial", entrada.tramite_inicial or "---"],
-            ["Data de Entrada na NOVACAP", entrada.data_entrada_novacap.strftime("%d/%m/%Y") if entrada.data_entrada_novacap else "---"],
-            ["Data do Documento", entrada.data_documento.strftime("%d/%m/%Y") if entrada.data_documento else "---"],
-            ["Tipo", entrada.tipo.descricao if entrada.tipo else "---"],
-            ["Responsável Técnico", f"{entrada.responsavel.nome} ({entrada.responsavel.usuario})" if entrada.responsavel else "---"]
-        ]
-        elements.append(Paragraph("<b>Informações da Entrada</b>", styles['Heading2']))
-        table = Table(entrada_table, colWidths=[200, 330])
-        table.setStyle(TableStyle([
-            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#f0f3f5")),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ]))
-        elements.append(table)
-        elements.append(Spacer(1, 12))
-
-    elements.append(Paragraph("<b>Histórico de Movimentações</b>", styles['Heading2']))
-    if movimentacoes:
-        mov_table = [["Data", "Status", "Responsável", "Observação"]]
-        for mov in movimentacoes:
-            mov_table.append([
-                mov.data.strftime("%d/%m/%Y %H:%M") if mov.data else "---",
-                mov.novo_status or "---",
-                mov.usuario.usuario if mov.usuario else "---",
-                mov.observacao or "---"
-            ])
-
-        table = Table(mov_table, repeatRows=1, colWidths=[80, 120, 120, 210])
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0060a8")),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.lightgrey]),
-        ]))
-        elements.append(table)
-    else:
-        elements.append(Paragraph("Nenhuma movimentação registrada.", styles['Normal']))
-
-    doc.build(elements)
-    output.seek(0)
-
-    nome_arquivo = f"Processo_{processo.numero_processo.replace('/', '_')}.pdf"
-    return send_file(output, as_attachment=True, download_name=nome_arquivo, mimetype='application/pdf')
-
-# ==========================================================
-# 🔍 Verificar se o processo já existe (AJAX)
-# ==========================================================
-from flask import jsonify
-
+@csrf.exempt  # ✅ evita conflito com CSRF em requisições fetch()
 @processos_bp.route("/verificar-processo", methods=["POST"])
 @login_required
 def verificar_processo():
@@ -441,8 +414,6 @@ def verificar_processo():
         return jsonify({"erro": "Número do processo não informado."}), 400
 
     processo = Processo.query.filter_by(numero_processo=numero).first()
-
     if processo:
         return jsonify({"existe": True, "id": processo.id_processo})
-    else:
-        return jsonify({"existe": False})
+    return jsonify({"existe": False})

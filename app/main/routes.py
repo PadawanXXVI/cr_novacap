@@ -29,15 +29,21 @@ def index():
 # ==========================================================
 @main_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Realiza login e direciona para o sistema selecionado"""
+    """
+    Realiza login e direciona para o sistema selecionado (Trâmite ou Protocolo).
+    Inclui verificações de credenciais, status de aprovação e bloqueio.
+    """
     if request.method == 'POST':
-        username = request.form.get('username')
+        username = (request.form.get('username') or '').strip()
         senha = request.form.get('password')
         sistema = (request.form.get('sistema') or '').lower()
 
-        usuario = Usuario.query.filter_by(usuario=username).first()
+        # 🔎 Busca case-insensitive
+        usuario = Usuario.query.filter(
+            db.func.lower(Usuario.usuario) == username.lower()
+        ).first()
 
-        # Validações básicas
+        # ⚠️ Validações básicas
         if not usuario:
             flash("Usuário não encontrado.", "error")
             return redirect(url_for('main_bp.login'))
@@ -54,7 +60,7 @@ def login():
             flash("Usuário bloqueado. Contate o administrador.", "error")
             return redirect(url_for('main_bp.login'))
 
-        # Login bem-sucedido
+        # ✅ Login bem-sucedido
         login_user(usuario)
         session['usuario'] = usuario.usuario
         session['is_admin'] = usuario.is_admin
@@ -62,7 +68,7 @@ def login():
 
         flash(f"Bem-vindo, {usuario.nome}!", "success")
 
-        # Direcionamento
+        # 🎯 Direcionamento por sistema
         if sistema == 'tramite':
             return redirect(url_for('processos_bp.dashboard_processos'))
         elif sistema == 'protocolo':
@@ -82,13 +88,13 @@ def login():
 def cadastro():
     """Permite ao usuário solicitar cadastro no sistema"""
     if request.method == 'POST':
-        nome = request.form.get('nome_completo')
-        email = request.form.get('email')
-        usuario = request.form.get('username')
+        nome = (request.form.get('nome_completo') or '').strip()
+        email = (request.form.get('email') or '').strip()
+        usuario = (request.form.get('username') or '').strip()
         senha = request.form.get('senha')
         confirmar = request.form.get('confirmar_senha')
 
-        # Validações básicas
+        # ⚠️ Validações
         if senha != confirmar:
             flash("As senhas não coincidem.", "error")
             return redirect(url_for('main_bp.cadastro'))
@@ -100,11 +106,12 @@ def cadastro():
         existente = Usuario.query.filter(
             (Usuario.usuario == usuario) | (Usuario.email == email)
         ).first()
+
         if existente:
             flash("E-mail ou nome de usuário já cadastrado.", "error")
             return redirect(url_for('main_bp.cadastro'))
 
-        # Cria usuário pendente de aprovação
+        # ✅ Cria novo usuário pendente
         novo_usuario = Usuario(
             nome=nome,
             email=email,
@@ -131,11 +138,12 @@ def cadastro():
 def trocar_senha():
     """Permite redefinir senha a partir do nome e e-mail"""
     if request.method == 'POST':
-        nome = request.form.get('nome_completo')
-        email = request.form.get('email')
+        nome = (request.form.get('nome_completo') or '').strip()
+        email = (request.form.get('email') or '').strip()
         nova_senha = request.form.get('nova_senha')
         confirmar = request.form.get('confirmar_senha')
 
+        # ⚠️ Verificações
         if nova_senha != confirmar:
             flash("As senhas não coincidem.", "error")
             return redirect(url_for('main_bp.trocar_senha'))
@@ -145,6 +153,7 @@ def trocar_senha():
             flash("Usuário não encontrado com os dados informados.", "error")
             return redirect(url_for('main_bp.trocar_senha'))
 
+        # ✅ Atualiza senha
         usuario.senha_hash = generate_password_hash(nova_senha)
         db.session.commit()
 
@@ -157,7 +166,7 @@ def trocar_senha():
 # ==========================================================
 # 5️⃣ Logout
 # ==========================================================
-@main_bp.route('/logout')
+@main_bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     """Encerra sessão do usuário"""
