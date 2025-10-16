@@ -124,7 +124,7 @@
 
     <nav>
       <a href="{{ url_for('processos_bp.dashboard_processos') }}"><i class="fas fa-chart-pie"></i> Painel</a>
-      <a href="{{ url_for('processos_bp.listar_processos') }}"><i class="fas fa-folder-open"></i> Processos</a>
+      <a href="{{ url_for('processos_bp.consultar_processos') }}"><i class="fas fa-folder-open"></i> Processos</a>
       <a href="{{ url_for('relatorios_bp.relatorios_gerenciais') }}"><i class="fas fa-file-alt"></i> Relatórios</a>
       {% if session.get('is_admin') %}
         <a href="{{ url_for('admin_bp.painel_admin') }}"><i class="fas fa-user-cog"></i> Administração</a>

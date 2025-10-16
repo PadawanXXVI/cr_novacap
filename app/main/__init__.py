@@ -1,18 +1,31 @@
-# app/main/__init__.py
+# app/main/_init_.py
 """
 Inicialização do módulo principal (Main) — CR-NOVACAP.
-Define o Blueprint principal usado para login, cadastro, tela inicial e logout.
+
+Responsável por:
+- Tela inicial (index)
+- Login e autenticação
+- Cadastro e redefinição de senha
+- Logout de sessão
+
+💡 Observação:
+Este blueprint é o ponto de entrada do sistema e, portanto,
+não precisa de prefixo (url_prefix), sendo acessado diretamente.
 """
 
 from flask import Blueprint
 
-# Cria o Blueprint principal
+# ==========================================================
+# 🔷 Criação do Blueprint principal
+# ==========================================================
 main_bp = Blueprint(
     'main_bp',
-    __name__,
-    template_folder='../templates',   # garante acesso às páginas HTML
-    static_folder='../static'         # garante acesso aos arquivos CSS/JS
+    _name_,
+    template_folder='../templates',
+    static_folder='../static'
 )
 
-# Importa as rotas associadas ao Blueprint
-from app.main import routes
+# ==========================================================
+# 🔁 Importação das rotas
+# ==========================================================
+from app.main import routes  # noqa: E402,F401

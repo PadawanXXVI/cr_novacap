@@ -96,17 +96,17 @@
     </div>
   </div>
 
-  <!-- Ações -->
+<!-- Ações -->
   <div class="button-group" style="margin-top: 3rem; flex-wrap: wrap; justify-content: center; gap: 0.8rem;">
     <a href="{{ url_for('processos_bp.cadastro_processo') }}">
       <button class="btn-primary"><i class="fas fa-plus-circle"></i> Novo Processo</button>
     </a>
 
-    <a href="{{ url_for('processos_bp.listar_processos') }}">
-      <button class="btn-secondary"><i class="fas fa-list"></i> Listar Processos</button>
+    <a href="{{ url_for('processos_bp.consultar_processos') }}">
+      <button class="btn-secondary"><i class="fas fa-list"></i> Consultar Processos</button>
     </a>
 
-    <a href="{{ url_for('processos_bp.buscar_processo') }}">
+    <a href="{{ url_for('processos_bp.consultar_processos') }}">
       <button class="btn-outline-gray"><i class="fas fa-search"></i> Buscar Processo</button>
     </a>
 

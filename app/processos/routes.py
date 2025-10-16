@@ -4,13 +4,14 @@ Rotas do módulo de Processos (Tramitação SEI) — CR-NOVACAP.
 Inclui: dashboard, cadastro, alteração, consulta unificada e exportações (CSV, XLSX, PDF).
 """
 
+import os
 from datetime import datetime
 from io import BytesIO
 import pandas as pd
 
 from flask import (
     render_template, request, redirect, url_for, flash, session,
-    make_response, send_file, jsonify
+    make_response, send_file, jsonify, current_app
 )
 from flask_login import login_required, current_user
 
@@ -27,6 +28,7 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
+
 # ==========================================================
 # 1️⃣ Dashboard de Processos
 # ==========================================================
@@ -41,14 +43,8 @@ def dashboard_processos():
     processos_dc = Processo.query.filter_by(diretoria_destino='Diretoria das Cidades - DC').count()
     processos_do = Processo.query.filter_by(diretoria_destino='Diretoria de Obras - DO').count()
     processos_dp = Processo.query.filter_by(diretoria_destino='Diretoria de Planejamento e Projetos - DP').count()
-    processos_improcedentes = Processo.query.filter(
-        Processo.status_atual.like('%Improcedente%')
-    ).count()
-
-    devolvidos_ra = Processo.query.filter(
-        Processo.status_atual.like('%Devolvido à RA%')
-    ).count()
-
+    processos_improcedentes = Processo.query.filter(Processo.status_atual.like('%Improcedente%')).count()
+    devolvidos_ra = Processo.query.filter(Processo.status_atual.like('%Devolvido à RA%')).count()
     processos_urgentes = Processo.query.filter_by(status_atual="Solicitação de urgência").count()
     processos_prazo_execucao = Processo.query.filter_by(status_atual="Solicitação de prazo de execução").count()
     processos_ouvidoria = Processo.query.filter_by(status_atual="Processo oriundo de Ouvidoria").count()
@@ -66,6 +62,7 @@ def dashboard_processos():
         processos_prazo_execucao=processos_prazo_execucao,
         processos_ouvidoria=processos_ouvidoria
     )
+
 
 # ==========================================================
 # 2️⃣ Cadastro de Processo
@@ -146,6 +143,7 @@ def cadastro_processo():
         diretorias=[d.nome_completo for d in diretorias]
     )
 
+
 # ==========================================================
 # 3️⃣ Alterar Processo
 # ==========================================================
@@ -171,7 +169,6 @@ def alterar_processo(id_processo):
                 data=data_movimentacao
             )
             db.session.add(nova_mov)
-
             processo.status_atual = novo_status
             db.session.commit()
 
@@ -193,6 +190,7 @@ def alterar_processo(id_processo):
         status=status
     )
 
+
 # ==========================================================
 # 4️⃣ Consulta Unificada (listar + buscar)
 # ==========================================================
@@ -211,6 +209,7 @@ def consultar_processos():
 
     query = db.session.query(Processo).join(EntradaProcesso)
 
+    # Filtros dinâmicos
     if numero:
         query = query.filter(Processo.numero_processo.like(f"%{numero}%"))
     if status_filtro:
@@ -224,9 +223,20 @@ def consultar_processos():
     if demanda:
         query = query.filter(EntradaProcesso.id_demanda == demanda)
     if inicio and fim:
-        query = query.filter(EntradaProcesso.data_entrada_novacap.between(inicio, fim))
+        inicio_dt = datetime.strptime(inicio, "%Y-%m-%d")
+        fim_dt = datetime.strptime(fim, "%Y-%m-%d")
+        query = query.filter(EntradaProcesso.data_entrada_novacap.between(inicio_dt, fim_dt))
+    elif inicio and not fim:
+        inicio_dt = datetime.strptime(inicio, "%Y-%m-%d")
+        query = query.filter(EntradaProcesso.data_entrada_novacap >= inicio_dt)
+    elif fim and not inicio:
+        fim_dt = datetime.strptime(fim, "%Y-%m-%d")
+        query = query.filter(EntradaProcesso.data_entrada_novacap <= fim_dt)
 
     processos = query.order_by(Processo.id_processo.desc()).all()
+
+    if not processos:
+        flash("Nenhum processo encontrado com os filtros aplicados.", "warning")
 
     for p in processos:
         entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
@@ -253,6 +263,7 @@ def consultar_processos():
         diretorias=diretorias
     )
 
+
 # ==========================================================
 # 5️⃣ Exportar PDF individual
 # ==========================================================
@@ -269,12 +280,13 @@ def exportar_processo_pdf(id_processo):
     elements = []
     styles = getSampleStyleSheet()
 
-    # Logo do GDF
-    logo_path = "app/static/images/ico-logo-gdf.svg"
-    try:
-        elements.append(Image(logo_path, width=80, height=60))
-    except:
-        pass
+    # ✅ Logo do GDF com caminho absoluto
+    logo_path = os.path.join(current_app.root_path, "static", "images", "ico-logo-gdf.svg")
+    if os.path.exists(logo_path):
+        try:
+            elements.append(Image(logo_path, width=80, height=60))
+        except Exception:
+            pass
 
     elements.append(Paragraph("<b>Relatório Institucional de Processo</b>", styles['Title']))
     elements.append(Spacer(1, 12))
@@ -308,7 +320,7 @@ def exportar_processo_pdf(id_processo):
         elements.append(table)
         elements.append(Spacer(1, 12))
 
-    # Movimentações
+    # Histórico
     elements.append(Paragraph("<b>Histórico de Movimentações</b>", styles['Heading2']))
     if movimentacoes:
         mov_table = [["Data", "Status", "Responsável", "Observação"]]
@@ -334,6 +346,7 @@ def exportar_processo_pdf(id_processo):
     output.seek(0)
     nome_arquivo = f"Processo_{processo.numero_processo.replace('/', '_')}.pdf"
     return send_file(output, as_attachment=True, download_name=nome_arquivo, mimetype='application/pdf')
+
 
 # ==========================================================
 # 6️⃣ Verificar processo via AJAX
