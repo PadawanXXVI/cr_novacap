@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from flask import Flask, redirect, url_for
 
 # ==========================================================
-# 🔒 Carrega variáveis de ambiente
+# 🔒 Carrega variáveis de ambiente (.env)
 # ==========================================================
 load_dotenv()
 
@@ -21,7 +21,7 @@ from app.ext import db, migrate, login_manager, csrf
 from app.models.modelos import Usuario
 
 # ==========================================================
-# 📦 Importação dos Blueprints
+# 📦 Importação dos Blueprints (módulos principais)
 # ==========================================================
 from app.main import main_bp
 from app.processos import processos_bp
@@ -69,13 +69,22 @@ def create_app():
 
     # ------------------------------------------------------
     # 📦 Registro de Blueprints institucionais
-    # (cada módulo já define seu url_prefix internamente)
     # ------------------------------------------------------
     app.register_blueprint(main_bp)
-    app.register_blueprint(processos_bp)
-    app.register_blueprint(protocolo_bp)
-    app.register_blueprint(relatorios_bp)
-    app.register_blueprint(admin_bp)
+    app.register_blueprint(processos_bp, url_prefix='/processos')
+    app.register_blueprint(protocolo_bp, url_prefix='/protocolo')
+    app.register_blueprint(relatorios_bp, url_prefix='/relatorios')
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+
+    # ------------------------------------------------------
+    # 🧩 Desativa CSRF apenas para rotas internas de tramitação
+    # (internas, seguras e sem acesso externo)
+    # ------------------------------------------------------
+    from app.processos.routes import cadastro_processo, alterar_processo, consultar_processos, verificar_processo
+    csrf.exempt(cadastro_processo)
+    csrf.exempt(alterar_processo)
+    csrf.exempt(consultar_processos)
+    csrf.exempt(verificar_processo)
 
     # ------------------------------------------------------
     # 🏠 Rota padrão (redireciona para login)
