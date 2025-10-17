@@ -2,140 +2,140 @@
 {% block title %}Dashboard – Processos | Central de Relacionamento NOVACAP{% endblock %}
 
 {% block content %}
-<section class="fade-in" style="padding:2rem 1rem;">
-  <div class="container" style="max-width:1300px;margin:0 auto;">
+<section class="fade-in" style="padding:2rem 1rem; max-width:1300px; margin:0 auto;">
 
-    <!-- Cabeçalho -->
-    <header class="text-center" style="margin-bottom:2.5rem;">
-      <h1 style="color:#002d62;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:700;margin-bottom:0.5rem;">
-        <i class="fas fa-chart-pie"></i> Painel de Controle – Processos
-      </h1>
-      <p style="color:#555;font-size:1.05rem;max-width:800px;margin:0 auto;line-height:1.6;">
-        Visualize os principais indicadores de tramitação, atendimento e resultados dos processos da NOVACAP.
-      </p>
-    </header>
+  <!-- Cabeçalho -->
+  <header class="text-center" style="margin-bottom:2.5rem;">
+    <h1 style="color:#002d62;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:700;margin-bottom:0.5rem;">
+      <i class="fas fa-chart-pie"></i> Painel de Controle – Processos
+    </h1>
+    <p style="color:#555;font-size:1.05rem;max-width:800px;margin:0 auto;line-height:1.6;">
+      Visualize os principais indicadores de tramitação, atendimento e resultados dos processos da NOVACAP.
+    </p>
+  </header>
 
-    <!-- Totais Gerais -->
-    <h2 class="section-title"><i class="fas fa-database"></i> Totais Gerais</h2>
-    <div class="card-grid">
-      <div class="card card-total">
-        <h3><i class="fas fa-folder-open"></i> Total de Processos</h3>
-        <p>{{ total_processos or 0 }}</p>
-      </div>
-      <div class="card card-info">
-        <h3><i class="fas fa-tasks"></i> Em Atendimento</h3>
-        <p>{{ total_em_atendimento or 0 }}</p>
-      </div>
+  <!-- Totais Gerais -->
+  <h2 class="section-title"><i class="fas fa-database"></i> Totais Gerais</h2>
+  <div class="card-grid">
+    <div class="card card-total">
+      <h3><i class="fas fa-folder-open"></i> Total de Processos</h3>
+      <p>{{ total_processos or 0 }}</p>
     </div>
-
-    <!-- Origem -->
-    <h2 class="section-title"><i class="fas fa-building"></i> Origem</h2>
-    <div class="card-grid">
-      <div class="card card-blue">
-        <h3><i class="fas fa-briefcase"></i> Iniciados pela SECRE</h3>
-        <p>{{ processos_secre or 0 }}</p>
-      </div>
-      <div class="card card-green">
-        <h3><i class="fas fa-network-wired"></i> Iniciados pela CR</h3>
-        <p>{{ processos_cr or 0 }}</p>
-      </div>
+    <div class="card card-info">
+      <h3><i class="fas fa-tasks"></i> Em Atendimento</h3>
+      <p>{{ total_em_atendimento or 0 }}</p>
     </div>
+  </div>
 
-    <!-- Tramitação -->
-    <h2 class="section-title"><i class="fas fa-route"></i> Tramitação</h2>
-    <div class="card-grid">
-      <div class="card card-dc">
-        <h3><i class="fas fa-city"></i> Diretoria das Cidades</h3>
-        <p>{{ processos_dc or 0 }}</p>
-      </div>
-      <div class="card card-do">
-        <h3><i class="fas fa-hard-hat"></i> Diretoria de Obras</h3>
-        <p>{{ processos_do or 0 }}</p>
-      </div>
-      <div class="card card-dp">
-        <h3><i class="fas fa-drafting-compass"></i> Planejamento e Projetos</h3>
-        <p>{{ processos_dp or 0 }}</p>
-      </div>
-      <div class="card card-gray">
-        <h3><i class="fas fa-share-square"></i> Via SGIA</h3>
-        <p>{{ processos_sgia or 0 }}</p>
-      </div>
+  <!-- Origem -->
+  <h2 class="section-title"><i class="fas fa-building"></i> Origem</h2>
+  <div class="card-grid">
+    <div class="card card-blue">
+      <h3><i class="fas fa-briefcase"></i> Iniciados pela SECRE</h3>
+      <p>{{ processos_secre or 0 }}</p>
     </div>
-
-    <!-- Resultados -->
-    <h2 class="section-title"><i class="fas fa-clipboard-check"></i> Resultados</h2>
-    <div class="card-grid">
-      <div class="card card-success">
-        <h3><i class="fas fa-check-circle"></i> Atendidos</h3>
-        <p>{{ processos_atendidos or 0 }}</p>
-      </div>
-      <div class="card card-warning">
-        <h3><i class="fas fa-undo-alt"></i> Devolvidos à RA</h3>
-        <p>{{ devolvidos_ra or 0 }}</p>
-      </div>
-      <div class="card card-danger">
-        <h3><i class="fas fa-times-circle"></i> Improcedentes</h3>
-        <p>{{ processos_improcedentes or 0 }}</p>
-      </div>
+    <div class="card card-green">
+      <h3><i class="fas fa-network-wired"></i> Iniciados pela CR</h3>
+      <p>{{ processos_cr or 0 }}</p>
     </div>
+  </div>
 
-    <!-- Especiais -->
-    <h2 class="section-title"><i class="fas fa-exclamation-triangle"></i> Especiais</h2>
-    <div class="card-grid">
-      <div class="card card-urgencia">
-        <h3><i class="fas fa-bolt"></i> Solicitação de Urgência</h3>
-        <p>{{ processos_urgentes or 0 }}</p>
-      </div>
-      <div class="card card-prazo">
-        <h3><i class="fas fa-hourglass-half"></i> Solicitação de Prazo</h3>
-        <p>{{ processos_prazo_execucao or 0 }}</p>
-      </div>
-      <div class="card card-ouvidoria">
-        <h3><i class="fas fa-headset"></i> Oriundos da Ouvidoria</h3>
-        <p>{{ processos_ouvidoria or 0 }}</p>
-      </div>
+  <!-- Tramitação -->
+  <h2 class="section-title"><i class="fas fa-route"></i> Tramitação</h2>
+  <div class="card-grid">
+    <div class="card card-dc">
+      <h3><i class="fas fa-city"></i> Diretoria das Cidades</h3>
+      <p>{{ processos_dc or 0 }}</p>
     </div>
+    <div class="card card-do">
+      <h3><i class="fas fa-hard-hat"></i> Diretoria de Obras</h3>
+      <p>{{ processos_do or 0 }}</p>
+    </div>
+    <div class="card card-dp">
+      <h3><i class="fas fa-drafting-compass"></i> Planejamento e Projetos</h3>
+      <p>{{ processos_dp or 0 }}</p>
+    </div>
+    <div class="card card-gray">
+      <h3><i class="fas fa-share-square"></i> Via SGIA</h3>
+      <p>{{ processos_sgia or 0 }}</p>
+    </div>
+  </div>
 
-    <!-- Ações -->
-    <div class="button-group" 
-         style="margin-top:3rem;flex-wrap:wrap;justify-content:center;gap:0.8rem;">
+  <!-- Resultados -->
+  <h2 class="section-title"><i class="fas fa-clipboard-check"></i> Resultados</h2>
+  <div class="card-grid">
+    <div class="card card-success">
+      <h3><i class="fas fa-check-circle"></i> Atendidos</h3>
+      <p>{{ processos_atendidos or 0 }}</p>
+    </div>
+    <div class="card card-warning">
+      <h3><i class="fas fa-undo-alt"></i> Devolvidos à RA</h3>
+      <p>{{ devolvidos_ra or 0 }}</p>
+    </div>
+    <div class="card card-danger">
+      <h3><i class="fas fa-times-circle"></i> Improcedentes</h3>
+      <p>{{ processos_improcedentes or 0 }}</p>
+    </div>
+  </div>
 
-      <a href="{{ url_for('processos_bp.cadastro_processo') }}">
-        <button class="btn-primary"><i class="fas fa-plus-circle"></i> Novo Processo</button>
-      </a>
+  <!-- Especiais -->
+  <h2 class="section-title"><i class="fas fa-exclamation-triangle"></i> Especiais</h2>
+  <div class="card-grid">
+    <div class="card card-urgencia">
+      <h3><i class="fas fa-bolt"></i> Solicitação de Urgência</h3>
+      <p>{{ processos_urgentes or 0 }}</p>
+    </div>
+    <div class="card card-prazo">
+      <h3><i class="fas fa-hourglass-half"></i> Solicitação de Prazo</h3>
+      <p>{{ processos_prazo_execucao or 0 }}</p>
+    </div>
+    <div class="card card-ouvidoria">
+      <h3><i class="fas fa-headset"></i> Oriundos da Ouvidoria</h3>
+      <p>{{ processos_ouvidoria or 0 }}</p>
+    </div>
+  </div>
 
-      <a href="{{ url_for('processos_bp.consultar_processos') }}">
-        <button class="btn-outline-blue"><i class="fas fa-list"></i> Consultar Processos</button>
-      </a>
+  <!-- Ações -->
+  <div class="button-group" style="margin-top:3rem;flex-wrap:wrap;justify-content:center;gap:0.8rem;">
 
-      {% if session.get('is_admin') %}
+    <a href="{{ url_for('processos_bp.cadastro_processo') }}">
+      <button class="btn-primary"><i class="fas fa-plus-circle"></i> Novo Processo</button>
+    </a>
+
+    <a href="{{ url_for('processos_bp.consultar_processos') }}">
+      <button class="btn-outline-blue"><i class="fas fa-list"></i> Consultar Processos</button>
+    </a>
+
+    {% if session.get('is_admin') %}
       <a href="{{ url_for('admin_bp.painel_admin') }}">
         <button class="btn-warning"><i class="fas fa-user-cog"></i> Painel Administrativo</button>
       </a>
       <a href="{{ url_for('relatorios_bp.relatorios_gerenciais') }}">
         <button class="btn-outline-blue"><i class="fas fa-chart-bar"></i> Relatórios Gerenciais</button>
       </a>
-      {% endif %}
+    {% endif %}
 
-      <div class="export-buttons" style="margin-top:2rem;text-align:center;">
-        <p style="color:#666;font-size:0.95rem;margin-bottom:0.5rem;">Exportar relatório consolidado:</p>
-        <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='xlsx') }}" class="btn-outline-blue">
-          <i class="fas fa-file-excel"></i> Excel
-        </a>
-        <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='csv') }}" class="btn-outline-blue">
-          <i class="fas fa-file-csv"></i> CSV
-        </a>
-        <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='pdf') }}" class="btn-outline-blue">
-          <i class="fas fa-file-pdf"></i> PDF
-        </a>
-      </div>
-
-      <a href="{{ url_for('main_bp.logout') }}">
-        <button class="btn-danger"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    <!-- Exportações -->
+    <div class="export-buttons" style="margin-top:2rem;text-align:center;">
+      <p style="color:#666;font-size:0.95rem;margin-bottom:0.5rem;">Exportar relatório consolidado:</p>
+      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='xlsx') }}" class="btn-outline-blue">
+        <i class="fas fa-file-excel"></i> Excel
+      </a>
+      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='csv') }}" class="btn-outline-blue">
+        <i class="fas fa-file-csv"></i> CSV
+      </a>
+      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='pdf') }}" class="btn-outline-blue">
+        <i class="fas fa-file-pdf"></i> PDF
       </a>
     </div>
+
+    <a href="{{ url_for('main_bp.logout') }}">
+      <button class="btn-danger"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    </a>
   </div>
+
 </section>
 
+<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}

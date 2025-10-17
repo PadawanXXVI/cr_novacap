@@ -1,11 +1,16 @@
 /* ==========================================================
-🌐 CR-NOVACAP - SISTEMA DE CONTROLE DE PROCESSOS (v3.1)
+🌐 CR-NOVACAP - SISTEMA DE CONTROLE DE PROCESSOS (v3.2)
 Design Moderno e Responsivo — Padrão Institucional GDF + Modo Escuro
 ========================================================== */
 
 /* ==== RESET E BASE ==== */
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{font-family:'Inter','Segoe UI','Roboto',sans-serif;background:#f4f6f9;color:#2b2b2b;line-height:1.6;font-size:16px;scroll-behavior:smooth}
+html,body{
+  font-family:'Inter','Segoe UI','Roboto',sans-serif;
+  background:#f4f6f9;color:#2b2b2b;
+  line-height:1.6;font-size:16px;
+  scroll-behavior:smooth
+}
 
 /* ==== VARIÁVEIS DE TEMA ==== */
 :root{
@@ -23,36 +28,67 @@ html,body{font-family:'Inter','Segoe UI','Roboto',sans-serif;background:#f4f6f9;
 }
 
 /* ==== LAYOUT PRINCIPAL ==== */
-.container{max-width:1200px;margin:2rem auto;padding:2rem;background:var(--light-bg);border-radius:12px;box-shadow:var(--shadow)}
-@media(max-width:768px){.container{padding:1.25rem;margin:1rem}}
+.container{
+  max-width:1200px;
+  margin:2rem auto;
+  padding:2rem;
+  background:var(--light-bg);
+  border-radius:12px;
+  box-shadow:var(--shadow)
+}
+@media(max-width:768px){
+  .container{padding:1.25rem;margin:1rem}
+}
 
 /* ==== NAVBAR ==== */
 .navbar{
   background:linear-gradient(90deg,var(--primary-dark),var(--primary));
   color:#fff;padding:1rem 2rem;
   display:flex;justify-content:space-between;align-items:center;
-  box-shadow:var(--shadow);position:sticky;top:0;z-index:1000
+  box-shadow:var(--shadow);
+  position:sticky;top:0;z-index:1000
 }
 .navbar h1{font-size:1.5rem;letter-spacing:.5px}
-.navbar a{color:#fff;text-decoration:none;margin-left:1.25rem;font-weight:500;transition:.2s}
+.navbar a{
+  color:#fff;text-decoration:none;margin-left:1.25rem;
+  font-weight:500;transition:.2s
+}
 .navbar a:hover{color:#ffc107}
-@media(max-width:768px){.navbar{flex-direction:column;text-align:center;gap:.5rem}}
+@media(max-width:768px){
+  .navbar{flex-direction:column;text-align:center;gap:.5rem}
+}
 
 /* ==== TÍTULOS ==== */
 h1,h2,h3{color:var(--text-dark);text-align:center;margin-bottom:1rem}
 h1{font-size:clamp(2rem,4vw,2.75rem)}
-h2{font-size:clamp(1.5rem,3vw,2rem);color:var(--primary-dark);border-bottom:2px solid var(--border-color);padding-bottom:.25rem}
+h2{font-size:clamp(1.5rem,3vw,2rem);color:var(--primary-dark);
+   border-bottom:2px solid var(--border-color);padding-bottom:.25rem}
+
+/* ==== NOVOS TÍTULOS DE SEÇÃO ==== */
+.section-title{
+  text-align:left;
+  color:var(--primary-dark);
+  font-size:1.3rem;
+  font-weight:700;
+  margin:2rem 0 1rem 0;
+  display:flex;
+  align-items:center;
+  gap:0.6rem
+}
+.section-title i{color:var(--primary)}
 
 /* ==== FORMULÁRIOS ==== */
 label{display:block;margin-bottom:.4rem;font-weight:600;color:var(--text-dark)}
 label i{color:var(--primary);margin-right:6px}
 input,select,textarea{
   width:100%;padding:.8rem;border:1px solid var(--border-color);
-  border-radius:8px;font-size:1rem;margin-bottom:1rem;transition:.2s;
-  background-color:#fff
+  border-radius:8px;font-size:1rem;margin-bottom:1rem;
+  transition:.2s;background-color:#fff
 }
 input:focus,select:focus,textarea:focus{
-  border-color:var(--primary-dark);box-shadow:0 0 0 3px rgba(0,96,168,.2);outline:none
+  border-color:var(--primary-dark);
+  box-shadow:0 0 0 3px rgba(0,96,168,.2);
+  outline:none
 }
 textarea{resize:vertical}
 .form-row{display:flex;gap:1rem;flex-wrap:wrap}
@@ -78,32 +114,69 @@ button:active,.btn:active{transform:translateY(0)}
 .btn-danger:hover{background:#b02a37;box-shadow:0 4px 10px rgba(220,53,69,.25)}
 .btn-secondary{background:#f1f3f5;color:var(--primary-dark);border:1px solid #cfd8dc}
 .btn-secondary:hover{background:var(--primary);color:#fff}
-.button-group,.button-toolbar{display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;margin-top:1.5rem}
+.button-group,.button-toolbar{
+  display:flex;justify-content:center;flex-wrap:wrap;
+  gap:1rem;margin-top:1.5rem
+}
 @media(max-width:768px){button,.btn{width:100%}}
 
 /* ==== TABELAS ==== */
 .table-responsive{background:#fff;border-radius:10px;overflow-x:auto;box-shadow:var(--shadow)}
 table{width:100%;border-collapse:collapse;margin-top:1.5rem}
-table th,table td{padding:.75rem 1rem;border:1px solid var(--border-color);text-align:center}
+table th,table td{
+  padding:.75rem 1rem;border:1px solid var(--border-color);text-align:center
+}
 table th{background:var(--primary);color:#fff;font-weight:600}
 table tr:nth-child(even){background-color:var(--gray-bg)}
 .table-hover tbody tr{transition:.2s}
-.table-hover tbody tr:hover{background-color:rgba(0,96,168,.05);transform:scale(1.005)}
+.table-hover tbody tr:hover{
+  background-color:rgba(0,96,168,.05);
+  transform:scale(1.005)
+}
 
 /* ==== CARDS ==== */
-.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin:2rem 0}
-.card{
-  background:var(--light-bg);border:1px solid var(--border-color);
-  border-radius:10px;padding:1.5rem;text-align:center;
-  box-shadow:var(--shadow);transition:all .25s ease-in-out
+.card-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:1.5rem;
+  margin:2rem auto;
+  width:100%;
+  max-width:1300px;
+  justify-items:stretch;
+  align-items:stretch;
 }
-.card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 6px 16px rgba(0,96,168,.15);border-color:var(--primary)}
-.card h3{color:var(--primary-dark);margin-bottom:.5rem}
-.card p{font-size:2rem;font-weight:700;color:var(--primary-dark)}
+.card{
+  background:var(--light-bg);
+  border:1px solid var(--border-color);
+  border-radius:10px;
+  padding:1.5rem;
+  text-align:center;
+  box-shadow:var(--shadow);
+  transition:all .25s ease-in-out;
+}
+.card:hover{
+  transform:translateY(-4px) scale(1.01);
+  box-shadow:0 6px 16px rgba(0,96,168,.15);
+  border-color:var(--primary)
+}
+.card h3{
+  color:var(--primary-dark);
+  margin-bottom:.5rem;
+  font-weight:600;
+  font-size:1.05rem;
+}
+.card p{
+  font-size:clamp(1.6rem,2.3vw,2.4rem);
+  font-weight:700;
+  color:var(--primary-dark);
+}
 .card i{margin-right:.4rem;color:var(--primary-dark)}
 
 /* ==== BADGES ==== */
-.badge{display:inline-block;padding:.35rem .75rem;border-radius:6px;font-size:.85rem;font-weight:600}
+.badge{
+  display:inline-block;padding:.35rem .75rem;
+  border-radius:6px;font-size:.85rem;font-weight:600
+}
 .badge.success{background:#d1e7dd;color:#0f5132}
 .badge.warning{background:#fff3cd;color:#664d03}
 .badge.danger{background:#f8d7da;color:#842029}
@@ -117,14 +190,28 @@ table tr:nth-child(even){background-color:var(--gray-bg)}
 .alert-info{background:#d1ecf1;color:#0c5460}
 
 /* ==== RODAPÉ ==== */
-footer{text-align:center;color:var(--text-muted);font-size:.9rem;margin-top:3rem;padding-top:2rem}
+footer{
+  text-align:center;
+  color:var(--text-muted);
+  font-size:.9rem;
+  margin-top:3rem;
+  padding-top:2rem
+}
 
 /* ==== ANIMAÇÕES ==== */
 .fade-in{animation:fadeIn .6s ease-in-out}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
 /* ==== LOGIN ==== */
-.auth-card{width:min(100%,760px);background:#fff;border:1px solid var(--border-color);border-radius:14px;box-shadow:var(--shadow);padding:2rem;margin-top:2rem}
+.auth-card{
+  width:min(100%,760px);
+  background:#fff;
+  border:1px solid var(--border-color);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  padding:2rem;
+  margin-top:2rem
+}
 .auth-header h1{text-align:center;font-size:1.6rem;margin-bottom:.25rem}
 .auth-header p{text-align:center;color:var(--primary-dark);font-weight:600;margin-bottom:1rem}
 
@@ -139,17 +226,30 @@ header p{color:var(--text-muted);font-size:1.05rem;margin-top:.4rem}
 /* ==========================================================
 🌙 MODO ESCURO (Dark Mode Institucional GDF)
 ========================================================== */
-body.dark-mode{background-color:#1c1f26;color:#e9ecef;transition:background .3s,color .3s}
-body.dark-mode .navbar{background:linear-gradient(90deg,#002b5b,#004b91);box-shadow:0 3px 12px rgba(0,0,0,.4)}
+body.dark-mode{
+  background-color:#1c1f26;color:#e9ecef;
+  transition:background .3s,color .3s
+}
+body.dark-mode .navbar{
+  background:linear-gradient(90deg,#002b5b,#004b91);
+  box-shadow:0 3px 12px rgba(0,0,0,.4)
+}
 body.dark-mode .container,
 body.dark-mode .card,
 body.dark-mode .auth-card,
 body.dark-mode .table-responsive{
-  background-color:#2b2f38;color:#f1f3f5;border-color:#3a3f4b;box-shadow:0 3px 12px rgba(0,0,0,.5)
+  background-color:#2b2f38;
+  color:#f1f3f5;
+  border-color:#3a3f4b;
+  box-shadow:0 3px 12px rgba(0,0,0,.5)
 }
 body.dark-mode input,
 body.dark-mode select,
-body.dark-mode textarea{background-color:#3a3f4b;color:#f8f9fa;border-color:#555b66}
+body.dark-mode textarea{
+  background-color:#3a3f4b;
+  color:#f8f9fa;
+  border-color:#555b66
+}
 body.dark-mode table th{background-color:#004a8f;color:#fff}
 body.dark-mode table td{background-color:#2e323c;color:#e9ecef}
 body.dark-mode .btn-primary{background-color:#0074cc;color:#fff}
@@ -159,4 +259,8 @@ body.dark-mode .btn-danger{background-color:#c82333}
 body.dark-mode .btn-outline-gray{border-color:#adb5bd;color:#adb5bd}
 body.dark-mode .btn-outline-gray:hover{background-color:#adb5bd;color:#1c1f26}
 body.dark-mode footer{color:#adb5bd}
-body.dark-mode .alert{border-left:4px solid #ffc107;background-color:#2e323c;color:#e9ecef}
+body.dark-mode .alert{
+  border-left:4px solid #ffc107;
+  background-color:#2e323c;
+  color:#e9ecef
+}
