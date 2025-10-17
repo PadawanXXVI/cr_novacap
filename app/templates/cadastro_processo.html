@@ -2,8 +2,8 @@
 {% block title %}Cadastro de Processo – Central de Relacionamento NOVACAP{% endblock %}
 
 {% block content %}
-<section class="page-wrapper">
-  <div class="page-card fade-in">
+<section class="page-wrapper fade-in">
+  <div class="page-card">
 
     <!-- Cabeçalho institucional -->
     <header>
@@ -24,7 +24,7 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Formulário -->
+    <!-- Formulário principal -->
     <form method="POST" action="{{ url_for('processos_bp.cadastro_processo') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
@@ -153,7 +153,6 @@
         </a>
       </div>
     </form>
-
   </div>
 </section>
 
