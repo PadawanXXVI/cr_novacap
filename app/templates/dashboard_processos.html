@@ -2,16 +2,16 @@
 {% block title %}Dashboard – Processos | Central de Relacionamento NOVACAP{% endblock %}
 
 {% block content %}
-<section class="dashboard-section fade-in" style="margin-top: 2rem;">
+<section class="dashboard-section fade-in" 
+         style="padding:2rem 1rem;max-width:1300px;margin:0 auto;">
 
   <!-- Cabeçalho -->
-  <header class="text-center" style="margin-bottom: 2.5rem;">
-    <img src="{{ url_for('static', filename='../images/ico-logo-gdf.svg') }}" alt="GDF" height="80" style="margin-bottom: 1rem;">
-    <h1 style="color: #002d62; font-size: 2rem; margin-bottom: 0.3rem;">
+  <header class="text-center" style="margin-bottom:2.5rem;">
+    <h1 style="color:#002d62;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:700;margin-bottom:0.5rem;">
       <i class="fas fa-chart-pie"></i> Painel de Controle – Processos
     </h1>
-    <p style="color: #666; max-width: 720px; margin: 0 auto;">
-      Visualize os principais indicadores de tramitação e atendimento de processos.
+    <p style="color:#555;font-size:1.05rem;max-width:800px;margin:0 auto;line-height:1.6;">
+      Visualize os principais indicadores de tramitação, atendimento e resultados dos processos da NOVACAP.
     </p>
   </header>
 
@@ -96,14 +96,16 @@
     </div>
   </div>
 
-<!-- Ações -->
-  <div class="button-group" style="margin-top: 3rem; flex-wrap: wrap; justify-content: center; gap: 0.8rem;">
+  <!-- Ações -->
+  <div class="button-group" 
+       style="margin-top:3rem;flex-wrap:wrap;justify-content:center;gap:0.8rem;">
+
     <a href="{{ url_for('processos_bp.cadastro_processo') }}">
       <button class="btn-primary"><i class="fas fa-plus-circle"></i> Novo Processo</button>
     </a>
 
     <a href="{{ url_for('processos_bp.consultar_processos') }}">
-      <button class="btn-secondary"><i class="fas fa-list"></i> Consultar Processos</button>
+      <button class="btn-outline-blue"><i class="fas fa-list"></i> Consultar Processos</button>
     </a>
 
     <a href="{{ url_for('processos_bp.consultar_processos') }}">
@@ -123,15 +125,20 @@
     {% endif %}
 
     <!-- Exportações -->
-    <div class="export-buttons" style="margin-top: 2rem; text-align: center;">
-      <p style="color: #666; font-size: 0.95rem; margin-bottom: 0.5rem;">Exportar relatório consolidado:</p>
-      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='xlsx') }}" class="btn-outline-blue">
+    <div class="export-buttons" style="margin-top:2rem;text-align:center;">
+      <p style="color:#666;font-size:0.95rem;margin-bottom:0.5rem;">
+        Exportar relatório consolidado:
+      </p>
+      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='xlsx') }}" 
+         class="btn-outline-blue">
         <i class="fas fa-file-excel"></i> Excel
       </a>
-      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='csv') }}" class="btn-outline-blue">
+      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='csv') }}" 
+         class="btn-outline-blue">
         <i class="fas fa-file-csv"></i> CSV
       </a>
-      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='pdf') }}" class="btn-outline-blue">
+      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='pdf') }}" 
+         class="btn-outline-blue">
         <i class="fas fa-file-pdf"></i> PDF
       </a>
     </div>
@@ -140,9 +147,9 @@
       <button class="btn-danger"><i class="fas fa-sign-out-alt"></i> Sair</button>
     </a>
   </div>
-
 </section>
 
 <!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" 
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}
