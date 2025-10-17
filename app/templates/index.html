@@ -2,100 +2,111 @@
 {% block title %}Central de Relacionamento – NOVACAP{% endblock %}
 
 {% block content %}
-<section class="home-intro fade-in">
+<section class="home-intro fade-in" style="text-align:center; margin-top:2rem;">
 
   <!-- Cabeçalho institucional -->
-  <div class="home-header text-center" style="margin-top: 2rem;">
-    <img src="{{ url_for('static', filename='../images/ico-logo-gdf.svg') }}" alt="GDF" height="90" style="margin-bottom: 1rem;">
-    <h1 style="color: #002d62; font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem;">
+  <div class="home-header" style="margin-top:1.5rem;">
+    <h1 style="color:#002d62;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:700;">
       Central de Relacionamento da NOVACAP
     </h1>
-    <h2 style="color: #005fa3; font-size: 1.3rem; font-weight: 500;">
+    <h2 style="color:#005fa3;font-size:clamp(1.1rem,2vw,1.3rem);font-weight:500;margin-top:0.3rem;">
       Companhia Urbanizadora da Nova Capital do Brasil
     </h2>
   </div>
 
   <!-- Texto institucional -->
-  <div class="home-description text-center" style="max-width: 700px; margin: 2rem auto; color: #555; line-height: 1.8; font-size: 1.1rem;">
+  <div class="home-description" 
+       style="max-width:700px;margin:2rem auto;color:#555;line-height:1.8;font-size:1.05rem;">
     <p>
       Bem-vindo ao sistema interno da <strong>Central de Relacionamento da NOVACAP</strong>.<br>
       Este ambiente foi desenvolvido para permitir o <strong>registro, acompanhamento e tramitação de processos internos</strong>,
-      assegurando <strong>transparência</strong>, <strong>agilidade</strong> e <strong>eficiência</strong> na gestão das demandas e atendimentos
-      entre as Diretorias, Regiões Administrativas e demais órgãos do GDF.
+      assegurando <strong>transparência</strong>, <strong>agilidade</strong> e <strong>eficiência</strong> na gestão das demandas
+      entre as Diretorias, Regiões Administrativas e demais órgãos do Governo do Distrito Federal.
     </p>
   </div>
 
   <!-- Botão principal -->
-  <div class="text-center" style="margin-top: 3rem;">
-    <a href="{{ url_for('main_bp.login') }}" style="text-decoration: none;">
+  <div style="margin-block:3rem;">
+    <a href="{{ url_for('main_bp.login') }}" style="text-decoration:none;">
       <button class="btn-primary" style="
-        background-color: #005fa3;
-        color: white;
-        border: none;
-        padding: 0.9rem 2rem;
-        font-size: 1.1rem;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: 0.3s ease;">
+        background:linear-gradient(90deg,#004a8f,#007bff);
+        color:white;
+        padding:1rem 2.5rem;
+        font-size:1.15rem;
+        font-weight:600;
+        border:none;
+        border-radius:8px;
+        box-shadow:0 4px 10px rgba(0,0,0,0.15);
+        cursor:pointer;
+        transition:transform 0.2s ease,box-shadow 0.2s ease;">
         <i class="fas fa-sign-in-alt"></i> Acessar o Sistema
       </button>
     </a>
   </div>
 
-  <!-- Bloco de apresentação dos módulos -->
-  <div class="modules-intro" style="margin-top: 4rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem;">
-    <div class="module-card" style="
-      background: white;
-      border: 1px solid #e3e6ea;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      padding: 1.5rem;
-      width: 320px;
-      border-radius: 8px;
-      text-align: center;">
-      <i class="fas fa-folder-open" style="font-size: 2rem; color: #005fa3; margin-bottom: 0.6rem;"></i>
-      <h3 style="margin-bottom: 0.6rem;">Módulo de Processos</h3>
-      <p style="color: #666;">Gerencie os processos tramitados via SEI, com status, movimentações e relatórios consolidados.</p>
-    </div>
+  <!-- Módulos do sistema -->
+  <div class="modules-intro" style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:2rem;
+    justify-items:center;
+    max-width:1100px;
+    margin:3rem auto;">
+    
+    {% set modulos = [
+      {'icone':'fa-folder-open','titulo':'Módulo de Processos',
+       'texto':'Gerencie os processos tramitados via SEI, com status, movimentações e relatórios consolidados.'},
+      {'icone':'fa-comments','titulo':'Módulo de Atendimentos',
+       'texto':'Registre e acompanhe solicitações internas e externas, integrando as demandas das RAs e órgãos do GDF.'},
+      {'icone':'fa-chart-line','titulo':'Painel de Relatórios',
+       'texto':'Acompanhe indicadores, exporte relatórios e visualize a evolução das demandas e processos da NOVACAP.'}
+    ] %}
 
-    <div class="module-card" style="
-      background: white;
-      border: 1px solid #e3e6ea;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      padding: 1.5rem;
-      width: 320px;
-      border-radius: 8px;
-      text-align: center;">
-      <i class="fas fa-comments" style="font-size: 2rem; color: #005fa3; margin-bottom: 0.6rem;"></i>
-      <h3 style="margin-bottom: 0.6rem;">Módulo de Atendimentos</h3>
-      <p style="color: #666;">Registro de solicitações internas e externas, integrando demandas da população e das RAs.</p>
-    </div>
-
-    <div class="module-card" style="
-      background: white;
-      border: 1px solid #e3e6ea;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      padding: 1.5rem;
-      width: 320px;
-      border-radius: 8px;
-      text-align: center;">
-      <i class="fas fa-chart-line" style="font-size: 2rem; color: #005fa3; margin-bottom: 0.6rem;"></i>
-      <h3 style="margin-bottom: 0.6rem;">Painel de Relatórios</h3>
-      <p style="color: #666;">Acompanhe os indicadores, exporte relatórios e visualize a evolução das demandas da NOVACAP.</p>
-    </div>
+    {% for m in modulos %}
+      <div class="module-card" style="
+        background:white;
+        border:1px solid #e3e6ea;
+        box-shadow:0 3px 8px rgba(0,0,0,0.08);
+        padding:2rem 1.5rem;
+        width:100%;
+        max-width:340px;
+        border-radius:10px;
+        transition:all 0.25s ease;
+        cursor:default;">
+        <i class="fas {{ m.icone }}" 
+           style="font-size:2rem;color:#005fa3;margin-bottom:0.8rem;"></i>
+        <h3 style="margin-bottom:0.6rem;color:#002d62;font-size:1.2rem;">{{ m.titulo }}</h3>
+        <p style="color:#555;font-size:0.95rem;">{{ m.texto }}</p>
+      </div>
+    {% endfor %}
   </div>
 
   <!-- Rodapé institucional -->
-  <div class="home-footer text-center" style="margin-top: 4rem; color: #888; font-size: 0.9rem;">
-    <hr style="width: 80%; margin: 2rem auto; border: 0; border-top: 1px solid #ddd;">
+  <div class="home-footer" style="margin-top:3rem;color:#777;font-size:0.9rem;">
+    <hr style="width:80%;margin:2rem auto;border:0;border-top:1px solid #ddd;">
     <p>
       Governo do Distrito Federal — Companhia Urbanizadora da Nova Capital do Brasil (NOVACAP)<br>
       Central de Relacionamento — Sistema de Controle de Processos e Atendimentos<br>
       © {{ current_year or 2025 }}
     </p>
   </div>
-
 </section>
 
 <!-- Ícones (Font Awesome) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" 
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- Efeito de hover suave nos cards -->
+<script>
+document.querySelectorAll('.module-card').forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    card.style.transform = 'translateY(-5px)';
+    card.style.boxShadow = '0 6px 14px rgba(0,0,0,0.12)';
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'translateY(0)';
+    card.style.boxShadow = '0 3px 8px rgba(0,0,0,0.08)';
+  });
+});
+</script>
 {% endblock %}
