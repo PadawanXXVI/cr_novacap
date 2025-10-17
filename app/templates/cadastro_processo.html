@@ -27,7 +27,9 @@
   <!-- Formulário -->
   <form method="POST" action="{{ url_for('processos_bp.cadastro_processo') }}"
         class="card" style="padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); background-color: #fff;">
-    {{ csrf_token() }}
+    
+    <!-- CSRF oculto -->
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <!-- Número do Processo -->
     <div class="form-group">
@@ -136,20 +138,21 @@
     </div>
 
     <!-- Botões -->
-    <div class="button-group" style="margin-top: 2rem; text-align: center;">
-      <button type="submit" class="btn-primary" onclick="this.disabled=true;this.form.submit();">
+    <div class="button-toolbar" style="margin-top: 2.5rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem;">
+      
+      <button type="submit" class="btn btn-primary" style="min-width: 200px;" onclick="this.disabled=true;this.form.submit();">
         <i class="fas fa-save"></i> Salvar Processo
       </button>
 
-      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn-secondary">
+      <a href="{{ url_for('processos_bp.consultar_processos') }}" class="btn btn-outline-blue" style="min-width: 200px;">
+        <i class="fas fa-search"></i> Consultar Processos
+      </a>
+
+      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn btn-outline-gray" style="min-width: 200px;">
         <i class="fas fa-chart-bar"></i> Tela de Totais
       </a>
 
-      <a href="{{ url_for('processos_bp.consultar_processos') }}" class="btn-outline-gray">
-        <i class="fas fa-eye"></i> Consultar Processo
-      </a>
-
-      <a href="{{ url_for('main_bp.logout') }}" class="btn-danger">
+      <a href="{{ url_for('main_bp.logout') }}" class="btn btn-danger" style="min-width: 200px;">
         <i class="fas fa-sign-out-alt"></i> Sair
       </a>
     </div>

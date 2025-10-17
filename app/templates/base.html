@@ -5,13 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Sistema CR-NOVACAP{% endblock %}</title>
 
-  <!-- 🔗 Ícone e Folhas de Estilo -->
+  <!-- 🔗 Ícones e Estilos -->
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css?v=3.1') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- 🔵 Paleta institucional GDF -->
+  <!-- 🎨 Ajustes complementares para integração institucional -->
   <style>
+    /* =============================================
+       ⚙ AJUSTES DO TEMPLATE BASE (modo claro)
+    ============================================== */
     body {
       font-family: 'Segoe UI', Tahoma, sans-serif;
       background-color: #f7f9fb;
@@ -20,9 +23,6 @@
       color: #333;
     }
 
-    /* =========================
-       🟦 CABEÇALHO INSTITUCIONAL
-    ========================== */
     header.navbar {
       background-color: #002d62;
       color: white;
@@ -36,6 +36,7 @@
     header.navbar img.logo-gdf {
       height: 60px;
       width: auto;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
     }
 
     header.navbar h1 {
@@ -62,13 +63,24 @@
       color: #ffc107;
     }
 
-    /* =========================
-       ⚙ CONTEÚDO PRINCIPAL
-    ========================== */
     main.container {
       max-width: 1200px;
       margin: 2rem auto;
       padding: 1rem 2rem;
+    }
+
+    footer {
+      background-color: #002d62;
+      color: white;
+      text-align: center;
+      padding: 1.5rem 0;
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      letter-spacing: 0.3px;
+    }
+
+    footer p {
+      margin: 0.3rem 0;
     }
 
     .alert {
@@ -79,23 +91,8 @@
 
     .alert-success { background-color: #d4edda; color: #155724; }
     .alert-warning { background-color: #fff3cd; color: #856404; }
-    .alert-error { background-color: #f8d7da; color: #721c24; }
-
-    /* =========================
-       🟡 RODAPÉ
-    ========================== */
-    footer {
-      background-color: #002d62;
-      color: white;
-      text-align: center;
-      padding: 1.5rem 0;
-      margin-top: 3rem;
-      font-size: 0.9rem;
-    }
-
-    footer p {
-      margin: 0.3rem 0;
-    }
+    .alert-error,
+    .alert-danger { background-color: #f8d7da; color: #721c24; }
 
     @media (max-width: 768px) {
       header.navbar {
@@ -109,6 +106,39 @@
         gap: 1rem;
       }
     }
+
+    /* =============================================
+       🌙 CABEÇALHO E RODAPÉ — MODO ESCURO INSTITUCIONAL
+       Azul petróleo + dourado SEGOV (#ffc107)
+    ============================================== */
+    body.dark-mode header.navbar {
+      background: linear-gradient(90deg, #001d3d, #003566);
+      color: #f8f9fa;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.4);
+    }
+
+    body.dark-mode header.navbar h1 {
+      color: #ffc107;
+    }
+
+    body.dark-mode nav a {
+      color: #e9ecef;
+    }
+
+    body.dark-mode nav a:hover {
+      color: #ffc107;
+    }
+
+    body.dark-mode footer {
+      background: linear-gradient(90deg, #001d3d, #002752);
+      color: #e9ecef;
+      border-top: 2px solid #ffc107;
+      box-shadow: 0 -3px 8px rgba(0,0,0,0.5);
+    }
+
+    body.dark-mode footer p {
+      color: #dee2e6;
+    }
   </style>
 </head>
 
@@ -118,7 +148,7 @@
   <!-- ========================= -->
   <header class="navbar">
     <div style="display: flex; align-items: center; gap: 1rem;">
-      <img src="{{ url_for('static', filename='../images/ico-logo-gdf.svg') }}" alt="GDF" class="logo-gdf">
+      <img src="{{ url_for('static', filename='images/ico-logo-gdf.svg') }}" alt="GDF" class="logo-gdf">
       <h1>Central de Relacionamento – NOVACAP</h1>
     </div>
 
@@ -136,7 +166,7 @@
   <!-- ========================= -->
   <!-- 📋 Conteúdo Principal -->
   <!-- ========================= -->
-  <main class="container">
+  <main class="container fade-in">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -144,7 +174,6 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-
     {% block content %}{% endblock %}
   </main>
 
@@ -158,5 +187,37 @@
   </footer>
 
   {% block scripts %}{% endblock %}
+
+  <!-- ========================= -->
+  <!-- 🌙 Botão modo claro/escuro -->
+  <!-- ========================= -->
+  <button id="toggle-theme" class="btn-outline-gray"
+          style="position:fixed;bottom:1.2rem;right:1.2rem;border-radius:50%;
+                 width:48px;height:48px;z-index:999;background-color:#fff;
+                 border:2px solid #adb5bd;display:flex;align-items:center;justify-content:center;
+                 box-shadow:0 3px 6px rgba(0,0,0,0.15);">
+    <i class="fas fa-moon"></i>
+  </button>
+
+  <script>
+  const themeBtn = document.getElementById('toggle-theme');
+  const body = document.body;
+  const icon = themeBtn.querySelector('i');
+
+  // Mantém o tema salvo entre sessões
+  if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add('dark-mode');
+    icon.classList.replace('fa-moon','fa-sun');
+  }
+
+  // Alternância manual
+  themeBtn.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    const isDark = body.classList.contains('dark-mode');
+    icon.classList.toggle('fa-moon', !isDark);
+    icon.classList.toggle('fa-sun', isDark);
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  });
+  </script>
 </body>
 </html>
