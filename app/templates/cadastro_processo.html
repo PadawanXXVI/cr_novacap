@@ -5,11 +5,11 @@
 <section class="page-section fade-in">
 
   <!-- Cabeçalho institucional -->
-  <header class="text-center" style="margin-bottom:2rem;">
-    <h1 style="color:#002d62;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:700;margin-bottom:0.5rem;">
+  <header>
+    <h1>
       <i class="fas fa-folder-plus"></i> Cadastro de Processo
     </h1>
-    <p style="color:#555;max-width:700px;margin:0 auto;line-height:1.6;">
+    <p>
       Preencha corretamente os campos abaixo para registrar um novo processo no sistema de tramitação.
     </p>
   </header>
@@ -18,14 +18,13 @@
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
-        <div class="alert alert-{{ category }}" style="margin-bottom:1rem;">{{ message }}</div>
+        <div class="alert alert-{{ category }}">{{ message }}</div>
       {% endfor %}
     {% endif %}
   {% endwith %}
 
   <!-- Formulário -->
-  <form method="POST" action="{{ url_for('processos_bp.cadastro_processo') }}" class="card" style="padding:2rem;">
-    
+  <form method="POST" action="{{ url_for('processos_bp.cadastro_processo') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <!-- Número do Processo -->
@@ -135,21 +134,20 @@
     </div>
 
     <!-- Botões -->
-    <div class="button-toolbar" style="margin-top:2.5rem;display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;">
-      
-      <button type="submit" class="btn btn-primary" style="min-width:220px;" onclick="this.disabled=true;this.form.submit();">
+    <div class="button-toolbar">
+      <button type="submit" class="btn btn-primary" onclick="this.disabled=true;this.form.submit();">
         <i class="fas fa-save"></i> Salvar Processo
       </button>
 
-      <a href="{{ url_for('processos_bp.consultar_processos') }}" class="btn btn-outline-blue" style="min-width:220px;">
+      <a href="{{ url_for('processos_bp.consultar_processos') }}" class="btn btn-outline-blue">
         <i class="fas fa-search"></i> Consultar Processos
       </a>
 
-      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn btn-outline-gray" style="min-width:220px;">
+      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn btn-outline-gray">
         <i class="fas fa-chart-bar"></i> Tela de Totais
       </a>
 
-      <a href="{{ url_for('main_bp.logout') }}" class="btn btn-danger" style="min-width:220px;">
+      <a href="{{ url_for('main_bp.logout') }}" class="btn btn-danger">
         <i class="fas fa-sign-out-alt"></i> Sair
       </a>
     </div>
@@ -159,8 +157,7 @@
 <!-- Verificação AJAX -->
 <script>
 document.getElementById('numero_processo').addEventListener('blur', function () {
-  let numero = this.value.trim();
-  numero = numero.replace(/\D/g, ''); // remove máscara
+  let numero = this.value.trim().replace(/\D/g, '');
   if (numero.length < 5) return;
   const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
 
