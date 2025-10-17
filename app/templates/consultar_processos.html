@@ -5,41 +5,39 @@
 <section class="page-section fade-in" style="max-width: 1200px; margin: 2rem auto;">
 
   <!-- 🔹 Cabeçalho Institucional -->
-  <header class="text-center" style="margin-bottom: 2rem;">
-    <h1 style="color: #005CA9; font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 700;">
-      <i class="fas fa-search"></i> Consulta de Processos
-    </h1>
-    <p style="color: #555; font-size: 1.05rem; max-width: 720px; margin: 0.5rem auto;">
-      Consulte, filtre e exporte processos SEI tramitando pela NOVACAP.
-    </p>
+  <header class="page-header">
+    <h1><i class="fas fa-search"></i> Consulta de Processos</h1>
+    <p>Utilize os filtros abaixo para localizar, visualizar ou exportar processos SEI tramitando pela NOVACAP.</p>
   </header>
 
   <!-- 🔍 FILTROS DE PESQUISA -->
-  <form method="GET" action="{{ url_for('processos_bp.consultar_processos') }}"
-        class="card" style="padding: 1.5rem 2rem; border-radius: 12px; box-shadow: var(--shadow);">
-
+  <form method="GET" action="{{ url_for('processos_bp.consultar_processos') }}" class="filter-card">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem 1.5rem;">
-      <!-- Número SEI -->
-      <div>
+    <div class="form-grid">
+      <!-- Nº Processo SEI -->
+      <div class="form-group">
         <label for="numero_processo"><i class="fas fa-hashtag"></i> Nº Processo SEI</label>
-        <input type="text" id="numero_processo" name="numero_processo" placeholder="00000-00000000/0000-00" value="{{ request.args.get('numero_processo', '') }}">
+        <input type="text" id="numero_processo" name="numero_processo"
+               placeholder="00000-00000000/0000-00"
+               value="{{ request.args.get('numero_processo', '') }}">
       </div>
 
       <!-- Status -->
-      <div>
+      <div class="form-group">
         <label for="status"><i class="fas fa-flag"></i> Status</label>
         <select id="status" name="status">
           <option value="">Todos</option>
           {% for s in todos_status %}
-            <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>{{ s.descricao }}</option>
+            <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>
+              {{ s.descricao }}
+            </option>
           {% endfor %}
         </select>
       </div>
 
       <!-- Diretoria -->
-      <div>
+      <div class="form-group">
         <label for="diretoria"><i class="fas fa-building"></i> Diretoria de Destino</label>
         <select id="diretoria" name="diretoria">
           <option value="">Todas</option>
@@ -50,66 +48,84 @@
       </div>
 
       <!-- Região Administrativa -->
-      <div>
+      <div class="form-group">
         <label for="ra"><i class="fas fa-map-marker-alt"></i> Região Administrativa</label>
         <select id="ra" name="ra">
           <option value="">Todas</option>
           {% for r in todas_ras %}
-            <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>{{ r.descricao_ra }}</option>
+            <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>
+              {{ r.descricao_ra }}
+            </option>
           {% endfor %}
         </select>
       </div>
 
       <!-- Tipo de Demanda -->
-      <div>
+      <div class="form-group">
         <label for="tipo"><i class="fas fa-tag"></i> Tipo de Demanda</label>
         <select id="tipo" name="tipo">
           <option value="">Todos</option>
           {% for t in tipos %}
-            <option value="{{ t.id_tipo }}" {% if request.args.get('tipo') == t.id_tipo|string %}selected{% endif %}>{{ t.descricao }}</option>
+            <option value="{{ t.id_tipo }}" {% if request.args.get('tipo') == t.id_tipo|string %}selected{% endif %}>
+              {{ t.descricao }}
+            </option>
           {% endfor %}
         </select>
       </div>
 
       <!-- Demanda -->
-      <div>
+      <div class="form-group">
         <label for="demanda"><i class="fas fa-list-ul"></i> Demanda</label>
         <select id="demanda" name="demanda">
           <option value="">Todas</option>
           {% for d in demandas %}
-            <option value="{{ d.id_demanda }}" {% if request.args.get('demanda') == d.id_demanda|string %}selected{% endif %}>{{ d.descricao }}</option>
+            <option value="{{ d.id_demanda }}" {% if request.args.get('demanda') == d.id_demanda|string %}selected{% endif %}>
+              {{ d.descricao }}
+            </option>
           {% endfor %}
         </select>
       </div>
 
       <!-- Datas -->
-      <div>
+      <div class="form-group">
         <label for="inicio"><i class="fas fa-calendar-plus"></i> Data Início</label>
         <input type="date" id="inicio" name="inicio" value="{{ request.args.get('inicio', '') }}">
       </div>
-      <div>
+      <div class="form-group">
         <label for="fim"><i class="fas fa-calendar-alt"></i> Data Fim</label>
         <input type="date" id="fim" name="fim" value="{{ request.args.get('fim', '') }}">
       </div>
     </div>
 
-    <!-- 🔘 Botões de ação -->
-    <div class="button-toolbar" style="margin-top: 1.2rem; justify-content: flex-end; flex-wrap: wrap; gap: 0.8rem;">
-      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Consultar</button>
-      <a href="{{ url_for('processos_bp.consultar_processos') }}" class="btn btn-outline-gray"><i class="fas fa-undo"></i> Limpar</a>
+    <!-- 🔘 Botões de Ação -->
+    <div class="button-toolbar">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-search"></i> Consultar
+      </button>
+      <a href="{{ url_for('processos_bp.consultar_processos') }}" class="btn btn-outline-gray">
+        <i class="fas fa-eraser"></i> Limpar
+      </a>
     </div>
   </form>
 
   <!-- 📊 RESULTADOS -->
   {% if processos %}
   <div class="card" style="margin-top: 2rem; padding: 1.5rem 2rem; border-radius: 12px; box-shadow: var(--shadow);">
-    
+
     <!-- Exportações -->
-    <div class="export-bar" style="display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem;">
-      <span style="font-weight: 600; color: var(--text-dark); align-self: center;">Exportar:</span>
-      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='csv') }}" class="btn btn-outline-blue"><i class="fas fa-file-csv"></i> CSV</a>
-      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='xlsx') }}" class="btn btn-outline-blue"><i class="fas fa-file-excel"></i> XLSX</a>
-      <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='pdf') }}" class="btn btn-outline-blue"><i class="fas fa-file-pdf"></i> PDF</a>
+    <div class="export-bar">
+      <span>Exportar resultados:</span>
+      <div style="display: flex; gap: 0.6rem;">
+        <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='csv') }}" class="btn btn-outline-blue btn-sm">
+          <i class="fas fa-file-csv"></i> CSV
+        </a>
+        <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='xlsx') }}" class="btn btn-outline-blue btn-sm">
+          <i class="fas fa-file-excel"></i> XLSX
+        </a>
+        <a href="{{ url_for('processos_bp.exportar_tramitacoes', formato='pdf') }}" class="btn btn-outline-blue btn-sm">
+          <i class="fas fa-file-pdf"></i> PDF
+        </a>
+      </div>
     </div>
 
     <!-- TABELA DE RESULTADOS -->
@@ -147,7 +163,7 @@
             <td>{{ p.ultima_data.strftime('%d/%m/%Y') if p.ultima_data else '---' }}</td>
             <td>
               <a href="{{ url_for('processos_bp.exportar_processo_pdf', id_processo=p.id_processo) }}"
-                 class="btn btn-outline-blue" title="Gerar PDF do processo">
+                 class="btn btn-outline-blue btn-sm" title="Gerar PDF do processo">
                 <i class="fas fa-file-pdf"></i>
               </a>
             </td>
@@ -159,14 +175,14 @@
 
     <!-- Paginação -->
     {% if processos_paginados %}
-    <div class="pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 1rem;">
-      <span style="color: var(--text-muted);">Exibindo {{ processos_paginados.start_index() }}–{{ processos_paginados.end_index() }} de {{ processos_paginados.total }}</span>
+    <div class="pagination">
+      <span>Exibindo {{ processos_paginados.start_index() }}–{{ processos_paginados.end_index() }} de {{ processos_paginados.total }}</span>
       <div>
         {% if processos_paginados.has_prev %}
-          <a href="{{ url_for('processos_bp.consultar_processos', page=processos_paginados.prev_num) }}" class="btn btn-outline-blue">&laquo; Anterior</a>
+          <a href="{{ url_for('processos_bp.consultar_processos', page=processos_paginados.prev_num) }}" class="btn btn-outline-blue btn-sm">&laquo; Anterior</a>
         {% endif %}
         {% if processos_paginados.has_next %}
-          <a href="{{ url_for('processos_bp.consultar_processos', page=processos_paginados.next_num) }}" class="btn btn-outline-blue">Próxima &raquo;</a>
+          <a href="{{ url_for('processos_bp.consultar_processos', page=processos_paginados.next_num) }}" class="btn btn-outline-blue btn-sm">Próxima &raquo;</a>
         {% endif %}
       </div>
     </div>
@@ -179,7 +195,7 @@
   </p>
   {% endif %}
 
-  <!-- ⚙ RODAPÉ -->
+  <!-- ⚙ RODAPÉ DE AÇÕES -->
   <div class="button-toolbar" style="margin-top: 2.5rem; justify-content:center;">
     <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn btn-secondary">
       <i class="fas fa-chart-bar"></i> Voltar ao Dashboard
