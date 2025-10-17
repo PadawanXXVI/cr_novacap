@@ -2,15 +2,14 @@
 {% block title %}Cadastro de Processo – Central de Relacionamento NOVACAP{% endblock %}
 
 {% block content %}
-<section class="container fade-in" style="max-width: 900px; margin: 3rem auto;">
+<section class="fade-in" style="padding:2rem 1rem; max-width:1100px; margin:3rem auto;">
 
   <!-- Cabeçalho institucional -->
-  <header class="text-center" style="margin-bottom: 2rem;">
-    <img src="{{ url_for('static', filename='../images/ico-logo-gdf.svg') }}" alt="GDF" height="80" style="margin-bottom: 1rem;">
-    <h1 style="color: #002d62; font-size: 2rem; margin-bottom: 0.3rem;">
+  <header class="text-center" style="margin-bottom:2rem;">
+    <h1 style="color:#002d62;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:700;margin-bottom:0.5rem;">
       <i class="fas fa-folder-plus"></i> Cadastro de Processo
     </h1>
-    <p style="color: #666; max-width: 680px; margin: 0 auto;">
+    <p style="color:#555;max-width:700px;margin:0 auto;line-height:1.6;">
       Preencha corretamente os campos abaixo para registrar um novo processo no sistema de tramitação.
     </p>
   </header>
@@ -19,16 +18,14 @@
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
-        <div class="alert alert-{{ category }}" style="margin-bottom: 1rem;">{{ message }}</div>
+        <div class="alert alert-{{ category }}" style="margin-bottom:1rem;">{{ message }}</div>
       {% endfor %}
     {% endif %}
   {% endwith %}
 
   <!-- Formulário -->
-  <form method="POST" action="{{ url_for('processos_bp.cadastro_processo') }}"
-        class="card" style="padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); background-color: #fff;">
+  <form method="POST" action="{{ url_for('processos_bp.cadastro_processo') }}" class="card" style="padding:2rem;">
     
-    <!-- CSRF oculto -->
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <!-- Número do Processo -->
@@ -37,7 +34,7 @@
       <input type="text" id="numero_processo" name="numero_processo" placeholder="00000-00000000/0000-00" required>
     </div>
 
-    <!-- Datas e RA -->
+    <!-- Datas e Região Administrativa -->
     <div class="form-row">
       <div class="form-col">
         <label for="data_criacao_ra"><i class="fas fa-calendar-plus"></i> Data de Criação na RA</label>
@@ -138,44 +135,38 @@
     </div>
 
     <!-- Botões -->
-    <div class="button-toolbar" style="margin-top: 2.5rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem;">
+    <div class="button-toolbar" style="margin-top:2.5rem;display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;">
       
-      <button type="submit" class="btn btn-primary" style="min-width: 200px;" onclick="this.disabled=true;this.form.submit();">
+      <button type="submit" class="btn btn-primary" style="min-width:220px;" onclick="this.disabled=true;this.form.submit();">
         <i class="fas fa-save"></i> Salvar Processo
       </button>
 
-      <a href="{{ url_for('processos_bp.consultar_processos') }}" class="btn btn-outline-blue" style="min-width: 200px;">
+      <a href="{{ url_for('processos_bp.consultar_processos') }}" class="btn btn-outline-blue" style="min-width:220px;">
         <i class="fas fa-search"></i> Consultar Processos
       </a>
 
-      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn btn-outline-gray" style="min-width: 200px;">
+      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn btn-outline-gray" style="min-width:220px;">
         <i class="fas fa-chart-bar"></i> Tela de Totais
       </a>
 
-      <a href="{{ url_for('main_bp.logout') }}" class="btn btn-danger" style="min-width: 200px;">
+      <a href="{{ url_for('main_bp.logout') }}" class="btn btn-danger" style="min-width:220px;">
         <i class="fas fa-sign-out-alt"></i> Sair
       </a>
     </div>
   </form>
 </section>
 
-<!-- Verificação AJAX de número de processo -->
+<!-- Verificação AJAX -->
 <script>
 document.getElementById('numero_processo').addEventListener('blur', function () {
   let numero = this.value.trim();
-
-  // Remove qualquer máscara (mantém só dígitos)
-  numero = numero.replace(/\D/g, '');
-
-  if (numero.length < 5) return; // ignora se for muito curto
+  numero = numero.replace(/\D/g, ''); // remove máscara
+  if (numero.length < 5) return;
   const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
 
   fetch('{{ url_for("processos_bp.verificar_processo") }}', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken
-    },
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
     body: JSON.stringify({ numero_processo: numero })
   })
   .then(response => response.json())
@@ -183,15 +174,12 @@ document.getElementById('numero_processo').addEventListener('blur', function () 
     if (data.existe) {
       if (confirm("⚠ Este processo já está cadastrado. Deseja alterá-lo?")) {
         window.location.href = `/processos/alterar/${data.id}`;
-      } else {
-        this.value = "";
-      }
+      } else { this.value = ""; }
     }
   })
   .catch(error => console.error('Erro na verificação do processo:', error));
 });
 </script>
 
-<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}
