@@ -364,3 +364,83 @@ Aplicação: dashboard_processos.html / cadastro_processo.html
   font-weight: 700;
   color: var(--primary-dark);
 }
+
+/* ==========================================================
+🏛 LAYOUT INSTITUCIONAL
+Aplicação: dashboard_processos.html / cadastro_processo.html
+========================================================== */
+
+.page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: calc(100vh - 120px);
+  padding: 3rem 1rem;
+  background-color: #f4f6f9;
+}
+
+.page-card {
+  width: 100%;
+  max-width: 1100px;
+  background: var(--light-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  padding: 2.5rem 2rem;
+}
+
+/* Cabeçalho institucional */
+.page-card header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.page-card header h1 {
+  color: var(--primary-dark);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.page-card header p {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  margin: 0 auto;
+  max-width: 720px;
+  line-height: 1.6;
+}
+
+/* Reaproveita estilos do formulário e dashboard */
+.page-card form,
+.page-card .dashboard-grid {
+  margin-top: 1.5rem;
+}
+
+/* Espaçamento entre seções internas */
+.page-card .section-title {
+  margin-top: 2.5rem;
+}
+
+/* Botões centralizados e proporcionais */
+.page-card .button-toolbar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.page-card .btn {
+  min-width: 200px;
+}
+
+/* ==== Responsividade ==== */
+@media (max-width: 768px) {
+  .page-wrapper {
+    padding: 2rem 1rem;
+  }
+
+  .page-card {
+    padding: 1.5rem 1rem;
+  }
+}
