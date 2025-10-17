@@ -264,3 +264,103 @@ body.dark-mode .alert{
   background-color:#2e323c;
   color:#e9ecef
 }
+
+/* ==========================================================
+🎨 AJUSTES DE INTERFACE — PAINÉIS E FORMULÁRIOS INTERNOS
+Aplicação: dashboard_processos.html / cadastro_processo.html
+========================================================== */
+
+/* ==== PÁGINAS INTERNAS (FORMULÁRIOS GRANDES) ==== */
+.page-section {
+  max-width: 1100px;
+  margin: 2rem auto;
+  background: var(--light-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 2.5rem 2rem;
+}
+
+.page-section header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.page-section header h1 {
+  color: var(--primary-dark);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  margin-bottom: 0.4rem;
+}
+
+.page-section header p {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  margin: 0 auto;
+  max-width: 700px;
+}
+
+/* ==== FORMULÁRIOS (MELHOR ESPAÇAMENTO) ==== */
+.page-section form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.page-section .form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.page-section .form-group textarea {
+  min-height: 90px;
+}
+
+/* ==== BOTÕES ==== */
+.page-section .button-toolbar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.page-section button,
+.page-section a.btn {
+  min-width: 200px;
+}
+
+/* ==== DASHBOARD (CARDS MELHORADOS) ==== */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.dashboard-grid .card {
+  background: var(--light-bg);
+  border-radius: 12px;
+  padding: 1.8rem 1rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: 0.25s;
+  border: 1px solid var(--border-color);
+}
+
+.dashboard-grid .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 96, 168, 0.15);
+}
+
+.dashboard-grid .card h3 {
+  color: var(--primary-dark);
+  font-size: 1.1rem;
+  margin-bottom: 0.6rem;
+}
+
+.dashboard-grid .card p {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
