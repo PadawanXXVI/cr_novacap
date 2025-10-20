@@ -27,7 +27,7 @@
 
   <!-- Formulário principal -->
   <form method="POST" action="{{ url_for('processos_bp.alterar_processo', id_processo=processo.id_processo) }}" class="card-form">
-    {{ csrf_token() }}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <!-- Número do Processo -->
     <div class="form-group">
@@ -57,7 +57,8 @@
     <!-- Observação -->
     <div class="form-group">
       <label for="observacao"><i class="fas fa-comment-dots"></i> Observação</label>
-      <textarea id="observacao" name="observacao" rows="4" placeholder="Descreva brevemente a movimentação..." required></textarea>
+      <textarea id="observacao" name="observacao" rows="4"
+                placeholder="Descreva brevemente a movimentação..." required></textarea>
     </div>
 
     <!-- Linha dupla -->
