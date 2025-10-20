@@ -6,11 +6,12 @@
 
   <!-- Cabeçalho -->
   <header class="text-center" style="margin-bottom: 2rem;">
-    <h1 style="color:#005CA9; font-size:clamp(1.8rem,3vw,2.4rem); font-weight:700;">
+    <h1 style="color:#004a8f; font-size:clamp(1.9rem,3vw,2.6rem); font-weight:700; letter-spacing:0.5px;">
       <i class="fas fa-chart-pie"></i> Painel de Controle – Processos
     </h1>
-    <p style="color:#555; font-size:1.05rem; max-width:720px; margin:0.5rem auto;">
-      Visualize os principais indicadores de tramitação, atendimento e resultados dos processos da NOVACAP.
+    <p style="color:#555; font-size:1.05rem; max-width:760px; margin:0.8rem auto; line-height:1.6;">
+      Acompanhe em tempo real os principais indicadores da tramitação de processos, 
+      identificando volumes, origens e resultados das demandas sob responsabilidade da NOVACAP.
     </p>
   </header>
 
@@ -95,8 +96,9 @@
     </div>
   </div>
 
-  <!-- Botões -->
-  <div class="button-toolbar" style="justify-content:center; margin-top:2.5rem; flex-wrap:wrap; gap:0.8rem;">
+  <!-- Botões de Ação -->
+  <div class="button-toolbar"
+       style="display:flex; justify-content:center; flex-wrap:wrap; gap:1rem; margin-top:2.8rem;">
     <a href="{{ url_for('processos_bp.cadastro_processo') }}" class="btn btn-primary">
       <i class="fas fa-plus-circle"></i> Novo Processo
     </a>
@@ -112,6 +114,7 @@
     </a>
     {% endif %}
   </div>
+
 </section>
 
 <!-- Font Awesome -->
@@ -164,7 +167,50 @@
     margin: 0;
   }
 
-  /* Cores institucionais */
+  /* Botões principais */
+  .btn {
+    padding: 0.9rem 1.8rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.25s ease;
+  }
+
+  .btn-primary {
+    background: linear-gradient(90deg, #004a8f, #007bff);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+  .btn-primary:hover {
+    background: linear-gradient(90deg, #003d7a, #0066e4);
+    transform: translateY(-2px);
+  }
+
+  .btn-outline-blue {
+    border: 2px solid #005CA9;
+    color: #005CA9;
+    background: transparent;
+  }
+  .btn-outline-blue:hover {
+    background: #005CA9;
+    color: white;
+  }
+
+  .btn-warning {
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+  }
+  .btn-warning:hover {
+    background-color: #e0a800;
+  }
+
+  /* Cores institucionais dos cards */
   .card-blue { border-top: 4px solid #005CA9; color: #005CA9; }
   .card-info { border-top: 4px solid #007bff; color: #007bff; }
   .card-green { border-top: 4px solid #2e7d32; color: #2e7d32; }
