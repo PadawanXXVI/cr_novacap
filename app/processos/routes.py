@@ -10,10 +10,10 @@ from io import BytesIO
 import pandas as pd
 
 from flask import (
-    render_template, request, redirect, url_for, flash, session,
-    make_response, send_file, jsonify, current_app
+    render_template, request, redirect, url_for, flash,
+    send_file, jsonify, current_app
 )
-from flask_login import login_required, current_user
+from flask_login import login_required
 
 from app.ext import db, csrf
 from app.models.modelos import (
@@ -38,7 +38,6 @@ def dashboard_processos():
     """Exibe estatísticas gerais dos processos"""
     total_processos = Processo.query.count()
 
-    # Totais consolidados
     processos_atendidos = Processo.query.filter_by(status_atual='Atendido').count()
     processos_dc = Processo.query.filter_by(diretoria_destino='Diretoria das Cidades - DC').count()
     processos_do = Processo.query.filter_by(diretoria_destino='Diretoria de Obras - DO').count()
@@ -72,10 +71,9 @@ def dashboard_processos():
 def cadastro_processo():
     """Cadastra um novo processo SEI"""
     if request.method == 'POST':
-        # Limpa e normaliza o número do processo SEI
         numero = request.form.get('numero_processo', '').strip().replace(' ', '').replace('\u200b', '')
 
-        # Busca caso já exista no banco
+        # Verifica duplicidade
         existente = Processo.query.filter(
             db.func.replace(Processo.numero_processo, ' ', '') == numero
         ).first()
@@ -128,10 +126,9 @@ def cadastro_processo():
 
         except Exception as e:
             db.session.rollback()
-            flash(f"❌ Erro ao cadastrar processo: {str(e)}", "error")
+            flash(f"❌ Erro ao cadastrar processo: {str(e)}", "danger")
             return redirect(url_for('processos_bp.cadastro_processo'))
 
-    # Carrega listas para o formulário
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
     tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
     demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
@@ -148,6 +145,7 @@ def cadastro_processo():
         usuarios=usuarios,
         diretorias=[d.nome_completo for d in diretorias]
     )
+
 
 # ==========================================================
 # 3️⃣ Alterar Processo
@@ -182,7 +180,7 @@ def alterar_processo(id_processo):
 
         except Exception as e:
             db.session.rollback()
-            flash(f"❌ Erro ao atualizar processo: {str(e)}", "error")
+            flash(f"❌ Erro ao atualizar processo: {str(e)}", "danger")
             return redirect(url_for('processos_bp.alterar_processo', id_processo=id_processo))
 
     usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario.asc()).all()
@@ -214,7 +212,6 @@ def consultar_processos():
 
     query = db.session.query(Processo).join(EntradaProcesso)
 
-    # Filtros dinâmicos
     if numero:
         query = query.filter(Processo.numero_processo.like(f"%{numero}%"))
     if status_filtro:
@@ -231,10 +228,10 @@ def consultar_processos():
         inicio_dt = datetime.strptime(inicio, "%Y-%m-%d")
         fim_dt = datetime.strptime(fim, "%Y-%m-%d")
         query = query.filter(EntradaProcesso.data_entrada_novacap.between(inicio_dt, fim_dt))
-    elif inicio and not fim:
+    elif inicio:
         inicio_dt = datetime.strptime(inicio, "%Y-%m-%d")
         query = query.filter(EntradaProcesso.data_entrada_novacap >= inicio_dt)
-    elif fim and not inicio:
+    elif fim:
         fim_dt = datetime.strptime(fim, "%Y-%m-%d")
         query = query.filter(EntradaProcesso.data_entrada_novacap <= fim_dt)
 
@@ -285,7 +282,6 @@ def exportar_processo_pdf(id_processo):
     elements = []
     styles = getSampleStyleSheet()
 
-    # ✅ Logo do GDF com caminho absoluto
     logo_path = os.path.join(current_app.root_path, "static", "images", "ico-logo-gdf.svg")
     if os.path.exists(logo_path):
         try:
@@ -305,7 +301,6 @@ def exportar_processo_pdf(id_processo):
     table = Table(info_table, colWidths=[160, 370])
     table.setStyle(TableStyle([
         ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
     ]))
     elements.append(table)
     elements.append(Spacer(1, 12))
@@ -314,15 +309,14 @@ def exportar_processo_pdf(id_processo):
         entrada_table = [
             ["RA de Origem", entrada.ra_origem or "---"],
             ["Tramitação Inicial", entrada.tramite_inicial or "---"],
-            ["Data de Entrada na NOVACAP", entrada.data_entrada_novacap.strftime("%d/%m/%Y") if entrada.data_entrada_novacap else "---"],
+            ["Data de Entrada", entrada.data_entrada_novacap.strftime("%d/%m/%Y") if entrada.data_entrada_novacap else "---"],
             ["Tipo de Demanda", entrada.tipo.descricao if entrada.tipo else "---"],
             ["Demanda", entrada.demanda.descricao if entrada.demanda else "---"],
-            ["Responsável Técnico", f"{entrada.usuario_responsavel}" if entrada.usuario_responsavel else "---"]
         ]
-        table = Table(entrada_table, colWidths=[200, 330])
-        table.setStyle(TableStyle([('GRID', (0, 0), (-1, -1), 0.25, colors.grey)]))
         elements.append(Paragraph("<b>Informações da Entrada</b>", styles['Heading2']))
-        elements.append(table)
+        t2 = Table(entrada_table, colWidths=[200, 330])
+        t2.setStyle(TableStyle([('GRID', (0, 0), (-1, -1), 0.25, colors.grey)]))
+        elements.append(t2)
         elements.append(Spacer(1, 12))
 
     # Histórico
@@ -337,13 +331,13 @@ def exportar_processo_pdf(id_processo):
                 usuario.nome if usuario else "---",
                 m.observacao or "---"
             ])
-        table = Table(mov_table, repeatRows=1, colWidths=[80, 120, 120, 210])
-        table.setStyle(TableStyle([
+        t3 = Table(mov_table, repeatRows=1, colWidths=[80, 120, 120, 210])
+        t3.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#004A8F")),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
         ]))
-        elements.append(table)
+        elements.append(t3)
     else:
         elements.append(Paragraph("Nenhuma movimentação registrada.", styles['Normal']))
 
@@ -363,21 +357,17 @@ def verificar_processo():
     """Verifica se um número de processo SEI já existe (AJAX)"""
     data = request.get_json()
     numero = data.get("numero_processo", "").strip()
-
     if not numero:
         return jsonify({"erro": "Número do processo não informado."}), 400
 
-    # Normaliza: remove tudo que não é número (padrão interno)
     numero_limpo = ''.join(filter(str.isdigit, numero))
-
-    # Busca ignorando máscara, comparando apenas dígitos
     processos = Processo.query.all()
     for p in processos:
         existente = ''.join(filter(str.isdigit, p.numero_processo or ''))
         if existente == numero_limpo:
             return jsonify({"existe": True, "id": p.id_processo})
-
     return jsonify({"existe": False})
+
 
 # ==========================================================
 # 7️⃣ Exportar lista de Processos (CSV / XLSX / PDF)
@@ -386,7 +376,6 @@ def verificar_processo():
 @login_required
 def exportar_tramitacoes():
     """Exporta a lista de processos filtrados (CSV, XLSX ou PDF)"""
-
     formato = request.args.get('formato', 'csv')
     status = request.args.get('status')
     ra = request.args.get('ra')
@@ -398,7 +387,6 @@ def exportar_tramitacoes():
 
     query = Processo.query.join(EntradaProcesso, isouter=True)
 
-    # Aplicação dos filtros (iguais à consulta principal)
     if status:
         query = query.filter(Processo.status_atual == status)
     if ra:
@@ -420,88 +408,4 @@ def exportar_tramitacoes():
     processos = query.order_by(Processo.id_processo.desc()).all()
     if not processos:
         flash("Nenhum processo encontrado para exportação.", "warning")
-        return redirect(url_for('processos_bp.consultar_processos'))
-
-    # Montagem dos dados para exportação
-    dados = []
-    for p in processos:
-        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
-        dados.append({
-            "Número do Processo": p.numero_processo,
-            "Status Atual": p.status_atual or "---",
-            "RA de Origem": entrada.ra_origem if entrada else "---",
-            "Tipo de Demanda": TipoDemanda.query.get(entrada.id_tipo).descricao if entrada else "---",
-            "Demanda": Demanda.query.get(entrada.id_demanda).descricao if entrada else "---",
-            "Diretoria": p.diretoria_destino or "---",
-            "Última Movimentação": (
-                Movimentacao.query.filter_by(id_entrada=entrada.id_entrada)
-                .order_by(Movimentacao.data.desc())
-                .first()
-                .data.strftime("%d/%m/%Y")
-                if entrada and Movimentacao.query.filter_by(id_entrada=entrada.id_entrada).first()
-                else "---"
-            )
-        })
-
-    df = pd.DataFrame(dados)
-
-    # === CSV ===
-    if formato == 'csv':
-        output = BytesIO()
-        df.to_csv(output, index=False, sep=';', encoding='utf-8-sig')
-        output.seek(0)
-        return send_file(
-            output,
-            as_attachment=True,
-            download_name='tramitacoes.csv',
-            mimetype='text/csv'
-        )
-
-    # === XLSX ===
-    elif formato == 'xlsx':
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name='Tramitacoes')
-        output.seek(0)
-        return send_file(
-            output,
-            as_attachment=True,
-            download_name='tramitacoes.xlsx',
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-
-    # === PDF ===
-    elif formato == 'pdf':
-        output = BytesIO()
-        doc = SimpleDocTemplate(output, pagesize=landscape(A4))
-        elements = []
-        styles = getSampleStyleSheet()
-
-        elements.append(Paragraph("<b>Relatório de Processos Filtrados</b>", styles["Title"]))
-        elements.append(Spacer(1, 12))
-
-        table_data = [list(df.columns)] + df.values.tolist()
-        table = Table(table_data, repeatRows=1)
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0060a8')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.lightgrey]),
-            ('FONTSIZE', (0, 0), (-1, -1), 8)
-        ]))
-
-        elements.append(table)
-        doc.build(elements)
-        output.seek(0)
-        return send_file(
-            output,
-            as_attachment=True,
-            download_name='tramitacoes.pdf',
-            mimetype='application/pdf'
-        )
-
-    # === Erro ===
-    flash("Formato inválido. Utilize CSV, XLSX ou PDF.", "danger")
-    return redirect(url_for('processos_bp.consultar_processos'))
+        return
