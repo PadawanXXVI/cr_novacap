@@ -2,6 +2,11 @@
 """
 Rotas do módulo de Processos (Tramitação SEI) — CR-NOVACAP.
 Inclui: dashboard, cadastro, alteração, consulta unificada e exportações (CSV, XLSX, PDF).
+Atualizado em 2025-11-05:
+ - Correção das métricas do Painel de Controle (dashboard_processos.html)
+ - Inclusão de Diretoria de Suporte, Via SGIA e EXT
+ - Adição de métricas de origem (SECRE / CR) e processos encerrados
+ - Comentários e padronização de código
 """
 
 import os
@@ -24,39 +29,75 @@ from app.processos import processos_bp
 
 # Bibliotecas para PDF
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 
 
 # ==========================================================
-# 1️⃣ Dashboard de Processos
+# 1️⃣ DASHBOARD DE PROCESSOS
 # ==========================================================
 @processos_bp.route('/dashboard')
 @login_required
 def dashboard_processos():
-    """Exibe estatísticas gerais dos processos"""
+    """Painel de Controle — Processos SEI tramitando pela CR/NOVACAP"""
+
+    # === Totais Gerais ===
     total_processos = Processo.query.count()
 
+    # === Origem (via EntradaProcesso) ===
+    processos_secre = EntradaProcesso.query.filter_by(tramite_inicial='SECRE').count()
+    processos_cr = EntradaProcesso.query.filter_by(tramite_inicial='CR').count()
+
+    # === Diretoria de Destino ===
+    processos_dc = Processo.query.filter(Processo.diretoria_destino.like('%Cidades%')).count()
+    processos_do = Processo.query.filter(Processo.diretoria_destino.like('%Obras%')).count()
+    processos_dp = Processo.query.filter(Processo.diretoria_destino.like('%Planejamento%')).count()
+    processos_ds = Processo.query.filter(Processo.diretoria_destino.like('%Suporte%')).count()
+    processos_sgia = Processo.query.filter(Processo.diretoria_destino.like('%SGIA%')).count()
+    processos_ext = Processo.query.filter(Processo.diretoria_destino.like('%EXT%')).count()
+
+    # === Situação dos Processos ===
     processos_atendidos = Processo.query.filter_by(status_atual='Atendido').count()
-    processos_dc = Processo.query.filter_by(diretoria_destino='Diretoria das Cidades - DC').count()
-    processos_do = Processo.query.filter_by(diretoria_destino='Diretoria de Obras - DO').count()
-    processos_dp = Processo.query.filter_by(diretoria_destino='Diretoria de Planejamento e Projetos - DP').count()
-    processos_improcedentes = Processo.query.filter(Processo.status_atual.like('%Improcedente%')).count()
-    devolvidos_ra = Processo.query.filter(Processo.status_atual.like('%Devolvido à RA%')).count()
-    processos_urgentes = Processo.query.filter_by(status_atual="Solicitação de urgência").count()
-    processos_prazo_execucao = Processo.query.filter_by(status_atual="Solicitação de prazo de execução").count()
-    processos_ouvidoria = Processo.query.filter_by(status_atual="Processo oriundo de Ouvidoria").count()
+    devolvidos_ra = Processo.query.filter(Processo.status_atual.like('Devolvido à RA%')).count()
+    processos_improcedentes = Processo.query.filter(Processo.status_atual.like('Improcedente%')).count()
+
+    # === Especiais ===
+    processos_urgentes = Processo.query.filter_by(status_atual='Solicitação de urgência').count()
+    processos_prazo_execucao = Processo.query.filter_by(status_atual='Solicitação de prazo de execução').count()
+    processos_ouvidoria = Processo.query.filter_by(status_atual='Processo oriundo de Ouvidoria').count()
+
+    # === Em atendimento (ativos na NOVACAP) ===
+    processos_em_atendimento = Processo.query.filter(
+        Processo.status_atual.in_([
+            'Enviado à Diretoria das Cidades',
+            'Enviado à Diretoria de Obras',
+            'Enviado à Diretoria de Planejamento e Projetos',
+            'Enviado à Diretoria de Suporte',
+            'Solicitação de urgência',
+            'Solicitação de prazo de execução'
+        ])
+    ).count()
+
+    # === Encerrados (resultado final) ===
+    processos_encerrados = processos_atendidos + processos_improcedentes + devolvidos_ra
 
     return render_template(
         'dashboard_processos.html',
         total_processos=total_processos,
-        processos_atendidos=processos_atendidos,
+        total_em_atendimento=processos_em_atendimento,
+        processos_secre=processos_secre,
+        processos_cr=processos_cr,
         processos_dc=processos_dc,
         processos_do=processos_do,
         processos_dp=processos_dp,
-        processos_improcedentes=processos_improcedentes,
+        processos_ds=processos_ds,
+        processos_sgia=processos_sgia,
+        processos_ext=processos_ext,
+        processos_atendidos=processos_atendidos,
         devolvidos_ra=devolvidos_ra,
+        processos_improcedentes=processos_improcedentes,
+        processos_encerrados=processos_encerrados,
         processos_urgentes=processos_urgentes,
         processos_prazo_execucao=processos_prazo_execucao,
         processos_ouvidoria=processos_ouvidoria
@@ -64,7 +105,7 @@ def dashboard_processos():
 
 
 # ==========================================================
-# 2️⃣ Cadastro de Processo
+# 2️⃣ CADASTRO DE PROCESSO
 # ==========================================================
 @processos_bp.route('/cadastro', methods=['GET', 'POST'])
 @login_required
@@ -148,7 +189,7 @@ def cadastro_processo():
 
 
 # ==========================================================
-# 3️⃣ Alterar Processo
+# 3️⃣ ALTERAR PROCESSO
 # ==========================================================
 @processos_bp.route('/alterar/<int:id_processo>', methods=['GET', 'POST'])
 @login_required
@@ -195,7 +236,7 @@ def alterar_processo(id_processo):
 
 
 # ==========================================================
-# 4️⃣ Consulta Unificada (listar + buscar)
+# 4️⃣ CONSULTA UNIFICADA
 # ==========================================================
 @processos_bp.route('/consultar', methods=['GET'])
 @login_required
@@ -267,12 +308,12 @@ def consultar_processos():
 
 
 # ==========================================================
-# 5️⃣ Exportar PDF individual
+# 5️⃣ EXPORTAR PROCESSO PDF
 # ==========================================================
 @processos_bp.route('/exportar-processo/<int:id_processo>')
 @login_required
 def exportar_processo_pdf(id_processo):
-    """Gera um PDF institucional com dados completos do processo"""
+    """Gera PDF institucional com os dados completos do processo"""
     processo = Processo.query.get_or_404(id_processo)
     entrada = EntradaProcesso.query.filter_by(id_processo=id_processo).first()
     movimentacoes = Movimentacao.query.filter_by(id_entrada=entrada.id_entrada).order_by(Movimentacao.data.asc()).all() if entrada else []
@@ -319,7 +360,6 @@ def exportar_processo_pdf(id_processo):
         elements.append(t2)
         elements.append(Spacer(1, 12))
 
-    # Histórico
     elements.append(Paragraph("<b>Histórico de Movimentações</b>", styles['Heading2']))
     if movimentacoes:
         mov_table = [["Data", "Status", "Responsável", "Observação"]]
@@ -348,7 +388,7 @@ def exportar_processo_pdf(id_processo):
 
 
 # ==========================================================
-# 6️⃣ Verificar processo via AJAX
+# 6️⃣ VERIFICAR PROCESSO VIA AJAX
 # ==========================================================
 @csrf.exempt
 @processos_bp.route("/verificar-processo", methods=["POST"])
@@ -370,12 +410,12 @@ def verificar_processo():
 
 
 # ==========================================================
-# 7️⃣ Exportar lista de Processos (CSV / XLSX / PDF)
+# 7️⃣ EXPORTAR TRAMITAÇÕES (CSV / XLSX / PDF)
 # ==========================================================
 @processos_bp.route('/exportar-tramitacoes', methods=['GET'])
 @login_required
 def exportar_tramitacoes():
-    """Exporta a lista de processos filtrados (CSV, XLSX ou PDF)"""
+    """Exporta lista de processos filtrados (CSV, XLSX ou PDF)"""
     formato = request.args.get('formato', 'csv')
     status = request.args.get('status')
     ra = request.args.get('ra')
@@ -408,4 +448,46 @@ def exportar_tramitacoes():
     processos = query.order_by(Processo.id_processo.desc()).all()
     if not processos:
         flash("Nenhum processo encontrado para exportação.", "warning")
-        return
+        return redirect(url_for('processos_bp.consultar_processos'))
+
+    dados = []
+    for p in processos:
+        entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
+        dados.append({
+            "Número do Processo": p.numero_processo,
+            "Status Atual": p.status_atual,
+            "Diretoria de Destino": p.diretoria_destino,
+            "RA de Origem": entrada.ra_origem if entrada else "---",
+            "Data de Entrada": entrada.data_entrada_novacap.strftime("%d/%m/%Y") if entrada and entrada.data_entrada_novacap else "---",
+        })
+
+    df = pd.DataFrame(dados)
+
+    if formato == 'xlsx':
+        output = BytesIO()
+        df.to_excel(output, index=False)
+        output.seek(0)
+        return send_file(output, as_attachment=True, download_name='processos.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+    if formato == 'pdf':
+        output = BytesIO()
+        doc = SimpleDocTemplate(output, pagesize=A4)
+        elements = []
+        styles = getSampleStyleSheet()
+        elements.append(Paragraph("<b>Relatório de Processos</b>", styles['Title']))
+        elements.append(Spacer(1, 12))
+        tabela = Table([df.columns.to_list()] + df.values.tolist(), repeatRows=1)
+        tabela.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#004A8F")),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+        ]))
+        elements.append(tabela)
+        doc.build(elements)
+        output.seek(0)
+        return send_file(output, as_attachment=True, download_name='processos.pdf', mimetype='application/pdf')
+
+    output = BytesIO()
+    df.to_csv(output, index=False, sep=';', encoding='utf-8-sig')
+    output.seek(0)
+    return send_file(output, as_attachment=True, download_name='processos.csv', mimetype='text/csv')
