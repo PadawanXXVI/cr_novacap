@@ -43,7 +43,7 @@ def create_app():
         SQLALCHEMY_DATABASE_URI=DATABASE_URL,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         PERMANENT_SESSION_LIFETIME=timedelta(hours=1),
-        SQLALCHEMY_ENGINE_OPTIONS={"pool_pre_ping": True},  # ✔ evita queda da conexão
+        SQLALCHEMY_ENGINE_OPTIONS={"pool_pre_ping": True},  # ✔ evita queda de conexão
     )
 
     # ------------------------------------------------------
@@ -92,6 +92,20 @@ def create_app():
     csrf.exempt(alterar_processo)
     csrf.exempt(consultar_processos)
     csrf.exempt(verificar_processo)
+
+    # ------------------------------------------------------
+    # 🔍 Rota de teste da conexão com o Neon (PostgreSQL)
+    # ------------------------------------------------------
+    @app.route('/teste-db')
+    def teste_db():
+        """Testa a conexão com o banco Neon."""
+        from sqlalchemy import text
+        try:
+            result = db.session.execute(text("SELECT COUNT(*) FROM usuarios"))
+            total = result.scalar()
+            return f"🟢 Conexão OK! Total de usuários no banco: {total}"
+        except Exception as e:
+            return f"🔴 Erro ao conectar no banco: {e}"
 
     # ------------------------------------------------------
     # 🏠 Rota padrão (redireciona para login)
