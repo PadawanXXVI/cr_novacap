@@ -106,26 +106,26 @@
 
               {% if not u.aprovado %}
               <form method="POST" action="{{ url_for('admin_bp.aprovar_usuario', id_usuario=u.id_usuario) }}">
-                {{ csrf_token() }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn-success"><i class="fas fa-user-check"></i> Aprovar</button>
               </form>
               {% endif %}
 
               {% if not u.is_admin %}
               <form method="POST" action="{{ url_for('admin_bp.atribuir_admin', id_usuario=u.id_usuario) }}">
-                {{ csrf_token() }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn-warning"><i class="fas fa-user-shield"></i> Admin</button>
               </form>
               {% endif %}
 
               {% if not u.bloqueado %}
               <form method="POST" action="{{ url_for('admin_bp.bloquear_usuario', id_usuario=u.id_usuario) }}">
-                {{ csrf_token() }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn-danger"><i class="fas fa-user-slash"></i> Bloquear</button>
               </form>
               {% else %}
               <form method="POST" action="{{ url_for('admin_bp.desbloquear_usuario', id_usuario=u.id_usuario) }}">
-                {{ csrf_token() }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn-outline-blue"><i class="fas fa-unlock"></i> Desbloquear</button>
               </form>
               {% endif %}
@@ -135,6 +135,7 @@
         </tr>
         {% endfor %}
       </tbody>
+
     </table>
   </div>
 
