@@ -5,10 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Sistema CR-NOVACAP{% endblock %}</title>
 
-  <!-- Ícones e Estilos -->
+  <!-- Arquivos oficiais -->
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css?v=3.2') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css?v=3.5') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Ajustes mínimos -->
+  <style>
+    main.container { margin-top: 20px; }
+  </style>
 </head>
 
 <body>
@@ -18,15 +23,12 @@
   <!-- ========================= -->
   <header class="navbar">
 
-    <!-- Logo + título -->
-    <a href="{{ url_for('main_bp.index') }}" class="logo-link">
-      <img src="{{ url_for('static', filename='images/ico-logo-gdf.svg') }}" alt="GDF" class="logo-gdf">
-      <h1>Central de Relacionamento – NOVACAP</h1>
+    <!-- Logo -->
+    <a href="{{ url_for('main_bp.index') }}" class="logo-link" style="display:flex; align-items:center; gap:1rem; text-decoration:none;">
+      <img src="{{ url_for('static', filename='images/ico-logo-gdf.svg') }}" class="logo-gdf" style="height:52px;">
+      <h1 style="font-size:1.35rem; font-weight:600;">Central de Relacionamento – NOVACAP</h1>
     </a>
 
-    <!-- ====================== -->
-    <!-- Navegação principal    -->
-    <!-- ====================== -->
     {% if current_user.is_authenticated %}
     <nav>
 
@@ -54,12 +56,10 @@
 
     </nav>
     {% endif %}
-
   </header>
 
-
   <!-- ========================= -->
-  <!-- 📋 Conteúdo Principal     -->
+  <!-- 📋 Conteúdo -->
   <!-- ========================= -->
   <main class="container fade-in">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -72,43 +72,39 @@
     {% block content %}{% endblock %}
   </main>
 
-
   <!-- ========================= -->
-  <!-- 🟡 Rodapé Institucional -->
+  <!-- 🟡 Rodapé -->
   <!-- ========================= -->
   <footer>
-    <p>Governo do Distrito Federal — Companhia Urbanizadora da Nova Capital do Brasil (NOVACAP)</p>
-    <p>Central de Relacionamento — Sistema de Controle de Processos SEI</p>
-    <p>© {{ current_year or 2025 }}</p>
+    <p>GDF — Companhia Urbanizadora da Nova Capital do Brasil</p>
+    <p>Central de Relacionamento — Sistema de Processos SEI</p>
+    <p>© {{ current_year }}</p>
   </footer>
 
   {% block scripts %}{% endblock %}
 
-  <!-- ========================= -->
-  <!-- 🌙 Botão modo claro/escuro -->
-  <!-- ========================= -->
+  <!-- Botão tema -->
   <button id="toggle-theme" title="Alternar tema">
     <i class="fas fa-moon"></i>
   </button>
 
   <script>
-  const themeBtn = document.getElementById('toggle-theme');
-  const body = document.body;
-  const icon = themeBtn.querySelector('i');
+    const themeBtn = document.getElementById('toggle-theme');
+    const body = document.body;
+    const icon = themeBtn.querySelector('i');
 
-  // Mantém o tema salvo
-  if (localStorage.getItem('theme') === 'dark') {
-    body.classList.add('dark-mode');
-    icon.classList.replace('fa-moon', 'fa-sun');
-  }
+    if (localStorage.getItem('theme') === 'dark') {
+      body.classList.add('dark-mode');
+      icon.classList.replace('fa-moon', 'fa-sun');
+    }
 
-  themeBtn.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-    const isDark = body.classList.contains('dark-mode');
-    icon.classList.toggle('fa-moon', !isDark);
-    icon.classList.toggle('fa-sun', isDark);
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-  });
+    themeBtn.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      const isDark = body.classList.contains('dark-mode');
+      icon.classList.toggle('fa-moon', !isDark);
+      icon.classList.toggle('fa-sun', isDark);
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
   </script>
 
 </body>
