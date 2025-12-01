@@ -46,10 +46,7 @@ html, body {
   box-shadow: var(--shadow);
 }
 @media (max-width: 768px) {
-  .container {
-    padding: 1.25rem;
-    margin: 1rem;
-  }
+  .container { padding: 1.25rem; margin: 1rem; }
 }
 
 /* ==========================================================
@@ -88,7 +85,6 @@ html, body {
   color: var(--primary-dark);
   font-size: clamp(1.8rem, 3vw, 2.4rem);
   font-weight: 700;
-  margin-bottom: 0.5rem;
 }
 .page-header p {
   color: var(--text-muted);
@@ -98,7 +94,7 @@ html, body {
 }
 
 /* ==========================================================
-📦 FORMULÁRIOS / CARDS DE FILTRO
+📦 FORMULÁRIOS / CARDS
 ========================================================== */
 .filter-card {
   background: var(--light-bg);
@@ -122,18 +118,14 @@ label {
   margin-bottom: .4rem;
   font-weight: 600;
   color: var(--text-dark);
-  font-size: .95rem;
 }
-label i {
-  color: var(--primary);
-  margin-right: 6px;
-}
+label i { color: var(--primary); margin-right: 6px; }
+
 input, select, textarea {
   width: 100%;
   padding: .8rem 1rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
-  font-size: 1rem;
   background: #fff;
   transition: all .25s ease;
 }
@@ -142,12 +134,13 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(0,96,168,.15);
   outline: none;
 }
+
 .button-toolbar {
   margin-top: 1.5rem;
   display: flex;
   justify-content: flex-end;
-  flex-wrap: wrap;
   gap: 0.8rem;
+  flex-wrap: wrap;
 }
 @media (max-width: 768px) {
   .button-toolbar { justify-content: center; }
@@ -165,85 +158,81 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================
-🟦 BOTÕES MODERNOS
+🟦 BOTÕES MODERNOS — BASE
 ========================================================== */
-button, .btn {
+button, .btn, .action-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .4rem;
+  gap: .5rem;
   padding: .85rem 1.8rem;
   font-weight: 600;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all .2s ease-in-out;
   font-size: 1rem;
-  text-decoration: none;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  text-decoration: none !important;
+  transition: all .2s ease-in-out;
 }
-button i, .btn i { font-size: 1.1rem; }
-button:hover, .btn:hover {
+button:hover, .btn:hover, .action-button:hover {
   transform: translateY(-2px);
   filter: brightness(1.05);
 }
+
+/* Botão principal azul */
 .btn-primary {
   background: var(--primary);
-  color: #fff;
-  box-shadow: 0 3px 10px rgba(0,92,169,0.2);
+  color: #fff !important;
 }
-.btn-primary:hover {
-  background: var(--primary-dark);
-  box-shadow: 0 5px 12px rgba(0,92,169,0.3);
-}
+.btn-primary:hover { background: var(--primary-dark); }
+
+/* Botão contornado azul */
 .btn-outline-blue {
   border: 2px solid var(--primary);
-  color: var(--primary);
   background: transparent;
+  color: var(--primary) !important;
 }
 .btn-outline-blue:hover {
   background: var(--primary);
-  color: #fff;
+  color: #fff !important;
 }
+
+/* CINZA */
 .btn-outline-gray {
   border: 2px solid var(--text-muted);
-  color: var(--text-muted);
+  color: var(--text-muted) !important;
   background: transparent;
 }
 .btn-outline-gray:hover {
   background: var(--text-muted);
-  color: #fff;
-}
-.btn-danger {
-  background: var(--danger);
-  color: #fff;
-}
-.btn-danger:hover {
-  background: #b02a37;
-  box-shadow: 0 4px 10px rgba(220,53,69,.25);
-}
-.btn-secondary {
-  background: #f1f3f5;
-  color: var(--primary-dark);
-  border: 1px solid #cfd8dc;
-}
-.btn-secondary:hover {
-  background: var(--primary);
-  color: #fff;
+  color: #fff !important;
 }
 
-/* ==========================================================
-🟦 BARRA DE BOTÕES PADRONIZADA (Relatórios Gerenciais)
-========================================================== */
-.button-bar {
-  display: flex;
-  justify-content: center;
-  gap: 1.2rem;
-  margin-top: 2.5rem;
-  flex-wrap: wrap;
+/* VERMELHO */
+.btn-danger {
+  background: var(--danger);
+  color: #fff !important;
 }
-.button-bar .btn {
-  min-width: 220px;
-  text-align: center;
+.btn-danger:hover { background: #b02a37; }
+
+/* ==========================================================
+🟦 BOTÕES PADRONIZADOS — ACTION BUTTONS
+========================================================== */
+.btn-primary-blue {
+  background: linear-gradient(90deg, #0057A6, #007BFF);
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+}
+.btn-primary-blue:hover { filter: brightness(1.1); }
+
+.btn-outline-blue-strong {
+  background: #fff;
+  border: 2px solid #0057A6;
+  color: #0057A6 !important;
+}
+.btn-outline-blue-strong:hover {
+  background: #0057A6;
+  color: #fff !important;
 }
 
 /* ==========================================================
@@ -259,49 +248,27 @@ button:hover, .btn:hover {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.96rem;
 }
 table th, table td {
   padding: .9rem 1rem;
   border: 1px solid var(--border-color);
-  text-align: center;
-  vertical-align: middle;
 }
 table th {
   background: var(--primary);
   color: #fff;
-  font-weight: 600;
 }
-table tbody tr:nth-child(even) {
-  background-color: var(--gray-bg);
-}
-.table-hover tbody tr {
-  transition: background-color .2s ease;
-}
-.table-hover tbody tr:hover {
-  background-color: rgba(0,96,168,0.08);
-}
-.table-hover td a.btn-outline-blue {
-  padding: .45rem .75rem;
-  font-size: .9rem;
-}
+table tr:nth-child(even) { background: var(--gray-bg); }
 
 /* ==========================================================
-📊 RELATÓRIOS GERENCIAIS - CARDS
+📊 CARDS — RELATÓRIOS GERENCIAIS
 ========================================================== */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
 .info-card {
   padding: 1.8rem;
   border-radius: var(--radius);
   background: var(--light-bg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
-  text-align: center; /* CORRIGIDO */
+  text-align: center;
 }
 .info-card h3 {
   font-size: 1.05rem;
@@ -312,7 +279,6 @@ table tbody tr:nth-child(even) {
   font-size: 2.2rem;
   font-weight: 700;
   color: var(--primary);
-  margin-top: 0.6rem;
 }
 
 /* ==========================================================
@@ -321,52 +287,27 @@ table tbody tr:nth-child(even) {
 body.dark-mode {
   background-color: #1C1F26;
   color: #E9ECEF;
-  transition: background .3s, color .3s;
 }
 body.dark-mode .container,
 body.dark-mode .filter-card,
 body.dark-mode .card {
   background-color: #2B2F38;
-  color: #F1F3F5;
   border-color: #3A3F4B;
-  box-shadow: 0 3px 12px rgba(0,0,0,.5);
 }
-body.dark-mode input,
-body.dark-mode select,
-body.dark-mode textarea {
-  background-color: #3A3F4B;
-  color: #F8F9FA;
-  border-color: #555B66;
-}
-body.dark-mode table th {
-  background-color: #004A8F;
-  color: #fff;
-}
-body.dark-mode table td {
-  background-color: #2E323C;
-  color: #E9ECEF;
-}
-body.dark-mode .btn-primary {
-  background-color: #0074CC;
-  color: #fff;
-}
+body.dark-mode table th { background: #004A8F; }
+body.dark-mode table td { background: #2E323C; }
 
-/* Botões dashboard no modo escuro */
+/* Botões dark */
 body.dark-mode .btn-primary-blue {
   background: linear-gradient(90deg, #0062CC, #00A3FF);
 }
 body.dark-mode .btn-outline-blue-strong {
-  background: transparent;
   border-color: #66B2FF;
-  color: #E9ECEF;
+  color: #E9ECEF !important;
 }
 body.dark-mode .btn-outline-blue-strong:hover {
   background: #66B2FF;
-  color: #1C1F26;
-}
-body.dark-mode .btn-yellow {
-  background: #FFCA2C;
-  color: #212529;
+  color: #1C1F26 !important;
 }
 
 /* ==========================================================
@@ -389,58 +330,4 @@ footer {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* ==========================================================
-🟦 BOTÕES PADRONIZADOS — AÇÃO (PAINEL / RELATÓRIOS)
-========================================================== */
-
-.action-button {
-  padding: 1rem 2rem;
-  font-size: 1rem;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s ease-in-out;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-  text-decoration: none;   /* CORRIGE O LINK ROXO */
-  color: inherit;          /* CORRIGE HERANÇA DE COR */
-}
-
-/* Botão principal azul degradê */
-.btn-primary-blue {
-  background: linear-gradient(90deg, #0057A6, #007BFF);
-  color: #fff !important;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
-}
-.btn-primary-blue:hover {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
-}
-
-/* Botão azul contornado forte */
-.btn-outline-blue-strong {
-  background: white;
-  border: 2px solid #0057A6;
-  color: #0057A6 !important;
-}
-.btn-outline-blue-strong:hover {
-  background: #0057A6;
-  color: white !important;
-  transform: translateY(-2px);
-}
-
-/* Botão vermelho */
-.btn-danger {
-  background: #dc3545;
-  color: white !important;
-  border: none;
-}
-.btn-danger:hover {
-  background: #c82333;
-  transform: translateY(-2px);
 }
