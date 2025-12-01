@@ -1,4 +1,4 @@
-# app/admin/_init_.py
+# app/admin/__init__.py
 """
 Inicialização do módulo Administrativo (Admin) — CR-NOVACAP.
 
@@ -8,21 +8,20 @@ Responsável por rotas de:
 - Elevação e remoção de privilégios administrativos
 
 💡 Observação:
-O prefixo /admin é definido diretamente aqui no blueprint para
-padronizar com os demais módulos.
+O prefixo /admin é definido NO app/__init__.py,
+portanto NÃO deve ser definido aqui no Blueprint.
 """
 
 from flask import Blueprint
 
 # ==========================================================
-# 🔷 Criação do Blueprint
+# 🔷 Criação do Blueprint (SEM url_prefix)
 # ==========================================================
 admin_bp = Blueprint(
     'admin_bp',
     __name__,
-    template_folder='../templates',
-    static_folder='../static',
-    url_prefix='/admin'
+    template_folder='templates',   # caminho correto relativo ao pacote
+    static_folder='static'
 )
 
 # ==========================================================
