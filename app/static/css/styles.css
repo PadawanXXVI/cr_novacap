@@ -1,5 +1,5 @@
 /* ==========================================================
-🌐 CR-NOVACAP - SISTEMA DE CONTROLE DE PROCESSOS (v3.5)
+🌐 CR-NOVACAP - SISTEMA DE CONTROLE DE PROCESSOS (v3.6)
 Design Institucional Moderno + Responsivo — Padrão GDF (2025)
 ========================================================== */
 
@@ -54,6 +54,7 @@ html, body {
 
 /* ==========================================================
 🔵 CABEÇALHO INSTITUCIONAL
+(estrutura geral – detalhes visuais vêm do base.html)
 ========================================================== */
 .navbar {
   background: linear-gradient(90deg, var(--primary-dark), var(--primary));
@@ -75,12 +76,15 @@ html, body {
   transition: 0.2s;
 }
 .navbar a:hover { color: var(--warning); }
+.navbar .logo-link {
+  margin-left: 0;
+}
 
 /* ==========================================================
 📋 CABEÇALHO DAS PÁGINAS
 ========================================================== */
 .page-header {
-  text-align: center;
+  text-align: left;
   margin-bottom: 2rem;
 }
 .page-header h1 {
@@ -93,12 +97,11 @@ html, body {
   color: var(--text-muted);
   font-size: 1.05rem;
   max-width: 740px;
-  margin: 0 auto;
   line-height: 1.5;
 }
 
 /* ==========================================================
-📦 FORMULÁRIO DE CONSULTA
+📦 FORMULÁRIOS / CARDS DE FILTRO
 ========================================================== */
 .filter-card {
   background: var(--light-bg);
@@ -154,7 +157,18 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================
-🟦 BOTÕES MODERNOS
+📦 CARDS GENÉRICOS (usados em painéis e resumos)
+========================================================== */
+.card {
+  background: var(--light-bg);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+/* ==========================================================
+🟦 BOTÕES MODERNOS (base)
 ========================================================== */
 button, .btn {
   display: inline-flex;
@@ -218,6 +232,58 @@ button:hover, .btn:hover {
 .btn-secondary:hover {
   background: var(--primary);
   color: #fff;
+}
+
+/* ==========================================================
+🟦 BOTÕES TIPO DASHBOARD (iguais aos do painel)
+========================================================== */
+.action-button {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+}
+
+.btn-primary-blue {
+  background: linear-gradient(90deg, #0057A6, #007BFF);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+}
+.btn-primary-blue:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.btn-outline-blue-strong {
+  background: white;
+  border: 2px solid #0057A6;
+  color: #0057A6;
+}
+.btn-outline-blue-strong:hover {
+  background: #0057A6;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-yellow {
+  background: #FFC107;
+  color: #212529;
+  font-weight: 700;
+}
+.btn-yellow:hover {
+  background: #e0a800;
+  transform: translateY(-2px);
+}
+
+.btn-icon i {
+  font-size: 1.2rem;
 }
 
 /* ==========================================================
@@ -305,6 +371,35 @@ table tbody tr:nth-child(even) {
 }
 
 /* ==========================================================
+📊 RELATÓRIOS GERENCIAIS / RESUMOS
+========================================================== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.info-card {
+  padding: 1.8rem;
+  border-radius: var(--radius);
+  background: var(--light-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+.info-card h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+.info-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 0.6rem;
+}
+
+/* ==========================================================
 🌙 MODO ESCURO GDF
 ========================================================== */
 body.dark-mode {
@@ -338,6 +433,24 @@ body.dark-mode table td {
 body.dark-mode .btn-primary {
   background-color: #0074CC;
   color: #fff;
+}
+
+/* Botões dashboard em modo escuro */
+body.dark-mode .btn-primary-blue {
+  background: linear-gradient(90deg, #0062CC, #00A3FF);
+}
+body.dark-mode .btn-outline-blue-strong {
+  background: transparent;
+  border-color: #66B2FF;
+  color: #E9ECEF;
+}
+body.dark-mode .btn-outline-blue-strong:hover {
+  background: #66B2FF;
+  color: #1C1F26;
+}
+body.dark-mode .btn-yellow {
+  background: #FFCA2C;
+  color: #212529;
 }
 
 /* ==========================================================

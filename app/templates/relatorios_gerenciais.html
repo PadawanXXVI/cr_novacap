@@ -1,78 +1,41 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Relatórios Gerenciais</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
-  <style>
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
-      margin-top: 2rem;
-    }
+{% extends "base.html" %}
+{% block title %}Relatórios Gerenciais — CR-NOVACAP{% endblock %}
 
-    .card {
-      background-color: #ffffff;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      text-align: center;
-    }
+{% block content %}
 
-    .card h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-      color: #444;
-    }
+<div class="page-header">
+    <h1>Relatórios Gerenciais</h1>
+    <p>Resumo dos principais indicadores do sistema</p>
+</div>
 
-    .card p {
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #007bff;
-    }
+<div class="card-grid">
 
-    .btn-group {
-      text-align: center;
-      margin-top: 2rem;
-    }
-
-    .btn-group a {
-      margin: 0 0.5rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1 style="text-align: center;">Relatórios Gerenciais</h1>
-
-    <div class="card-grid">
-      <div class="card">
+    <div class="card info-card">
         <h3>Total de Processos Cadastrados</h3>
-        <p>{{ total_processos }}</p>
-      </div>
-      <div class="card">
+        <p class="info-value">{{ total_processos }}</p>
+    </div>
+
+    <div class="card info-card">
         <h3>Total de Tramitações Realizadas</h3>
-        <p>{{ total_tramitacoes }}</p>
-      </div>
+        <p class="info-value">{{ total_tramitacoes }}</p>
     </div>
 
-    <div class="btn-group">
-      <a href="{{ url_for('dashboard_processos') }}">
-        <button class="btn-secondary">Voltar ao Dashboard</button>
-      </a>
+</div>
 
-      {% if session.get('is_admin') %}
-      <a href="{{ url_for('relatorios_avancados') }}">
-        <button class="btn-warning">Relatórios Avançados</button>
-      </a>
-      {% endif %}
+<div class="button-bar">
 
-      <a href="{{ url_for('logout') }}">
-        <button class="btn-danger">Sair do Sistema</button>
-      </a>
-    </div>
-  </div>
-</body>
-</html>
+    <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn btn-outline-blue">
+        <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+    </a>
+
+    <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="btn btn-primary">
+        <i class="fas fa-chart-line"></i> Relatórios Avançados
+    </a>
+
+    <a href="{{ url_for('main_bp.logout') }}" class="btn btn-danger">
+        <i class="fas fa-sign-out-alt"></i> Sair do Sistema
+    </a>
+
+</div>
+
+{% endblock %}
