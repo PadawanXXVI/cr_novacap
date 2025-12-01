@@ -390,3 +390,57 @@ footer {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==========================================================
+🟦 BOTÕES PADRONIZADOS — AÇÃO (PAINEL / RELATÓRIOS)
+========================================================== */
+
+.action-button {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  text-decoration: none;   /* CORRIGE O LINK ROXO */
+  color: inherit;          /* CORRIGE HERANÇA DE COR */
+}
+
+/* Botão principal azul degradê */
+.btn-primary-blue {
+  background: linear-gradient(90deg, #0057A6, #007BFF);
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+}
+.btn-primary-blue:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+/* Botão azul contornado forte */
+.btn-outline-blue-strong {
+  background: white;
+  border: 2px solid #0057A6;
+  color: #0057A6 !important;
+}
+.btn-outline-blue-strong:hover {
+  background: #0057A6;
+  color: white !important;
+  transform: translateY(-2px);
+}
+
+/* Botão vermelho */
+.btn-danger {
+  background: #dc3545;
+  color: white !important;
+  border: none;
+}
+.btn-danger:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+}
