@@ -54,7 +54,6 @@ html, body {
 
 /* ==========================================================
 🔵 CABEÇALHO INSTITUCIONAL
-(estrutura geral – detalhes visuais vêm do base.html)
 ========================================================== */
 .navbar {
   background: linear-gradient(90deg, var(--primary-dark), var(--primary));
@@ -76,9 +75,7 @@ html, body {
   transition: 0.2s;
 }
 .navbar a:hover { color: var(--warning); }
-.navbar .logo-link {
-  margin-left: 0;
-}
+.navbar .logo-link { margin-left: 0; }
 
 /* ==========================================================
 📋 CABEÇALHO DAS PÁGINAS
@@ -157,7 +154,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================
-📦 CARDS GENÉRICOS (usados em painéis e resumos)
+📦 CARDS GENÉRICOS
 ========================================================== */
 .card {
   background: var(--light-bg);
@@ -168,7 +165,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================
-🟦 BOTÕES MODERNOS (base)
+🟦 BOTÕES MODERNOS
 ========================================================== */
 button, .btn {
   display: inline-flex;
@@ -235,59 +232,22 @@ button:hover, .btn:hover {
 }
 
 /* ==========================================================
-🟦 BOTÕES TIPO DASHBOARD (iguais aos do painel)
+🟦 BARRA DE BOTÕES PADRONIZADA (Relatórios Gerenciais)
 ========================================================== */
-.action-button {
-  padding: 1rem 2rem;
-  font-size: 1rem;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s ease-in-out;
-  display: inline-flex;
-  align-items: center;
+.button-bar {
+  display: flex;
   justify-content: center;
-  gap: .5rem;
+  gap: 1.2rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
 }
-
-.btn-primary-blue {
-  background: linear-gradient(90deg, #0057A6, #007BFF);
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
-}
-.btn-primary-blue:hover {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
-}
-
-.btn-outline-blue-strong {
-  background: white;
-  border: 2px solid #0057A6;
-  color: #0057A6;
-}
-.btn-outline-blue-strong:hover {
-  background: #0057A6;
-  color: white;
-  transform: translateY(-2px);
-}
-
-.btn-yellow {
-  background: #FFC107;
-  color: #212529;
-  font-weight: 700;
-}
-.btn-yellow:hover {
-  background: #e0a800;
-  transform: translateY(-2px);
-}
-
-.btn-icon i {
-  font-size: 1.2rem;
+.button-bar .btn {
+  min-width: 220px;
+  text-align: center;
 }
 
 /* ==========================================================
-📊 TABELA DE RESULTADOS
+📊 TABELAS
 ========================================================== */
 .table-responsive {
   background: #fff;
@@ -327,51 +287,7 @@ table tbody tr:nth-child(even) {
 }
 
 /* ==========================================================
-🏷 BADGES E EXPORTAÇÕES
-========================================================== */
-.badge {
-  display: inline-block;
-  padding: .35rem .75rem;
-  border-radius: 6px;
-  font-size: .85rem;
-  font-weight: 600;
-}
-.badge.success { background: #D1E7DD; color: #0F5132; }
-.badge.warning { background: #FFF3CD; color: #664D03; }
-.badge.danger { background: #F8D7DA; color: #842029; }
-.badge.neutral { background: #E2E3E5; color: #343A40; }
-
-.export-bar {
-  display: flex;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-  margin-top: 1rem;
-  align-items: center;
-}
-.export-bar span {
-  color: var(--text-dark);
-  font-weight: 600;
-}
-
-/* ==========================================================
-📈 PAGINAÇÃO
-========================================================== */
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-.pagination span {
-  color: var(--text-muted);
-  font-size: .95rem;
-}
-
-/* ==========================================================
-📊 RELATÓRIOS GERENCIAIS / RESUMOS
+📊 RELATÓRIOS GERENCIAIS - CARDS
 ========================================================== */
 .card-grid {
   display: grid;
@@ -385,7 +301,7 @@ table tbody tr:nth-child(even) {
   background: var(--light-bg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow);
-  text-align: left;
+  text-align: center; /* CORRIGIDO */
 }
 .info-card h3 {
   font-size: 1.05rem;
@@ -400,7 +316,7 @@ table tbody tr:nth-child(even) {
 }
 
 /* ==========================================================
-🌙 MODO ESCURO GDF
+🌙 MODO ESCURO
 ========================================================== */
 body.dark-mode {
   background-color: #1C1F26;
@@ -435,7 +351,7 @@ body.dark-mode .btn-primary {
   color: #fff;
 }
 
-/* Botões dashboard em modo escuro */
+/* Botões dashboard no modo escuro */
 body.dark-mode .btn-primary-blue {
   background: linear-gradient(90deg, #0062CC, #00A3FF);
 }
