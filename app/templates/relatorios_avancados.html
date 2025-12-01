@@ -1,137 +1,289 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relatórios Avançados - NOVACAP</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
+{% extends "base.html" %}
+{% block title %}Relatórios Avançados — CR-NOVACAP{% endblock %}
 
-<body>
-  <div class="container">
+{% block content %}
 
-    <h1>📊 Relatórios Gerenciais Avançados</h1>
-    <hr>
+<style>
+  /* ===== Estilos específicos da página de Relatórios Avançados ===== */
 
-    <!-- ============================= -->
-    <!-- FORMULÁRIO DE FILTROS -->
-    <!-- ============================= -->
+  .relatorios-avancados-section {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
 
-    <form method="GET" action="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="filtros">
+  .filtros-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-bottom: 1rem;
+  }
 
-      <div class="form-row">
-        <div class="form-col">
-          <label>Diretoria</label>
-          <select name="diretoria" multiple>
-            <option value="Todas">Todas</option>
-            {% for d in diretorias %}
-              <option value="{{ d }}" {% if d in request.args.getlist('diretoria') %}selected{% endif %}>{{ d }}</option>
-            {% endfor %}
-          </select>
-        </div>
+  /* Altura padrão para selects múltiplos */
+  .filtro-multi select[multiple] {
+    height: 180px;
+  }
 
-        <div class="form-col">
-          <label>Status</label>
-          <select name="status" multiple>
-            <option value="Todos">Todos</option>
-            {% for s in todos_status %}
-              <option value="{{ s.descricao }}" {% if s.descricao in request.args.getlist('status') %}selected{% endif %}>{{ s.descricao }}</option>
-            {% endfor %}
-          </select>
-        </div>
+  .filtro-multi small {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
 
-        <div class="form-col">
-          <label>Filtro de Status</label>
-          <select name="modo_status">
-            <option value="historico" {% if modo_status != 'atual' %}selected{% endif %}>Qualquer movimentação</option>
-            <option value="atual" {% if modo_status == 'atual' %}selected{% endif %}>Somente atual</option>
-          </select>
-        </div>
+  .chips-filtros {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+  }
 
-        <div class="form-col">
-          <label>Região Administrativa</label>
-          <select name="ra" multiple>
-            <option value="Todas">Todas</option>
-            {% for r in todas_ras %}
-              <option value="{{ r.descricao_ra }}" {% if r.descricao_ra in request.args.getlist('ra') %}selected{% endif %}>{{ r.descricao_ra }}</option>
-            {% endfor %}
-          </select>
-        </div>
+  .chip-filtro {
+    background: #e9f2fb;
+    border-radius: 999px;
+    padding: .25rem .75rem;
+    font-size: 0.8rem;
+    color: #004a8f;
+  }
 
-      </div>
+  .export-bar {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    align-items: center;
+    justify-content: center;
+  }
 
-      <div class="form-row">
-        <div class="form-col">
-          <label>Demandas</label>
-          <select name="servico" multiple>
-            <option value="Todas">Todas</option>
-            {% for d in todas_demandas %}
-              <option value="{{ d.descricao }}" {% if d.descricao in request.args.getlist('servico') %}selected{% endif %}>{{ d.descricao }}</option>
-            {% endfor %}
-          </select>
-        </div>
+  .export-bar span {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
 
-        <div class="form-col">
-          <label>Data Inicial</label>
-          <input type="date" name="inicio" value="{{ request.args.get('inicio','') }}">
-        </div>
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-bottom: .75rem;
+  }
 
-        <div class="form-col">
-          <label>Data Final</label>
-          <input type="date" name="fim" value="{{ request.args.get('fim','') }}">
-        </div>
-      </div>
+  .result-header h2 {
+    font-size: 1.2rem;
+    color: var(--primary-dark);
+    margin: 0;
+  }
 
-      <div style="text-align:center;margin-top:1rem;">
-        <button class="btn-primary">Filtrar</button>
-      </div>
+  .result-header small {
+    color: var(--text-muted);
+  }
+</style>
 
-    </form>
+<!-- ============================
+     Cabeçalho
+     ============================ -->
+<div class="page-header">
+  <h1>Relatórios Gerenciais Avançados</h1>
+  <p>Combine filtros por Diretoria, Status, Região Administrativa, Demanda e Período para explorar as tramitações da Central de Relacionamento.</p>
+</div>
 
-    <!-- ============================= -->
-    <!-- EXPORTAÇÃO -->
-    <!-- ============================= -->
+<section class="container fade-in relatorios-avancados-section">
 
-    <div style="text-align:center;margin-top:2rem;">
-
-      <form method="GET" action="{{ url_for('relatorios_bp.exportar_relatorios') }}" style="display:inline-block;">
-        <input type="hidden" name="formato" value="csv">
-        <button class="btn-secondary">Exportar CSV</button>
-      </form>
-
-      <form method="GET" action="{{ url_for('relatorios_bp.exportar_relatorios') }}" style="display:inline-block;">
-        <input type="hidden" name="formato" value="xlsx">
-        <button class="btn-secondary">Exportar Excel</button>
-      </form>
-
-      <form method="GET" action="{{ url_for('relatorios_bp.gerar_relatorio_sei') }}" style="display:inline-block;">
-        <button class="btn-primary">Gerar Relatório SEI</button>
-      </form>
-
+  <!-- ============================
+       Card de Filtros
+       ============================ -->
+  <div class="filter-card">
+    <div class="filtros-card-title">
+      <i class="fas fa-filter"></i> Filtros do Relatório
     </div>
 
-    <!-- ============================= -->
-    <!-- RESULTADOS -->
-    <!-- ============================= -->
+    <form method="GET" action="{{ url_for('relatorios_bp.relatorios_avancados') }}">
+      <div class="form-grid">
 
-    {% if resultados %}
-      <h2 style="margin-top:2rem;">Resultados Encontrados: {{ resultados|length }}</h2>
+        <!-- Diretoria -->
+        <div class="form-group filtro-multi">
+          <label for="diretoria"><i class="fas fa-building"></i> Diretoria</label>
+          <select id="diretoria" name="diretoria" multiple>
+            <option value="Todas">Todas</option>
+            {% for d in diretorias %}
+              <option value="{{ d }}"
+                {% if d in request.args.getlist('diretoria') %}selected{% endif %}>
+                {{ d }}
+              </option>
+            {% endfor %}
+          </select>
+          <small>Mantenha “Todas” ou nenhuma seleção para não filtrar por diretoria.</small>
+        </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Nº Processo</th>
-            <th>RA</th>
-            <th>Status</th>
-            <th>Diretoria</th>
-            <th>Serviço</th>
-            <th>Responsável</th>
-            <th>Observação</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for mov, user, entrada, processo, demanda in resultados %}
+        <!-- Status -->
+        <div class="form-group filtro-multi">
+          <label for="status"><i class="fas fa-flag"></i> Status</label>
+          <select id="status" name="status" multiple>
+            <option value="Todos">Todos</option>
+            {% for s in todos_status %}
+              <option value="{{ s.descricao }}"
+                {% if s.descricao in request.args.getlist('status') %}selected{% endif %}>
+                {{ s.descricao }}
+              </option>
+            {% endfor %}
+          </select>
+          <small>Segure CTRL (ou CTRL+Clique) para selecionar mais de um status.</small>
+        </div>
+
+        <!-- Modo de filtro de status -->
+        <div class="form-group">
+          <label for="modo_status"><i class="fas fa-filter-circle-dollar"></i> Tipo de Filtro de Status</label>
+          <select id="modo_status" name="modo_status">
+            <option value="historico" {% if modo_status != 'atual' %}selected{% endif %}>
+              Qualquer movimentação (histórico)
+            </option>
+            <option value="atual" {% if modo_status == 'atual' %}selected{% endif %}>
+              Somente status atual do processo
+            </option>
+          </select>
+        </div>
+
+        <!-- RA -->
+        <div class="form-group filtro-multi">
+          <label for="ra"><i class="fas fa-map-marker-alt"></i> Região Administrativa</label>
+          <select id="ra" name="ra" multiple>
+            <option value="Todas">Todas</option>
+            {% for r in todas_ras %}
+              <option value="{{ r.descricao_ra }}"
+                {% if r.descricao_ra in request.args.getlist('ra') %}selected{% endif %}>
+                {{ r.descricao_ra }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Demandas -->
+        <div class="form-group filtro-multi">
+          <label for="servico"><i class="fas fa-list-ul"></i> Demandas (Serviços)</label>
+          <select id="servico" name="servico" multiple>
+            <option value="Todas">Todas</option>
+            {% for d in todas_demandas %}
+              <option value="{{ d.descricao }}"
+                {% if d.descricao in request.args.getlist('servico') %}selected{% endif %}>
+                {{ d.descricao }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Período: início -->
+        <div class="form-group">
+          <label for="inicio"><i class="fas fa-calendar-plus"></i> Data Inicial</label>
+          <input type="date" id="inicio" name="inicio"
+                 value="{{ request.args.get('inicio', '') }}">
+        </div>
+
+        <!-- Período: fim -->
+        <div class="form-group">
+          <label for="fim"><i class="fas fa-calendar-alt"></i> Data Final</label>
+          <input type="date" id="fim" name="fim"
+                 value="{{ request.args.get('fim', '') }}">
+        </div>
+
+      </div>
+
+      <!-- Resumo simples dos filtros (chips) -->
+      {% if request.args %}
+      <div class="chips-filtros">
+        {% if request.args.getlist('diretoria') %}
+          <span class="chip-filtro">Diretoria: {{ request.args.getlist('diretoria')|join(', ') }}</span>
+        {% endif %}
+        {% if request.args.getlist('status') %}
+          <span class="chip-filtro">Status: {{ request.args.getlist('status')|join(', ') }}</span>
+        {% endif %}
+        {% if modo_status == 'atual' %}
+          <span class="chip-filtro">Filtro de status: somente status atual</span>
+        {% endif %}
+        {% if request.args.getlist('ra') %}
+          <span class="chip-filtro">RA: {{ request.args.getlist('ra')|join(', ') }}</span>
+        {% endif %}
+        {% if request.args.getlist('servico') %}
+          <span class="chip-filtro">Demandas: {{ request.args.getlist('servico')|join(', ') }}</span>
+        {% endif %}
+        {% if request.args.get('inicio') and request.args.get('fim') %}
+          <span class="chip-filtro">Período: {{ request.args.get('inicio') }} a {{ request.args.get('fim') }}</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Botões de ação dos filtros -->
+      <div class="button-toolbar" style="justify-content:center; margin-top:1.5rem;">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-search"></i> Aplicar filtros
+        </button>
+        <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="btn btn-outline-gray">
+          <i class="fas fa-eraser"></i> Limpar filtros
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- ============================
+       Mensagens flash
+       ============================ -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" style="margin-top: 1rem;">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- ============================
+       Exportações + Resultados
+       ============================ -->
+  {% if resultados and total_resultados > 0 %}
+
+    <!-- Barra de exportação -->
+    <div class="export-bar">
+      <span><i class="fas fa-download"></i> Exportar resultados:</span>
+      <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}"
+         class="btn btn-outline-blue">
+        <i class="fas fa-file-csv"></i> CSV
+      </a>
+      <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}"
+         class="btn btn-outline-blue">
+        <i class="fas fa-file-excel"></i> XLSX
+      </a>
+      <a href="{{ url_for('relatorios_bp.gerar_relatorio_sei') }}"
+         class="btn btn-primary">
+        <i class="fas fa-file-word"></i> Relatório SEI (.docx)
+      </a>
+      <a href="{{ url_for('relatorios_bp.relatorios_bi') }}"
+         class="btn btn-secondary">
+        <i class="fas fa-chart-bar"></i> Painel Interativo (BI)
+      </a>
+    </div>
+
+    <!-- Card com tabela de resultados -->
+    <div class="card" style="margin-top: 1.5rem;">
+      <div class="result-header">
+        <h2><i class="fas fa-table"></i> Resultados encontrados</h2>
+        <small>{{ total_resultados }} registro(s) listado(s)</small>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table-hover">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Nº Processo</th>
+              <th>RA</th>
+              <th>Status</th>
+              <th>Diretoria</th>
+              <th>Serviço</th>
+              <th>Responsável</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for mov, user, entrada, processo, demanda in resultados %}
             <tr>
               <td>{{ mov.data.strftime('%d/%m/%Y %H:%M') }}</td>
               <td>{{ processo.numero_processo }}</td>
@@ -142,19 +294,28 @@
               <td>{{ user.usuario }}</td>
               <td>{{ mov.observacao or '---' }}</td>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-    {% elif request.args %}
-      <p style="text-align:center;margin-top:2rem;">Nenhum registro encontrado.</p>
-    {% endif %}
-
-    <!-- VOLTAR -->
-    <div style="text-align:center;margin-top:3rem;">
-      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn-secondary">⬅ Voltar ao Dashboard</a>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
 
+  {% elif request.args %}
+    <p style="margin-top:2rem; text-align:center; color: var(--text-muted);">
+      Nenhum resultado encontrado com os filtros selecionados.
+    </p>
+  {% endif %}
+
+  <!-- Botão de voltar -->
+  <div class="button-toolbar" style="justify-content:center; margin-top:2.5rem;">
+    <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn btn-outline-gray">
+      <i class="fas fa-arrow-left"></i> Voltar ao Dashboard de Processos
+    </a>
   </div>
-</body>
-</html>
+
+</section>
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+{% endblock %}
