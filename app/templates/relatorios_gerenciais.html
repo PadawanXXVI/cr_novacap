@@ -4,10 +4,6 @@
 {% block content %}
 
 <style>
-    /* =============================
-       Estilos ESPECÍFICOS da página
-       ============================= */
-
     .card-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -51,32 +47,13 @@
         margin-top: 3rem;
         flex-wrap: wrap;
     }
-
-    /* 🔹 Modo Escuro */
-    body.dark-mode .info-card {
-        background: #2b2f38;
-        border-color: #3a3f4b;
-        color: #f1f3f5;
-    }
-    body.dark-mode .info-card h3 {
-        color: #a8c9ff;
-    }
-    body.dark-mode .info-value {
-        color: #4da3ff;
-    }
 </style>
 
-<!-- ============================
-     Cabeçalho da Página
-     ============================ -->
 <div class="page-header">
     <h1>Relatórios Gerenciais</h1>
     <p>Resumo dos principais indicadores do sistema</p>
 </div>
 
-<!-- ============================
-     CARDS (Indicadores)
-     ============================ -->
 <div class="card-grid">
     <div class="card info-card">
         <h3>Total de Processos Cadastrados</h3>
@@ -89,29 +66,25 @@
     </div>
 </div>
 
-<!-- ============================
-     BOTÕES PADRÃO DO SISTEMA
-     ============================ -->
 <div class="button-bar">
 
-    <!-- Botão azul contornado forte -->
+    <!-- Voltar -->
     <a href="{{ url_for('processos_bp.dashboard_processos') }}"
        class="action-button btn-outline-blue-strong">
        <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
     </a>
 
-    <!-- Botão azul degradê (principal) -->
+    <!-- IMPORTANTE: ENDPOINT CORRETO -->
     <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}"
        class="action-button btn-primary-blue">
        <i class="fas fa-chart-line"></i> Relatórios Avançados
     </a>
 
-    <!-- Botão vermelho -->
+    <!-- Logout -->
     <a href="{{ url_for('main_bp.logout') }}"
        class="action-button btn-danger">
        <i class="fas fa-sign-out-alt"></i> Sair do Sistema
     </a>
-
 </div>
 
 {% endblock %}
