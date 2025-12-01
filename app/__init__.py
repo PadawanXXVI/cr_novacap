@@ -1,4 +1,3 @@
-# app/_init_.py
 """
 Inicialização principal do sistema CR-NOVACAP — Controle de Processos e Atendimentos.
 Configurações globais, registro de extensões e blueprints institucionais.
@@ -78,7 +77,6 @@ def create_app():
 
     # ------------------------------------------------------
     # 🧩 Desativa CSRF apenas para rotas internas de tramitação
-    # (internas, seguras e sem acesso externo)
     # ------------------------------------------------------
     from app.processos.routes import cadastro_processo, alterar_processo, consultar_processos, verificar_processo
     csrf.exempt(cadastro_processo)
