@@ -5,141 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Relatórios Avançados - NOVACAP</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fafafa;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      width: 95%;
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      color: #003b8e;
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1.5rem;
-    }
-    th, td {
-      padding: 0.75rem;
-      border-bottom: 1px solid #ccc;
-      text-align: left;
-      font-size: 0.9rem;
-    }
-    th {
-      background-color: #f0f0f0;
-    }
-    .btn-primary, .btn-secondary {
-      padding: 0.6rem 1.2rem;
-      font-size: 0.95rem;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .btn-primary {
-      background-color: #004aad;
-      color: white;
-    }
-    .btn-secondary {
-      background-color: #e0e0e0;
-      color: #333;
-    }
-    .btn-primary:hover {
-      background-color: #003b8e;
-    }
-    .btn-secondary:hover {
-      background-color: #d5d5d5;
-    }
-    .form-row {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-    .form-col {
-      flex: 1 1 22%;
-      min-width: 220px;
-      margin-right: 1rem;
-    }
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 0.3rem;
-    }
-    select, input[type="date"] {
-      width: 100%;
-      padding: 0.4rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    select[multiple] {
-      height: 130px;
-    }
-    .cards {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      margin-top: 2rem;
-    }
-    .card {
-      flex: 1 1 22%;
-      min-width: 200px;
-      margin: 0.5rem;
-      border-radius: 8px;
-      padding: 1rem;
-      color: white;
-      text-align: center;
-      font-weight: bold;
-    }
-    .bg-primary { background-color: #004aad; }
-    .bg-success { background-color: #2e8b57; }
-    .bg-warning { background-color: #ffb400; }
-    .bg-info { background-color: #17a2b8; }
-    .bg-secondary { background-color: #6c757d; }
-    .bg-dark { background-color: #343a40; }
-    .bg-light { background-color: #f8f9fa; color: #212529; }
-  </style>
 </head>
 
 <body>
   <div class="container">
+
     <h1>📊 Relatórios Gerenciais Avançados</h1>
     <hr>
 
     <!-- ============================= -->
-    <!-- CARDS DE TOTAIS POR DIRETORIA -->
+    <!-- FORMULÁRIO DE FILTROS -->
     <!-- ============================= -->
-    {% if totais %}
-    <div class="cards">
-      <div class="card bg-primary">Total Geral: {{ totais.total }}</div>
-      <div class="card bg-info">Diretoria das Cidades (DC): {{ totais.dc }}</div>
-      <div class="card bg-success">Diretoria de Obras (DO): {{ totais.do }}</div>
-      <div class="card bg-warning">Planejamento e Projetos (DP): {{ totais.dp }}</div>
-      <div class="card bg-secondary">Diretoria de Suporte (DS): {{ totais.ds }}</div>
-      <div class="card bg-dark">SGIA: {{ totais.sgia }}</div>
-      <div class="card bg-light">Outros: {{ totais.outros }}</div>
-    </div>
-    {% endif %}
 
-    <!-- ============================= -->
-    <!-- FILTROS -->
-    <!-- ============================= -->
-    <form method="GET" action="{{ url_for('relatorios_avancados') }}" class="filtros">
+    <form method="GET" action="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="filtros">
 
       <div class="form-row">
         <div class="form-col">
-          <label for="diretoria">Diretoria</label>
-          <select name="diretoria" id="diretoria" multiple>
+          <label>Diretoria</label>
+          <select name="diretoria" multiple>
             <option value="Todas">Todas</option>
             {% for d in diretorias %}
               <option value="{{ d }}" {% if d in request.args.getlist('diretoria') %}selected{% endif %}>{{ d }}</option>
@@ -148,8 +31,8 @@
         </div>
 
         <div class="form-col">
-          <label for="status">Status</label>
-          <select name="status" id="status" multiple>
+          <label>Status</label>
+          <select name="status" multiple>
             <option value="Todos">Todos</option>
             {% for s in todos_status %}
               <option value="{{ s.descricao }}" {% if s.descricao in request.args.getlist('status') %}selected{% endif %}>{{ s.descricao }}</option>
@@ -158,28 +41,29 @@
         </div>
 
         <div class="form-col">
-          <label for="modo_status">Tipo de Filtro de Status</label>
-          <select name="modo_status" id="modo_status">
+          <label>Filtro de Status</label>
+          <select name="modo_status">
             <option value="historico" {% if modo_status != 'atual' %}selected{% endif %}>Qualquer movimentação</option>
-            <option value="atual" {% if modo_status == 'atual' %}selected{% endif %}>Somente status atual</option>
+            <option value="atual" {% if modo_status == 'atual' %}selected{% endif %}>Somente atual</option>
           </select>
         </div>
 
         <div class="form-col">
-          <label for="ra">Região Administrativa</label>
-          <select name="ra" id="ra" multiple>
+          <label>Região Administrativa</label>
+          <select name="ra" multiple>
             <option value="Todas">Todas</option>
             {% for r in todas_ras %}
               <option value="{{ r.descricao_ra }}" {% if r.descricao_ra in request.args.getlist('ra') %}selected{% endif %}>{{ r.descricao_ra }}</option>
             {% endfor %}
           </select>
         </div>
+
       </div>
 
       <div class="form-row">
         <div class="form-col">
-          <label for="servico">Demandas (Serviços)</label>
-          <select name="servico" id="servico" multiple>
+          <label>Demandas</label>
+          <select name="servico" multiple>
             <option value="Todas">Todas</option>
             {% for d in todas_demandas %}
               <option value="{{ d.descricao }}" {% if d.descricao in request.args.getlist('servico') %}selected{% endif %}>{{ d.descricao }}</option>
@@ -188,91 +72,89 @@
         </div>
 
         <div class="form-col">
-          <label for="inicio">Data Inicial</label>
-          <input type="date" id="inicio" name="inicio" value="{{ request.args.get('inicio', '') }}">
+          <label>Data Inicial</label>
+          <input type="date" name="inicio" value="{{ request.args.get('inicio','') }}">
         </div>
 
         <div class="form-col">
-          <label for="fim">Data Final</label>
-          <input type="date" id="fim" name="fim" value="{{ request.args.get('fim', '') }}">
+          <label>Data Final</label>
+          <input type="date" name="fim" value="{{ request.args.get('fim','') }}">
         </div>
       </div>
 
-      <div style="margin-top: 1rem; text-align: center;">
-        <button type="submit" class="btn-primary">Filtrar Resultados</button>
+      <div style="text-align:center;margin-top:1rem;">
+        <button class="btn-primary">Filtrar</button>
       </div>
+
     </form>
 
     <!-- ============================= -->
-    <!-- BOTÕES DE EXPORTAÇÃO -->
+    <!-- EXPORTAÇÃO -->
     <!-- ============================= -->
-    <div style="text-align:center; margin-top:2rem;">
-      <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display:inline-block;">
+
+    <div style="text-align:center;margin-top:2rem;">
+
+      <form method="GET" action="{{ url_for('relatorios_bp.exportar_relatorios') }}" style="display:inline-block;">
         <input type="hidden" name="formato" value="csv">
-        <button class="btn-secondary">Exportar para CSV</button>
+        <button class="btn-secondary">Exportar CSV</button>
       </form>
 
-      <form method="GET" action="{{ url_for('exportar_tramitacoes') }}" target="_blank" style="display:inline-block;">
+      <form method="GET" action="{{ url_for('relatorios_bp.exportar_relatorios') }}" style="display:inline-block;">
         <input type="hidden" name="formato" value="xlsx">
-        <button class="btn-secondary">Exportar para Excel</button>
+        <button class="btn-secondary">Exportar Excel</button>
       </form>
 
-      <form method="GET" action="{{ url_for('gerar_relatorio_sei_route') }}" target="_blank" style="display:inline-block;">
-        <button class="btn-primary">Gerar Relatório SEI (.docx)</button>
+      <form method="GET" action="{{ url_for('relatorios_bp.gerar_relatorio_sei') }}" style="display:inline-block;">
+        <button class="btn-primary">Gerar Relatório SEI</button>
       </form>
 
-      <a href="{{ url_for('relatorios_bi') }}">
-        <button class="btn-primary" style="margin-top:1rem;">Ver Painel Interativo (BI)</button>
-      </a>
     </div>
 
     <!-- ============================= -->
     <!-- RESULTADOS -->
     <!-- ============================= -->
+
     {% if resultados %}
-      <div style="margin-top:2rem;">
-        <h2>Resultados Encontrados: {{ resultados | length }}</h2>
-        <table>
-          <thead>
+      <h2 style="margin-top:2rem;">Resultados Encontrados: {{ resultados|length }}</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Nº Processo</th>
+            <th>RA</th>
+            <th>Status</th>
+            <th>Diretoria</th>
+            <th>Serviço</th>
+            <th>Responsável</th>
+            <th>Observação</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mov, user, entrada, processo, demanda in resultados %}
             <tr>
-              <th>Data</th>
-              <th>Número do Processo</th>
-              <th>RA</th>
-              <th>Status</th>
-              <th>Diretoria</th>
-              <th>Serviço</th>
-              <th>Responsável</th>
-              <th>Observação</th>
+              <td>{{ mov.data.strftime('%d/%m/%Y %H:%M') }}</td>
+              <td>{{ processo.numero_processo }}</td>
+              <td>{{ entrada.ra_origem }}</td>
+              <td>{{ mov.novo_status }}</td>
+              <td>{{ processo.diretoria_destino }}</td>
+              <td>{{ demanda.descricao if demanda else '---' }}</td>
+              <td>{{ user.usuario }}</td>
+              <td>{{ mov.observacao or '---' }}</td>
             </tr>
-          </thead>
-          <tbody>
-            {% for mov, user, entrada, processo, demanda in resultados %}
-              <tr>
-                <td>{{ mov.data.strftime('%d/%m/%Y %H:%M') }}</td>
-                <td>{{ processo.numero_processo }}</td>
-                <td>{{ entrada.ra_origem }}</td>
-                <td>{{ mov.novo_status }}</td>
-                <td>{{ processo.diretoria_destino }}</td>
-                <td>{{ demanda.descricao if demanda else '---' }}</td>
-                <td>{{ user.usuario }}</td>
-                <td>{{ mov.observacao or '---' }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+          {% endfor %}
+        </tbody>
+      </table>
+
     {% elif request.args %}
-      <p style="margin-top:2rem; text-align:center;">Nenhum resultado encontrado com os filtros selecionados.</p>
+      <p style="text-align:center;margin-top:2rem;">Nenhum registro encontrado.</p>
     {% endif %}
 
-    <!-- ============================= -->
-    <!-- BOTÃO DE VOLTAR -->
-    <!-- ============================= -->
-    <div style="text-align:center; margin-top:3rem;">
-      <a href="{{ url_for('dashboard_processos') }}">
-        <button class="btn-secondary">⬅ Voltar ao Dashboard</button>
-      </a>
+    <!-- VOLTAR -->
+    <div style="text-align:center;margin-top:3rem;">
+      <a href="{{ url_for('processos_bp.dashboard_processos') }}" class="btn-secondary">⬅ Voltar ao Dashboard</a>
     </div>
+
   </div>
 </body>
 </html>
