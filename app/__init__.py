@@ -1,4 +1,3 @@
-# app/__init__.py
 """
 Inicialização principal do sistema CR-NOVACAP — Controle de Processos e Atendimentos.
 Configurações globais, registro de extensões e blueprints institucionais.
@@ -20,6 +19,15 @@ load_dotenv()
 from app.ext import db, migrate, login_manager, csrf
 from app.models.modelos import Usuario
 
+# ==========================================================
+# 📦 Importação dos Blueprints (módulos principais)
+# ==========================================================
+from app.main import main_bp
+from app.processos import processos_bp
+from app.protocolo import protocolo_bp
+from app.relatorios import relatorios_bp
+from app.admin import admin_bp
+
 
 # ==========================================================
 # 🏗 Factory principal do sistema CR-NOVACAP
@@ -31,19 +39,11 @@ def create_app():
     # ------------------------------------------------------
     # 🔧 Configurações básicas do sistema
     # ------------------------------------------------------
-    DATABASE_URL = os.getenv("DATABASE_URL")
-
-    # 🔥 Ajuste obrigatório para Neon (SSL)
-    if DATABASE_URL and DATABASE_URL.startswith("postgresql"):
-        if "?sslmode=" not in DATABASE_URL:
-            DATABASE_URL += "?sslmode=require"
-
     app.config.update(
         SECRET_KEY=os.getenv('SECRET_KEY', 'chave-secreta-padrao'),
-        SQLALCHEMY_DATABASE_URI=DATABASE_URL,
+        SQLALCHEMY_DATABASE_URI=os.getenv('DATABASE_URL'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         PERMANENT_SESSION_LIFETIME=timedelta(hours=1),
-        SQLALCHEMY_ENGINE_OPTIONS={"pool_pre_ping": True},  # ✔ evita queda de conexão
     )
 
     # ------------------------------------------------------
@@ -69,12 +69,6 @@ def create_app():
     # ------------------------------------------------------
     # 📦 Registro de Blueprints institucionais
     # ------------------------------------------------------
-    from app.main import main_bp
-    from app.processos import processos_bp
-    from app.protocolo import protocolo_bp
-    from app.relatorios import relatorios_bp
-    from app.admin import admin_bp
-
     app.register_blueprint(main_bp)
     app.register_blueprint(processos_bp, url_prefix='/processos')
     app.register_blueprint(protocolo_bp, url_prefix='/protocolo')
@@ -82,30 +76,13 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
     # ------------------------------------------------------
-    # 🧩 Desativa CSRF para rotas internas de tramitação
+    # 🧩 Desativa CSRF apenas para rotas internas de tramitação
     # ------------------------------------------------------
-    from app.processos.routes import (
-        cadastro_processo, alterar_processo, 
-        consultar_processos, verificar_processo
-    )
+    from app.processos.routes import cadastro_processo, alterar_processo, consultar_processos, verificar_processo
     csrf.exempt(cadastro_processo)
     csrf.exempt(alterar_processo)
     csrf.exempt(consultar_processos)
     csrf.exempt(verificar_processo)
-
-    # ------------------------------------------------------
-    # 🔍 Rota de teste da conexão com o Neon (PostgreSQL)
-    # ------------------------------------------------------
-    @app.route('/teste-db')
-    def teste_db():
-        """Testa a conexão com o banco Neon."""
-        from sqlalchemy import text
-        try:
-            result = db.session.execute(text("SELECT COUNT(*) FROM usuarios"))
-            total = result.scalar()
-            return f"🟢 Conexão OK! Total de usuários no banco: {total}"
-        except Exception as e:
-            return f"🔴 Erro ao conectar no banco: {e}"
 
     # ------------------------------------------------------
     # 🏠 Rota padrão (redireciona para login)
