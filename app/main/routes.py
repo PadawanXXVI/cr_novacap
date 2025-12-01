@@ -174,3 +174,25 @@ def logout():
     session.clear()
     flash("Sessão encerrada com sucesso.", "info")
     return redirect(url_for('main_bp.login'))
+
+from flask import Blueprint, jsonify
+from sqlalchemy import text
+from app.ext import db
+
+main_bp = Blueprint('main_bp', __name__)
+
+@main_bp.route("/teste-db")
+def testar_banco():
+    try:
+        resultado = db.session.execute(text("SELECT 1")).scalar()
+        return jsonify({
+            "status": "OK",
+            "mensagem": "Conexão com o banco Neon funcionando!",
+            "retorno": resultado
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "status": "ERRO",
+            "mensagem": "Falha ao conectar ao banco Neon",
+            "detalhes": str(e)
+        }), 500
