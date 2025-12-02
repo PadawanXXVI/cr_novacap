@@ -15,4 +15,6 @@ app = create_app()
 # ⚙ Execução do servidor (modo desenvolvimento)
 # ==================================================
 if __name__ == '__main__':
+    # O sistema roda sempre localmente em http://127.0.0.1:5000
+    # Todos os usuários acessam o banco remoto definido no .env
     app.run(debug=True, host='127.0.0.1', port=5000)
