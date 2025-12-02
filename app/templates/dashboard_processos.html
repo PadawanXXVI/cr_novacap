@@ -99,15 +99,20 @@
   <!-- Botões de Ação -->
   <div class="button-toolbar"
        style="display:flex; justify-content:center; flex-wrap:wrap; gap:1rem; margin-top:2.8rem;">
+    
     <a href="{{ url_for('processos_bp.cadastro_processo') }}" class="btn btn-primary">
       <i class="fas fa-plus-circle"></i> Novo Processo
     </a>
+
     <a href="{{ url_for('processos_bp.consultar_processos') }}" class="btn btn-outline-blue">
       <i class="fas fa-list"></i> Consultar Processos
     </a>
-    <a href="{{ url_for('relatorios_bp.relatorios_gerenciais') }}" class="btn btn-outline-blue">
-      <i class="fas fa-chart-bar"></i> Relatórios Gerenciais
+
+    <!-- CORRIGIDO: rota antiga removida -->
+    <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="btn btn-outline-blue">
+      <i class="fas fa-chart-bar"></i> Relatórios
     </a>
+
     {% if session.get('is_admin') %}
     <a href="{{ url_for('admin_bp.painel_admin') }}" class="btn btn-warning">
       <i class="fas fa-user-cog"></i> Painel Administrativo
@@ -167,7 +172,6 @@
     margin: 0;
   }
 
-  /* Botões principais */
   .btn {
     padding: 0.9rem 1.8rem;
     font-size: 1rem;
@@ -210,7 +214,6 @@
     background-color: #e0a800;
   }
 
-  /* Cores institucionais dos cards */
   .card-blue { border-top: 4px solid #005CA9; color: #005CA9; }
   .card-info { border-top: 4px solid #007bff; color: #007bff; }
   .card-green { border-top: 4px solid #2e7d32; color: #2e7d32; }
