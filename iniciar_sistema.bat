@@ -4,7 +4,7 @@ setlocal enabledelayedexpansion
 :: ================================================
 :: INICIAR SISTEMA CR-NOVACAP (Flask + MySQL)
 :: ================================================
-:: Banco de dados remoto: 10.115.14.84 (máquina local com banco)
+:: Banco de dados remoto: 10.115.14.61 (máquina local com banco)
 :: O servidor MySQL precisa estar acessível antes de iniciar
 :: ================================================
 
@@ -15,7 +15,7 @@ echo  INICIANDO O SISTEMA CR-NOVACAP
 echo ============================================
 
 :: Verificando conectividade com o banco de dados
-set DB_HOST=10.115.14.84
+set DB_HOST=10.115.14.61
 echo Verificando conexão com o banco de dados em %DB_HOST% ...
 ping -n 2 %DB_HOST% >nul
 if errorlevel 1 (
