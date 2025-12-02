@@ -38,7 +38,7 @@
       z-index: 1000;
     }
 
-    /* Logo + título clicáveis */
+    /* Logo + título */
     .navbar a.logo-link {
       display: flex;
       align-items: center;
@@ -53,11 +53,6 @@
       text-shadow: 0 0 8px rgba(255, 193, 7, 0.6);
     }
 
-    .navbar a.logo-link:hover img {
-      filter: brightness(1.15);
-      transform: scale(1.05);
-    }
-
     .navbar img.logo-gdf {
       height: 58px;
       width: auto;
@@ -67,7 +62,6 @@
     .navbar h1 {
       font-size: 1.3rem;
       font-weight: 600;
-      letter-spacing: 0.4px;
       margin: 0;
     }
 
@@ -85,7 +79,7 @@
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      transition: color 0.25s ease, transform 0.25s ease;
+      transition: .25s ease;
     }
 
     nav a:hover {
@@ -125,7 +119,6 @@
       font-size: 0.9rem;
       margin-top: 3rem;
       box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.1);
-      letter-spacing: 0.3px;
     }
 
     footer p {
@@ -145,10 +138,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
       cursor: pointer;
       z-index: 999;
-      transition: transform 0.2s ease, background 0.2s ease;
+      transition: .2s ease;
     }
 
     #toggle-theme:hover {
@@ -162,11 +155,9 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 0.8rem;
-        padding: 1rem;
       }
       nav {
         flex-wrap: wrap;
-        gap: 1rem;
       }
       main.container {
         padding: 1rem;
@@ -174,22 +165,15 @@
     }
 
     /* =============================================
-       🌙 MODO ESCURO INSTITUCIONAL (NOVACAP/GDF)
+       🌙 MODO ESCURO
     ============================================== */
     body.dark-mode {
       background-color: #1c1f26;
       color: #e9ecef;
-      transition: background 0.3s ease, color 0.3s ease;
     }
 
     body.dark-mode header.navbar {
       background: linear-gradient(90deg, #001d3d, #003566);
-      color: #f8f9fa;
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
-    }
-
-    body.dark-mode .navbar h1 {
-      color: #ffc107;
     }
 
     body.dark-mode nav a {
@@ -202,15 +186,12 @@
 
     body.dark-mode main.container {
       background-color: #2b2f38;
-      color: #f1f3f5;
       border: 1px solid #3a3f4b;
     }
 
     body.dark-mode footer {
       background: linear-gradient(90deg, #001d3d, #002752);
-      color: #dee2e6;
       border-top: 2px solid #ffc107;
-      box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.5);
     }
 
     body.dark-mode #toggle-theme {
@@ -218,15 +199,18 @@
       border-color: #495057;
       color: #ffc107;
     }
+
   </style>
 </head>
 
 <body>
+
   <!-- ========================= -->
   <!-- 🟦 Cabeçalho Institucional -->
   <!-- ========================= -->
   <header class="navbar">
-    <!-- Logo + título clicáveis -->
+
+    <!-- Logo + título -->
     <a href="{{ url_for('main_bp.index') }}" class="logo-link">
       <img src="{{ url_for('static', filename='images/ico-logo-gdf.svg') }}" alt="GDF" class="logo-gdf">
       <h1>Central de Relacionamento – NOVACAP</h1>
@@ -234,14 +218,30 @@
 
     <!-- Navegação principal -->
     <nav>
-      <a href="{{ url_for('processos_bp.dashboard_processos') }}"><i class="fas fa-chart-pie"></i> Painel</a>
-      <a href="{{ url_for('processos_bp.consultar_processos') }}"><i class="fas fa-folder-open"></i> Processos</a>
-      <a href="{{ url_for('relatorios_bp.relatorios_gerenciais') }}"><i class="fas fa-file-alt"></i> Relatórios</a>
+      <a href="{{ url_for('processos_bp.dashboard_processos') }}">
+        <i class="fas fa-chart-pie"></i> Painel
+      </a>
+
+      <a href="{{ url_for('processos_bp.consultar_processos') }}">
+        <i class="fas fa-folder-open"></i> Processos
+      </a>
+
+      <!-- 🔥 CORRIGIDO: agora envia para relatórios avançados -->
+      <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}">
+        <i class="fas fa-file-alt"></i> Relatórios
+      </a>
+
       {% if session.get('is_admin') %}
-        <a href="{{ url_for('admin_bp.painel_admin') }}"><i class="fas fa-user-cog"></i> Administração</a>
+        <a href="{{ url_for('admin_bp.painel_admin') }}">
+          <i class="fas fa-user-cog"></i> Administração
+        </a>
       {% endif %}
-      <a href="{{ url_for('main_bp.logout') }}"><i class="fas fa-sign-out-alt"></i> Sair</a>
+
+      <a href="{{ url_for('main_bp.logout') }}">
+        <i class="fas fa-sign-out-alt"></i> Sair
+      </a>
     </nav>
+
   </header>
 
   <!-- ========================= -->
@@ -269,31 +269,30 @@
 
   {% block scripts %}{% endblock %}
 
-  <!-- ========================= -->
-  <!-- 🌙 Botão modo claro/escuro -->
-  <!-- ========================= -->
+  <!-- 🌙 Botão de alternância -->
   <button id="toggle-theme" title="Alternar tema">
     <i class="fas fa-moon"></i>
   </button>
 
   <script>
-  const themeBtn = document.getElementById('toggle-theme');
-  const body = document.body;
-  const icon = themeBtn.querySelector('i');
+    const themeBtn = document.getElementById('toggle-theme');
+    const body = document.body;
+    const icon = themeBtn.querySelector('i');
 
-  // Mantém o tema salvo
-  if (localStorage.getItem('theme') === 'dark') {
-    body.classList.add('dark-mode');
-    icon.classList.replace('fa-moon', 'fa-sun');
-  }
+    if (localStorage.getItem('theme') === 'dark') {
+      body.classList.add('dark-mode');
+      icon.classList.replace('fa-moon', 'fa-sun');
+    }
 
-  themeBtn.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-    const isDark = body.classList.contains('dark-mode');
-    icon.classList.toggle('fa-moon', !isDark);
-    icon.classList.toggle('fa-sun', isDark);
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-  });
+    themeBtn.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      const isDark = body.classList.contains('dark-mode');
+
+      icon.classList.toggle('fa-moon', !isDark);
+      icon.classList.toggle('fa-sun', isDark);
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
   </script>
+
 </body>
 </html>
