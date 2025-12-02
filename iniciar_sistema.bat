@@ -59,7 +59,7 @@ echo.
 :: ▶️ 4. Iniciar o sistema
 :: -------------------------------------------------------
 echo Iniciando servidor Flask...
-start "" python run.py
+start python run.py
 
 echo.
 echo =====================================================
