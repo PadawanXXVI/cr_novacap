@@ -5,11 +5,9 @@ Módulo de Relatórios — CR-NOVACAP
 Este módulo contém:
  - Relatórios avançados (com filtros combinados)
  - Exportações CSV/XLSX
- - Geração de relatório SEI (.docx)
  - Suporte ao Painel BI
 
-A tela de Relatórios Gerenciais foi DESCONTINUADA e removida,
-pois o dashboard principal de Processos já fornece os totais.
+A funcionalidade de Relatório SEI (.docx) foi removida.
 """
 
 from datetime import datetime
@@ -18,7 +16,7 @@ import pandas as pd
 
 from flask import (
     render_template, request, redirect, url_for, flash, session,
-    send_file, make_response, abort
+    send_file, make_response
 )
 from flask_login import login_required
 
@@ -37,18 +35,9 @@ from app.relatorios import relatorios_bp
 @relatorios_bp.route('/avancados')
 @login_required
 def relatorios_avancados():
-    """
-    Tela principal de Relatórios Avançados.
-    Permite aplicar filtros combinados e gerar:
-     • Listagem filtrada
-     • Dashboard BI
-     • Exportações
-     • Relatório SEI
-    """
+    """Tela principal de Relatórios Avançados com filtros e resultados."""
 
-    # ----------------------------
-    # 🔽 Carregar listas para filtros
-    # ----------------------------
+    # Listas para filtros
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
     todas_demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
@@ -62,20 +51,16 @@ def relatorios_avancados():
         "Tramita via SGIA",
     ]
 
-    # ----------------------------
-    # 🔽 Coletar filtros aplicados
-    # ----------------------------
+    # Filtros recebidos
     status_sel = request.args.getlist('status')
     ras_sel = request.args.getlist('ra')
     diretorias_sel = request.args.getlist('diretoria')
     demandas_sel = request.args.getlist('servico')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
-    modo_status = request.args.get('modo_status', 'historico')  # histórico ou status atual
+    modo_status = request.args.get('modo_status', 'historico')
 
-    # ----------------------------
-    # 🔍 Construir Query
-    # ----------------------------
+    # Query principal
     query = (
         db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo, Demanda)
         .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
@@ -84,26 +69,22 @@ def relatorios_avancados():
         .join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
     )
 
-    # Filtro por status (histórico ou atual)
+    # Filtros dinâmicos
     if status_sel and "Todos" not in status_sel:
         if modo_status == 'atual':
             query = query.filter(Processo.status_atual.in_(status_sel))
         else:
             query = query.filter(Movimentacao.novo_status.in_(status_sel))
 
-    # Filtro por RA
     if ras_sel and "Todas" not in ras_sel:
         query = query.filter(EntradaProcesso.ra_origem.in_(ras_sel))
 
-    # Filtro por diretoria
     if diretorias_sel and "Todas" not in diretorias_sel:
         query = query.filter(Processo.diretoria_destino.in_(diretorias_sel))
 
-    # Filtro por demanda
     if demandas_sel and "Todas" not in demandas_sel:
         query = query.filter(Demanda.descricao.in_(demandas_sel))
 
-    # Filtro por período
     if inicio and fim:
         try:
             inicio_dt = datetime.strptime(inicio, "%Y-%m-%d")
@@ -112,30 +93,27 @@ def relatorios_avancados():
         except:
             flash("Formato de data inválido. Use AAAA-MM-DD.", "danger")
 
-    # ----------------------------
-    # 📤 Executar consulta
-    # ----------------------------
+    # Executa
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
-    # ----------------------------
-    # 📄 Organizar DataFrame para BI / exportação
-    # ----------------------------
-    dados = [{
-        "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
-        "Número do Processo": processo.numero_processo,
-        "RA": entrada.ra_origem,
-        "Status": mov.novo_status,
-        "Diretoria": processo.diretoria_destino,
-        "Serviço": demanda.descricao if demanda else "",
-        "Responsável": user.usuario,
-        "Observação": mov.observacao or ""
-    } for mov, user, entrada, processo, demanda in resultados]
+    # Monta DataFrame
+    dados = [
+        {
+            "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
+            "Número do Processo": processo.numero_processo,
+            "RA": entrada.ra_origem,
+            "Status": mov.novo_status,
+            "Diretoria": processo.diretoria_destino,
+            "Serviço": demanda.descricao if demanda else "",
+            "Responsável": user.usuario,
+            "Observação": mov.observacao or ""
+        }
+        for mov, user, entrada, processo, demanda in resultados
+    ]
 
     df = pd.DataFrame(dados)
 
-    # ----------------------------
-    # 💾 Armazenar dados na sessão
-    # ----------------------------
+    # Guarda na sessão
     session['dados_relatorio'] = df.to_dict(orient='records')
     session['filtros_ativos'] = {
         "status": status_sel,
@@ -160,7 +138,7 @@ def relatorios_avancados():
 
 
 # ==========================================================
-# 2️⃣ EXPORTAÇÃO DE RELATÓRIOS (CSV / XLSX)
+# 2️⃣ EXPORTAÇÃO CSV / XLSX
 # ==========================================================
 @relatorios_bp.route('/exportar')
 @login_required
@@ -195,36 +173,3 @@ def exportar_relatorios():
     response.headers["Content-Disposition"] = f"attachment; filename={nome}.csv"
     response.headers["Content-Type"] = "text/csv"
     return response
-
-
-# ==========================================================
-# 3️⃣ RELATÓRIO SEI (.docx)
-# ==========================================================
-@relatorios_bp.route('/gerar-sei')
-@login_required
-def gerar_relatorio_sei():
-    """Gera relatório institucional SEI a partir dos dados filtrados."""
-    from gerar_relatorio_sei import gerar_relatorio_sei  # Import local
-
-    dados = session.get('dados_relatorio', [])
-    filtros = session.get('filtros_ativos', {})
-
-    if not dados:
-        flash("Nenhum dado disponível para gerar relatório SEI.", "warning")
-        return redirect(url_for('relatorios_bp.relatorios_avancados'))
-
-    df = pd.DataFrame(dados)
-    autor = session.get('usuario', 'Usuário desconhecido')
-
-    try:
-        caminho = gerar_relatorio_sei(df, filtros=filtros, autor=autor)
-    except Exception as e:
-        print("Erro ao gerar relatório SEI:", e)
-        abort(500, description="Erro interno ao gerar relatório SEI.")
-
-    return send_file(
-        caminho,
-        as_attachment=True,
-        download_name=f"Relatorio_SEI_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
-        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    )
