@@ -2,18 +2,21 @@
 """
 Módulo de Relatórios — CR-NOVACAP
 ---------------------------------
-Relatórios avançados com filtros combinados, exportações CSV/XLSX
-e visualizações analíticas com gráficos Plotly.
+Este módulo contém:
+ - Relatórios avançados (com filtros combinados)
+ - Exportações CSV/XLSX
+ - Suporte ao Painel BI
+
+A funcionalidade de Relatório SEI (.docx) foi removida.
 """
 
 from datetime import datetime
 from io import BytesIO
 import pandas as pd
-import json
 
 from flask import (
-    render_template, request, redirect, url_for,
-    flash, session, send_file, make_response
+    render_template, request, redirect, url_for, flash, session,
+    send_file, make_response
 )
 from flask_login import login_required
 
@@ -34,7 +37,7 @@ from app.relatorios import relatorios_bp
 def relatorios_avancados():
     """Tela principal de Relatórios Avançados com filtros e resultados."""
 
-    # --- Listas para os filtros ---
+    # Listas para filtros
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
     todas_demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
@@ -48,7 +51,7 @@ def relatorios_avancados():
         "Tramita via SGIA",
     ]
 
-    # --- Filtros recebidos ---
+    # Filtros recebidos
     status_sel = request.args.getlist('status')
     ras_sel = request.args.getlist('ra')
     diretorias_sel = request.args.getlist('diretoria')
@@ -57,7 +60,7 @@ def relatorios_avancados():
     fim = request.args.get('fim')
     modo_status = request.args.get('modo_status', 'historico')
 
-    # --- Query padrão ---
+    # Query principal
     query = (
         db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo, Demanda)
         .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
@@ -66,13 +69,12 @@ def relatorios_avancados():
         .join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
     )
 
-    # --- Aplicação dos filtros ---
+    # Filtros dinâmicos
     if status_sel and "Todos" not in status_sel:
-        query = (
-            query.filter(Processo.status_atual.in_(status_sel))
-            if modo_status == "atual"
-            else query.filter(Movimentacao.novo_status.in_(status_sel))
-        )
+        if modo_status == 'atual':
+            query = query.filter(Processo.status_atual.in_(status_sel))
+        else:
+            query = query.filter(Movimentacao.novo_status.in_(status_sel))
 
     if ras_sel and "Todas" not in ras_sel:
         query = query.filter(EntradaProcesso.ra_origem.in_(ras_sel))
@@ -83,20 +85,22 @@ def relatorios_avancados():
     if demandas_sel and "Todas" not in demandas_sel:
         query = query.filter(Demanda.descricao.in_(demandas_sel))
 
-    # Datas
     if inicio and fim:
         try:
             inicio_dt = datetime.strptime(inicio, "%Y-%m-%d")
             fim_dt = datetime.strptime(fim, "%Y-%m-%d")
             query = query.filter(Movimentacao.data.between(inicio_dt, fim_dt))
-        except:
+        except ValueError:
             flash("Formato de data inválido. Use AAAA-MM-DD.", "danger")
 
-    # --- Execução da query ---
+    # Executa consulta
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
-    # --- Preparar DataFrame ---
+    # Monta DataFrame para exportação / gráficos
     dados = []
+    ras_distintas = set()
+    demandas_distintas = set()
+
     for mov, user, entrada, processo, demanda in resultados:
         dados.append({
             "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
@@ -109,17 +113,30 @@ def relatorios_avancados():
             "Observação": mov.observacao or ""
         })
 
+        # Contagens para os cards
+        if entrada.ra_origem:
+            ras_distintas.add(entrada.ra_origem)
+        if demanda and demanda.descricao:
+            demandas_distintas.add(demanda.descricao)
+
     df = pd.DataFrame(dados)
 
-    # --- Valores para os cards ---
-    total_ras_envolvidas = len({entrada.ra_origem for _, _, entrada, _, _ in resultados})
-    total_demandas_distintas = len({demanda.descricao for _, _, _, _, demanda in resultados})
-
-    # --- JSON seguro para Plotly ---
-    df_json_safe = json.dumps(df.to_dict(orient="records"), ensure_ascii=False)
-
-    # --- Guardar dados na sessão (para exportação) ---
+    # Guarda na sessão (para exportar depois)
     session['dados_relatorio'] = df.to_dict(orient='records')
+    session['filtros_ativos'] = {
+        "status": status_sel,
+        "ra": ras_sel,
+        "diretoria": diretorias_sel,
+        "servico": demandas_sel,
+        "inicio": inicio,
+        "fim": fim,
+        "modo_status": modo_status,
+    }
+
+    # Totais para os cards
+    total_resultados = len(resultados)
+    total_ras = len(ras_distintas)
+    total_demandas = len(demandas_distintas)
 
     return render_template(
         'relatorios_avancados.html',
@@ -128,10 +145,10 @@ def relatorios_avancados():
         todas_demandas=todas_demandas,
         diretorias=diretorias,
         resultados=resultados,
-        total_resultados=len(resultados),
-        total_ras_envolvidas=total_ras_envolvidas,
-        total_demandas_distintas=total_demandas_distintas,
-        dados_json=df_json_safe
+        total_resultados=total_resultados,
+        total_ras=total_ras,
+        total_demandas=total_demandas,
+        modo_status=modo_status
     )
 
 
@@ -152,6 +169,7 @@ def exportar_relatorios():
     formato = request.args.get('formato', 'csv').lower()
     nome = f"Relatorio_Avancado_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
+    # XLSX
     if formato == "xlsx":
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -164,6 +182,7 @@ def exportar_relatorios():
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
+    # CSV
     csv = df.to_csv(index=False, sep=';', encoding='utf-8-sig')
     response = make_response(csv)
     response.headers["Content-Disposition"] = f"attachment; filename={nome}.csv"
