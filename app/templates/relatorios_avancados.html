@@ -34,7 +34,9 @@
         font-weight: 600;
         border: none;
         margin-top: 0.5rem;
+        cursor: pointer;
     }
+
     .btn-clear {
         padding: 0.7rem 1.5rem;
         background: #6c757d;
@@ -42,6 +44,10 @@
         border-radius: 8px;
         font-weight: 600;
         border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
     }
 
     .card-grid {
@@ -93,6 +99,7 @@
         display: flex;
         gap: 1rem;
         margin: 1rem 0;
+        flex-wrap: wrap;
     }
 </style>
 
@@ -139,9 +146,9 @@
                 </select>
             </div>
 
-            <!-- Status atual -->
+            <!-- Status atual (ou histórico, conforme rota) -->
             <div>
-                <label>Status Atual</label>
+                <label>Status</label>
                 <select name="status" multiple class="form-control">
                     {% for s in todos_status %}
                         <option value="{{ s.descricao }}">{{ s.descricao }}</option>
@@ -185,12 +192,24 @@
 
     <div class="info-card">
         <h3>Total de RAs Envolvidas</h3>
-        <div class="info-value">{{ resultados|map(attribute=2)|list|unique|length }}</div>
+        <div class="info-value">
+            {% if resultados %}
+                {{ resultados|map(attribute=2)|list|unique|list|length }}
+            {% else %}
+                0
+            {% endif %}
+        </div>
     </div>
 
     <div class="info-card">
         <h3>Demandas Distintas</h3>
-        <div class="info-value">{{ resultados|map(attribute=4)|list|unique|length }}</div>
+        <div class="info-value">
+            {% if resultados %}
+                {{ resultados|map(attribute=4)|list|unique|list|length }}
+            {% else %}
+                0
+            {% endif %}
+        </div>
     </div>
 </div>
 
@@ -207,29 +226,37 @@
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <script>
-    const dados = "{{ session['dados_relatorio']|tojson }}";
-    
-    // Organizar dados em arrays
-    const status = dados.map(d => d["Status"]);
-    const ra = dados.map(d => d["RA"]);
-    const diretoria = dados.map(d => d["Diretoria"]);
+    // Dados vindos da sessão, já em formato JSON válido
+    const dados = `{{ session.get('dados_relatorio', []) | tojson | safe }}`;
 
-    function gerarGrafico(id, titulo, labels) {
-        let contagem = {};
-        labels.forEach(l => contagem[l] = (contagem[l] || 0) + 1);
+    function gerarGrafico(id, titulo, campo) {
+        if (!dados || dados.length === 0) {
+            const div = document.getElementById(id);
+            if (div) {
+                div.innerHTML = "<p>Nenhum dado disponível para este gráfico.</p>";
+            }
+            return;
+        }
+
+        const contagem = {};
+        dados.forEach(d => {
+            const chave = d[campo] || "Não informado";
+            contagem[chave] = (contagem[chave] || 0) + 1;
+        });
 
         Plotly.newPlot(id, [{
             x: Object.keys(contagem),
             y: Object.values(contagem),
-            type: 'bar'
+            type: "bar"
         }], {
-            title: titulo
+            title: titulo,
+            margin: { t: 40, l: 40, r: 20, b: 80 }
         });
     }
 
-    gerarGrafico('grafico_status', 'Distribuição por Status Atual', status);
-    gerarGrafico('grafico_ra', 'Processos por RA de Origem', ra);
-    gerarGrafico('grafico_diretoria', 'Distribuição por Diretoria', diretoria);
+    gerarGrafico("grafico_status", "Distribuição por Status", "Status");
+    gerarGrafico("grafico_ra", "Processos por RA de Origem", "RA");
+    gerarGrafico("grafico_diretoria", "Distribuição por Diretoria", "Diretoria");
 </script>
 
 
