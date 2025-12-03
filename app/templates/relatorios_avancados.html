@@ -1,88 +1,280 @@
 {% extends "base.html" %}
-{% block title %}Relatórios Gerenciais — CR-NOVACAP{% endblock %}
+{% block title %}Relatórios Avançados — CR-NOVACAP{% endblock %}
 
 {% block content %}
 
 <style>
+    .filter-box {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #dce3e9;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+
+    .filter-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #003c7a;
+        margin-bottom: 1.2rem;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.2rem;
+    }
+
+    .btn-apply {
+        padding: 0.7rem 1.5rem;
+        background: linear-gradient(90deg, #004a8f, #007bff);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        margin-top: 0.5rem;
+    }
+    .btn-clear {
+        padding: 0.7rem 1.5rem;
+        background: #6c757d;
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+    }
+
     .card-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 1.5rem;
-        margin-bottom: 2.5rem;
+        margin-bottom: 2rem;
     }
+
     .info-card {
-        padding: 2rem 1.5rem;
+        padding: 1.5rem;
         border-radius: 12px;
-        background: #ffffff;
-        border: 1px solid #dee2e6;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+        background: white;
+        border: 1px solid #dce3e9;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
         text-align: center;
-        transition: 0.25s ease;
     }
-    .info-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 22px rgba(0,0,0,0.12);
-    }
+
     .info-card h3 {
-        font-size: 1.15rem;
-        font-weight: 600;
+        font-size: 1rem;
         color: #003c7a;
-        margin-bottom: 0.9rem;
+        margin-bottom: 0.5rem;
     }
+
     .info-value {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
         color: #005ca9;
-        margin-top: 0.4rem;
     }
-    .button-bar {
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 2rem;
+    }
+
+    th, td {
+        padding: 0.8rem;
+        border: 1px solid #dce3e9;
+    }
+
+    th {
+        background: #004a8f;
+        color: white;
+        font-weight: 600;
+    }
+
+    .export-buttons {
         display: flex;
-        justify-content: center;
-        gap: 1.2rem;
-        margin-top: 3rem;
-        flex-wrap: wrap;
+        gap: 1rem;
+        margin: 1rem 0;
     }
 </style>
 
-<div class="page-header">
-    <h1>Relatórios Gerenciais</h1>
-    <p>Resumo dos principais indicadores do sistema</p>
+
+<h1 style="color:#004a8f; margin-bottom: 1rem;">📊 Relatórios Avançados</h1>
+<p>Utilize os filtros abaixo para gerar análises detalhadas. Todas as tabelas e gráficos irão refletir exatamente as combinações escolhidas.</p>
+
+<!-- =================== -->
+<!-- 🔎 CAIXA DE FILTROS -->
+<!-- =================== -->
+<div class="filter-box">
+    <div class="filter-title">Filtros</div>
+
+    <form method="GET" action="{{ url_for('relatorios_bp.relatorios_avancados') }}">
+        <div class="filter-grid">
+
+            <!-- RA -->
+            <div>
+                <label>Região Administrativa (RA)</label>
+                <select name="ra" multiple class="form-control">
+                    {% for ra in todas_ras %}
+                        <option value="{{ ra.descricao_ra }}">{{ ra.descricao_ra }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Demanda -->
+            <div>
+                <label>Tipo de Demanda (Serviço)</label>
+                <select name="servico" multiple class="form-control">
+                    {% for d in todas_demandas %}
+                        <option value="{{ d.descricao }}">{{ d.descricao }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Diretoria -->
+            <div>
+                <label>Diretoria de Destino</label>
+                <select name="diretoria" multiple class="form-control">
+                    {% for d in diretorias %}
+                        <option value="{{ d }}">{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status atual -->
+            <div>
+                <label>Status Atual</label>
+                <select name="status" multiple class="form-control">
+                    {% for s in todos_status %}
+                        <option value="{{ s.descricao }}">{{ s.descricao }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Datas -->
+            <div>
+                <label>Data Inicial (Entrada na Novacap)</label>
+                <input type="date" class="form-control" name="inicio">
+            </div>
+            <div>
+                <label>Data Final (Entrada na Novacap)</label>
+                <input type="date" class="form-control" name="fim">
+            </div>
+
+        </div>
+
+        <br>
+
+        <button type="submit" class="btn-apply">
+            <i class="fas fa-filter"></i> Aplicar Filtros
+        </button>
+
+        <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="btn-clear">
+            <i class="fas fa-eraser"></i> Limpar
+        </a>
+    </form>
 </div>
 
+
+<!-- =================== -->
+<!-- 📌 CARDS DE INDICADORES -->
+<!-- =================== -->
 <div class="card-grid">
-
-    <div class="card info-card">
-        <h3>Total de Processos Cadastrados</h3>
-        <p class="info-value">{{ total_processos }}</p>
+    <div class="info-card">
+        <h3>Total de Registros Encontrados</h3>
+        <div class="info-value">{{ total_resultados }}</div>
     </div>
 
-    <div class="card info-card">
-        <h3>Total de Tramitações Realizadas</h3>
-        <p class="info-value">{{ total_tramitacoes }}</p>
+    <div class="info-card">
+        <h3>Total de RAs Envolvidas</h3>
+        <div class="info-value">{{ resultados|map(attribute=2)|list|unique|length }}</div>
     </div>
 
+    <div class="info-card">
+        <h3>Demandas Distintas</h3>
+        <div class="info-value">{{ resultados|map(attribute=4)|list|unique|length }}</div>
+    </div>
 </div>
 
-<div class="button-bar">
 
-    <!-- Voltar -->
-    <a href="{{ url_for('processos_bp.dashboard_processos') }}"
-       class="action-button btn-outline-blue-strong">
-        <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+<!-- =================== -->
+<!-- 📈 GRÁFICOS -->
+<!-- =================== -->
+<h2 style="color:#003c7a; margin-top:2rem;">Gráficos</h2>
+
+<div id="grafico_status"></div>
+<div id="grafico_ra"></div>
+<div id="grafico_diretoria"></div>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script>
+    const dados = "{{ session['dados_relatorio']|tojson }}";
+    
+    // Organizar dados em arrays
+    const status = dados.map(d => d["Status"]);
+    const ra = dados.map(d => d["RA"]);
+    const diretoria = dados.map(d => d["Diretoria"]);
+
+    function gerarGrafico(id, titulo, labels) {
+        let contagem = {};
+        labels.forEach(l => contagem[l] = (contagem[l] || 0) + 1);
+
+        Plotly.newPlot(id, [{
+            x: Object.keys(contagem),
+            y: Object.values(contagem),
+            type: 'bar'
+        }], {
+            title: titulo
+        });
+    }
+
+    gerarGrafico('grafico_status', 'Distribuição por Status Atual', status);
+    gerarGrafico('grafico_ra', 'Processos por RA de Origem', ra);
+    gerarGrafico('grafico_diretoria', 'Distribuição por Diretoria', diretoria);
+</script>
+
+
+<!-- =================== -->
+<!-- 📄 TABELA DE RESULTADOS -->
+<!-- =================== -->
+<h2 style="color:#003c7a; margin-top:2rem;">Tabela de Resultados</h2>
+
+<div class="export-buttons">
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}" class="btn btn-primary">
+        <i class="fas fa-file-csv"></i> Exportar CSV
     </a>
 
-    <!-- 🔧 CORRIGIDO AQUI: usamos o nome correto do endpoint -->
-    <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}"
-       class="action-button btn-primary-blue">
-        <i class="fas fa-chart-line"></i> Relatórios Avançados
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}" class="btn btn-success">
+        <i class="fas fa-file-excel"></i> Exportar XLSX
     </a>
-
-    <!-- Sair -->
-    <a href="{{ url_for('main_bp.logout') }}"
-       class="action-button btn-danger">
-        <i class="fas fa-sign-out-alt"></i> Sair do Sistema
-    </a>
-
 </div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Nº Processo</th>
+            <th>RA</th>
+            <th>Status</th>
+            <th>Diretoria</th>
+            <th>Serviço</th>
+            <th>Responsável</th>
+            <th>Observação</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for mov, user, entrada, processo, demanda in resultados %}
+            <tr>
+                <td>{{ mov.data.strftime("%d/%m/%Y %H:%M") }}</td>
+                <td>{{ processo.numero_processo }}</td>
+                <td>{{ entrada.ra_origem }}</td>
+                <td>{{ mov.novo_status }}</td>
+                <td>{{ processo.diretoria_destino }}</td>
+                <td>{{ demanda.descricao }}</td>
+                <td>{{ user.usuario }}</td>
+                <td>{{ mov.observacao }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 {% endblock %}
