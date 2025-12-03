@@ -3,115 +3,192 @@
 
 {% block content %}
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
-    .filter-box {
+    /* ================================
+       CARD PRINCIPAL DE FILTROS
+    ================================= */
+    .filter-card {
         background: #ffffff;
-        border-radius: 12px;
-        border: 1px solid #dce3e9;
-        padding: 1.5rem;
+        border-radius: 14px;
+        padding: 1.8rem;
+        border: 1px solid #d7e0ea;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.06);
         margin-bottom: 2rem;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
     }
 
-    .filter-title {
-        font-size: 1.3rem;
+    .filter-header {
+        font-size: 1.4rem;
         font-weight: 700;
-        color: #003c7a;
+        color: #004a8f;
         margin-bottom: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .filter-header i {
+        font-size: 1.4rem;
     }
 
     .filter-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 1.2rem;
     }
 
-    .btn-apply {
-        padding: 0.7rem 1.5rem;
-        background: linear-gradient(90deg, #004a8f, #007bff);
-        color: white;
+    select.form-control, input[type=date] {
+        width: 100%;
+        padding: 10px;
         border-radius: 8px;
-        font-weight: 600;
+        border: 1px solid #c8d3df;
+        font-size: 0.95rem;
+        transition: 0.2s ease;
+        background: #fdfdfd;
+    }
+
+    select:hover, input[type=date]:hover {
+        border-color: #004a8f;
+    }
+
+    .btn-apply {
+        padding: 0.8rem 1.6rem;
+        background: linear-gradient(90deg, #004a8f, #007bff);
         border: none;
-        margin-top: 0.5rem;
-        cursor: pointer;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        margin-top: 0.8rem;
+        transition: 0.2s ease;
+    }
+    .btn-apply:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(90deg, #003a74, #0063d3);
     }
 
     .btn-clear {
-        padding: 0.7rem 1.5rem;
+        padding: 0.8rem 1.6rem;
         background: #6c757d;
-        color: white;
-        border-radius: 8px;
-        font-weight: 600;
         border: none;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        margin-left: 0.8rem;
+        margin-top: 0.8rem;
+    }
+    .btn-clear:hover {
+        background: #565e64;
     }
 
-    .card-grid {
+    /* ================================
+       CARDS DE INDICADORES
+    ================================= */
+    .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.4rem;
         margin-bottom: 2rem;
     }
 
-    .info-card {
-        padding: 1.5rem;
-        border-radius: 12px;
-        background: white;
-        border: 1px solid #dce3e9;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    .stats-card {
+        background: #ffffff;
+        padding: 1.7rem;
+        border-radius: 14px;
+        border: 1px solid #d7e0ea;
         text-align: center;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        transition: 0.25s ease;
     }
 
-    .info-card h3 {
+    .stats-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+
+    .stats-card h3 {
+        margin: 0;
+        color: #004a8f;
         font-size: 1rem;
-        color: #003c7a;
-        margin-bottom: 0.5rem;
+        font-weight: 600;
     }
 
-    .info-value {
-        font-size: 2rem;
-        font-weight: 700;
+    .stats-card .value {
+        font-size: 2.3rem;
+        font-weight: 800;
         color: #005ca9;
+        margin-top: 0.6rem;
     }
 
+    /* ================================
+       GRÁFICOS
+    ================================= */
+    .grafico-card {
+        background: #ffffff;
+        padding: 1.5rem;
+        border-radius: 14px;
+        border: 1px solid #d7e0ea;
+        margin-bottom: 2rem;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+
+    .grafico-card h2 {
+        color: #004a8f;
+        margin-bottom: 1rem;
+    }
+
+    /* ================================
+       TABELA
+    ================================= */
     table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 2rem;
-    }
-
-    th, td {
-        padding: 0.8rem;
-        border: 1px solid #dce3e9;
+        margin-top: 1rem;
+        border-radius: 12px;
+        overflow: hidden;
     }
 
     th {
         background: #004a8f;
         color: white;
-        font-weight: 600;
+        padding: 0.9rem;
+    }
+
+    td {
+        background: white;
+        padding: 0.8rem;
+        border-bottom: 1px solid #d7e0ea;
+    }
+
+    tr:nth-child(even) td {
+        background: #f5f9ff;
     }
 
     .export-buttons {
+        margin-top: 1.2rem;
         display: flex;
         gap: 1rem;
-        margin: 1rem 0;
-        flex-wrap: wrap;
     }
 </style>
 
 
-<h1 style="color:#004a8f; margin-bottom: 1rem;">📊 Relatórios Avançados</h1>
-<p>Utilize os filtros abaixo para gerar análises detalhadas. Todas as tabelas e gráficos irão refletir exatamente as combinações escolhidas.</p>
+<!-- TÍTULO -->
+<h1 style="color:#004a8f; font-size:1.8rem; font-weight:700;">
+    <i class="fas fa-chart-line"></i>
+    Relatórios Avançados
+</h1>
+<p style="color:#555; max-width:800px; margin-top:-6px;">
+    Utilize os filtros abaixo para gerar análises detalhadas. Os gráficos e a tabela seguirão exatamente as combinações aplicadas.
+</p>
 
-<!-- =================== -->
-<!-- 🔎 CAIXA DE FILTROS -->
-<!-- =================== -->
-<div class="filter-box">
-    <div class="filter-title">Filtros</div>
+
+<!-- ================================
+     FILTROS
+================================ -->
+<div class="filter-card">
+    <div class="filter-header">
+        <i class="fas fa-filter"></i> Filtros
+    </div>
 
     <form method="GET" action="{{ url_for('relatorios_bp.relatorios_avancados') }}">
         <div class="filter-grid">
@@ -146,9 +223,9 @@
                 </select>
             </div>
 
-            <!-- Status atual (ou histórico, conforme rota) -->
+            <!-- Status -->
             <div>
-                <label>Status</label>
+                <label>Status Atual</label>
                 <select name="status" multiple class="form-control">
                     {% for s in todos_status %}
                         <option value="{{ s.descricao }}">{{ s.descricao }}</option>
@@ -156,114 +233,114 @@
                 </select>
             </div>
 
-            <!-- Datas -->
+            <!-- Data -->
             <div>
-                <label>Data Inicial (Entrada na Novacap)</label>
+                <label>Data Inicial</label>
                 <input type="date" class="form-control" name="inicio">
             </div>
+
             <div>
-                <label>Data Final (Entrada na Novacap)</label>
+                <label>Data Final</label>
                 <input type="date" class="form-control" name="fim">
             </div>
 
         </div>
 
-        <br>
+        <!-- Botões -->
+        <div style="margin-top:1rem;">
+            <button type="submit" class="btn-apply">
+                <i class="fas fa-filter"></i> Aplicar Filtros
+            </button>
 
-        <button type="submit" class="btn-apply">
-            <i class="fas fa-filter"></i> Aplicar Filtros
-        </button>
-
-        <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="btn-clear">
-            <i class="fas fa-eraser"></i> Limpar
-        </a>
+            <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="btn-clear">
+                <i class="fas fa-eraser"></i> Limpar
+            </a>
+        </div>
     </form>
 </div>
 
 
-<!-- =================== -->
-<!-- 📌 CARDS DE INDICADORES -->
-<!-- =================== -->
-<div class="card-grid">
-    <div class="info-card">
+<!-- ================================
+     CARDS DE INDICADORES
+================================ -->
+<div class="stats-grid">
+
+    <div class="stats-card">
         <h3>Total de Registros Encontrados</h3>
-        <div class="info-value">{{ total_resultados }}</div>
+        <div class="value">{{ total_resultados }}</div>
     </div>
 
-    <div class="info-card">
+    <div class="stats-card">
         <h3>Total de RAs Envolvidas</h3>
-        <div class="info-value">
-            {% if resultados %}
-                {{ resultados|map(attribute=2)|list|unique|list|length }}
-            {% else %}
-                0
-            {% endif %}
+        <div class="value">
+            {{ resultados|map(attribute=2)|list|unique|length }}
         </div>
     </div>
 
-    <div class="info-card">
+    <div class="stats-card">
         <h3>Demandas Distintas</h3>
-        <div class="info-value">
-            {% if resultados %}
-                {{ resultados|map(attribute=4)|list|unique|list|length }}
-            {% else %}
-                0
-            {% endif %}
+        <div class="value">
+            {{ resultados|map(attribute=4)|list|unique|length }}
         </div>
     </div>
+
 </div>
 
 
-<!-- =================== -->
-<!-- 📈 GRÁFICOS -->
-<!-- =================== -->
-<h2 style="color:#003c7a; margin-top:2rem;">Gráficos</h2>
+<!-- ================================
+     GRÁFICOS
+================================ -->
+<div class="grafico-card">
+    <h2><i class="fas fa-chart-bar"></i> Distribuição por Status</h2>
+    <div id="grafico_status"></div>
+</div>
 
-<div id="grafico_status"></div>
-<div id="grafico_ra"></div>
-<div id="grafico_diretoria"></div>
+<div class="grafico-card">
+    <h2><i class="fas fa-map-marked-alt"></i> Processos por RA</h2>
+    <div id="grafico_ra"></div>
+</div>
+
+<div class="grafico-card">
+    <h2><i class="fas fa-building"></i> Processos por Diretoria</h2>
+    <div id="grafico_diretoria"></div>
+</div>
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-
 <script>
-    // Dados vindos da sessão, já em formato JSON válido
-    const dados = `{{ session.get('dados_relatorio', []) | tojson | safe }}`;
+    const dados = JSON.parse(`{{ session['dados_relatorio']|tojson|safe }}`);
 
-    function gerarGrafico(id, titulo, campo) {
-        if (!dados || dados.length === 0) {
-            const div = document.getElementById(id);
-            if (div) {
-                div.innerHTML = "<p>Nenhum dado disponível para este gráfico.</p>";
-            }
-            return;
-        }
+    const status = dados.map(d => d.Status);
+    const ra = dados.map(d => d.RA);
+    const diretoria = dados.map(d => d.Diretoria);
 
-        const contagem = {};
-        dados.forEach(d => {
-            const chave = d[campo] || "Não informado";
-            contagem[chave] = (contagem[chave] || 0) + 1;
-        });
+    function gerarGrafico(id, titulo, labels) {
+        let contagem = {};
+        labels.forEach(l => contagem[l] = (contagem[l] || 0) + 1);
 
         Plotly.newPlot(id, [{
             x: Object.keys(contagem),
             y: Object.values(contagem),
-            type: "bar"
+            type: 'bar',
+            marker: { color: '#004a8f' }
         }], {
             title: titulo,
-            margin: { t: 40, l: 40, r: 20, b: 80 }
+            paper_bgcolor: '#ffffff',
+            plot_bgcolor: '#ffffff'
         });
     }
 
-    gerarGrafico("grafico_status", "Distribuição por Status", "Status");
-    gerarGrafico("grafico_ra", "Processos por RA de Origem", "RA");
-    gerarGrafico("grafico_diretoria", "Distribuição por Diretoria", "Diretoria");
+    gerarGrafico('grafico_status', 'Distribuição por Status', status);
+    gerarGrafico('grafico_ra', 'Processos por RA', ra);
+    gerarGrafico('grafico_diretoria', 'Processos por Diretoria', diretoria);
 </script>
 
 
-<!-- =================== -->
-<!-- 📄 TABELA DE RESULTADOS -->
-<!-- =================== -->
-<h2 style="color:#003c7a; margin-top:2rem;">Tabela de Resultados</h2>
+<!-- ================================
+     TABELA DE RESULTADOS
+================================ -->
+<h2 style="color:#004a8f; margin-top:2rem;">
+    <i class="fas fa-table"></i> Tabela de Resultados
+</h2>
 
 <div class="export-buttons">
     <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}" class="btn btn-primary">
@@ -290,16 +367,16 @@
     </thead>
     <tbody>
         {% for mov, user, entrada, processo, demanda in resultados %}
-            <tr>
-                <td>{{ mov.data.strftime("%d/%m/%Y %H:%M") }}</td>
-                <td>{{ processo.numero_processo }}</td>
-                <td>{{ entrada.ra_origem }}</td>
-                <td>{{ mov.novo_status }}</td>
-                <td>{{ processo.diretoria_destino }}</td>
-                <td>{{ demanda.descricao }}</td>
-                <td>{{ user.usuario }}</td>
-                <td>{{ mov.observacao }}</td>
-            </tr>
+        <tr>
+            <td>{{ mov.data.strftime("%d/%m/%Y %H:%M") }}</td>
+            <td>{{ processo.numero_processo }}</td>
+            <td>{{ entrada.ra_origem }}</td>
+            <td>{{ mov.novo_status }}</td>
+            <td>{{ processo.diretoria_destino }}</td>
+            <td>{{ demanda.descricao }}</td>
+            <td>{{ user.usuario }}</td>
+            <td>{{ mov.observacao }}</td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
