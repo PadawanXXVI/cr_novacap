@@ -1,0 +1,226 @@
+/* ============================================================
+   CR-NOVACAP — Relatórios Avançados
+   Estilos 100% padronizados com consultar_processos.html
+   ============================================================ */
+
+/* --------- CONTAINER PRINCIPAL --------- */
+.page-section {
+    max-width: 1200px;
+    margin: 2rem auto;
+}
+
+/* --------- CAIXA DE FILTROS --------- */
+.card-form {
+    background: #ffffff;
+    padding: 2rem 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    border: 1px solid #e0e6eb;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #002d62;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+}
+
+/* --------- CAMPOS DE INPUT & SELECT --------- */
+input, select {
+    width: 100%;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid #cfd8dc;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: white;
+    transition: 0.2s ease;
+    appearance: none;
+}
+
+input:focus,
+select:focus {
+    border-color: #005CA9;
+    box-shadow: 0 0 0 2px rgba(0,92,169,0.20);
+    outline: none;
+}
+
+/* Ícone da seta do select */
+select {
+    background-image:
+        linear-gradient(45deg, transparent 50%, #777 50%),
+        linear-gradient(135deg, #777 50%, transparent 50%),
+        linear-gradient(to right, #eee, #eee);
+    background-position:
+        calc(100% - 20px) calc(1rem + 2px),
+        calc(100% - 15px) calc(1rem + 2px),
+        calc(100% - 2.5rem) 0;
+    background-size:
+        6px 6px,
+        6px 6px,
+        2.3rem 100%;
+    background-repeat: no-repeat;
+}
+
+/* Placeholder dos selects */
+select option[value=""] {
+    color: #777;
+}
+
+/* --------- BOTÕES --------- */
+.button-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.8rem 1.6rem;
+    font-weight: 600;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+/* Botão primário */
+.btn-primary {
+    background: linear-gradient(90deg, #004a8f, #007bff);
+    color: white;
+    border: none;
+}
+.btn-primary:hover {
+    background: linear-gradient(90deg, #003d7a, #0066e4);
+}
+
+/* Botão neutral / outline */
+.btn-outline-gray {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+}
+.btn-outline-gray:hover {
+    background: #6c757d;
+    color: white;
+}
+
+/* Botão cinza (limpar) */
+.btn-outline-light {
+    border: 2px solid #b0b0b0;
+    color: #555;
+    background: transparent;
+}
+.btn-outline-light:hover {
+    background: #b0b0b0;
+    color: white;
+}
+
+/* Botão vermelho padrão */
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+}
+.btn-danger:hover {
+    background: #c82333;
+}
+
+/* --------- CARDS DE INDICADORES --------- */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.4rem;
+    margin-top: 2rem;
+}
+
+.info-card {
+    padding: 1.4rem 1.2rem;
+    border-radius: 12px;
+    background: white;
+    border: 1px solid #dce3e9;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    text-align: center;
+    transition: 0.2s ease;
+}
+
+.info-card:hover {
+    transform: scale(1.02);
+}
+
+.info-card h3 {
+    font-size: 1rem;
+    color: #003c7a;
+    margin-bottom: 0.4rem;
+}
+
+.info-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #005ca9;
+}
+
+/* --------- GRÁFICOS --------- */
+#grafico_status,
+#grafico_ra,
+#grafico_diretoria {
+    margin-top: 1.5rem;
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+}
+
+/* --------- TABELA DE RESULTADOS --------- */
+.export-buttons {
+    display: flex;
+    gap: 0.8rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.table-area {
+    margin-top: 2rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+th, td {
+    padding: 0.7rem 0.9rem;
+    border: 1px solid #dce3e9;
+}
+
+th {
+    background: #004a8f;
+    color: white;
+    font-weight: 600;
+    font-size: 0.92rem;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+tr:hover {
+    background: #eef5ff;
+}
