@@ -4,49 +4,93 @@
 {% block content %}
 
 <style>
+    /* ===== CONTAINER DOS FILTROS ===== */
     .filter-box {
         background: #ffffff;
-        border-radius: 12px;
-        border: 1px solid #dce3e9;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        border-radius: 14px;
+        border: 1px solid #d7e2ec;
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     }
 
     .filter-title {
-        font-size: 1.3rem;
+        font-size: 1.35rem;
         font-weight: 700;
         color: #003c7a;
-        margin-bottom: 1.2rem;
+        margin-bottom: 1.6rem;
     }
 
     .filter-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1.2rem;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.6rem;
+    }
+
+    .filter-grid label {
+        font-weight: 600;
+        color: #003c7a;
+        margin-bottom: 0.4rem;
+        display: block;
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.95rem;
+        color: #003c7a;
+        border: 1px solid #bfd2e0;
+        border-radius: 10px;
+        background: #f8fbff;
+        outline: none;
+        cursor: pointer;
+        transition: 0.2s ease-in-out;
+        min-height: 46px;
+    }
+
+    .filter-select:hover {
+        border-color: #4a90e2;
+    }
+
+    .filter-select:focus {
+        border-color: #007bff;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.18);
+    }
+
+    .filter-select[multiple] {
+        height: 140px;
+        padding-top: 0.5rem;
+        overflow-y: auto;
+    }
+
+    .filter-select option {
+        padding: 6px 8px;
+        border-radius: 6px;
     }
 
     .btn-apply {
-        padding: 0.7rem 1.5rem;
+        padding: 0.85rem 1.6rem;
         background: linear-gradient(90deg, #004a8f, #007bff);
         color: white;
-        border-radius: 8px;
+        border-radius: 10px;
         font-weight: 600;
         border: none;
-        margin-top: 0.5rem;
         cursor: pointer;
+        transition: 0.2s ease;
+        margin-top: 1rem;
     }
+
     .btn-clear {
-        padding: 0.7rem 1.5rem;
+        padding: 0.85rem 1.6rem;
         background: #6c757d;
-        color: white;
-        border-radius: 8px;
+        color: white !important;
+        border-radius: 10px;
         font-weight: 600;
         border: none;
         cursor: pointer;
         text-decoration: none;
-        display: inline-block;
-        margin-left: .5rem;
+        margin-left: 0.6rem;
     }
 
     .card-grid {
@@ -105,15 +149,11 @@
         gap: 1rem;
         margin: 1rem 0;
     }
-
-    .export-buttons a {
-        text-decoration: none;
-    }
 </style>
 
 
 <h1 style="color:#004a8f; margin-bottom: 1rem;">📊 Relatórios Avançados</h1>
-<p>Utilize os filtros abaixo para gerar análises detalhadas. Todas as tabelas e gráficos irão refletir exatamente as combinações escolhidas.</p>
+<p>Utilize os filtros abaixo para gerar análises detalhadas. As tabelas e gráficos irão refletir exatamente as combinações escolhidas.</p>
 
 <!-- =================== -->
 <!-- 🔎 CAIXA DE FILTROS -->
@@ -124,10 +164,9 @@
     <form method="GET" action="{{ url_for('relatorios_bp.relatorios_avancados') }}">
         <div class="filter-grid">
 
-            <!-- RA -->
             <div>
                 <label>Região Administrativa (RA)</label>
-                <select name="ra" multiple class="form-control">
+                <select name="ra" multiple class="filter-select">
                     {% for ra in todas_ras %}
                         <option value="{{ ra.descricao_ra }}"
                             {% if ra.descricao_ra in request.args.getlist('ra') %}selected{% endif %}>
@@ -137,10 +176,9 @@
                 </select>
             </div>
 
-            <!-- Demanda -->
             <div>
                 <label>Tipo de Demanda (Serviço)</label>
-                <select name="servico" multiple class="form-control">
+                <select name="servico" multiple class="filter-select">
                     {% for d in todas_demandas %}
                         <option value="{{ d.descricao }}"
                             {% if d.descricao in request.args.getlist('servico') %}selected{% endif %}>
@@ -150,10 +188,9 @@
                 </select>
             </div>
 
-            <!-- Diretoria -->
             <div>
                 <label>Diretoria de Destino</label>
-                <select name="diretoria" multiple class="form-control">
+                <select name="diretoria" multiple class="filter-select">
                     {% for d in diretorias %}
                         <option value="{{ d }}"
                             {% if d in request.args.getlist('diretoria') %}selected{% endif %}>
@@ -163,10 +200,9 @@
                 </select>
             </div>
 
-            <!-- Status atual -->
             <div>
                 <label>Status Atual</label>
-                <select name="status" multiple class="form-control">
+                <select name="status" multiple class="filter-select">
                     {% for s in todos_status %}
                         <option value="{{ s.descricao }}"
                             {% if s.descricao in request.args.getlist('status') %}selected{% endif %}>
@@ -176,15 +212,15 @@
                 </select>
             </div>
 
-            <!-- Datas -->
             <div>
                 <label>Data Inicial (Entrada na Novacap)</label>
-                <input type="date" class="form-control" name="inicio"
+                <input type="date" class="filter-select" name="inicio"
                        value="{{ request.args.get('inicio','') }}">
             </div>
+
             <div>
                 <label>Data Final (Entrada na Novacap)</label>
-                <input type="date" class="form-control" name="fim"
+                <input type="date" class="filter-select" name="fim"
                        value="{{ request.args.get('fim','') }}">
             </div>
 
@@ -236,13 +272,10 @@
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 <script>
-    // Dados vindos da sessão (mesma base usada para exportar)
     const dados = `{{ session.get('dados_relatorio', []) | tojson }}`;
 
     function gerarGrafico(id, titulo, campo) {
-        if (!dados || dados.length === 0) {
-            return;
-        }
+        if (!dados || dados.length === 0) return;
 
         const contagem = {};
         dados.forEach(d => {
