@@ -3,12 +3,15 @@
 
 {% block content %}
 
-<section class="page-section fade-in" style="max-width: 1200px; margin: 2rem auto;">
+<!-- Carrega o CSS moderno -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/relatorios.css') }}">
+
+<section class="page-section fade-in">
 
   <!-- 🔹 Cabeçalho -->
   <header class="text-center" style="margin-bottom: 2rem;">
     <h1 style="color:#004a8f; font-size:clamp(1.8rem,3vw,2.3rem); font-weight:700;">
-      <i class="fas fa-file-alt"></i> Relatórios Avançados
+      <i class="fas fa-chart-line"></i> Relatórios Avançados
     </h1>
     <p style="color:#555; font-size:1.05rem; max-width:800px; margin:0.6rem auto; line-height:1.6;">
       Utilize os filtros abaixo para gerar análises detalhadas. Tabelas e gráficos refletem exatamente os filtros selecionados.
@@ -20,102 +23,107 @@
 
     <div class="form-grid">
 
+      <!-- RA -->
       <div class="form-group">
-        <label for="ra"><i class="fas fa-map-marker-alt"></i> Região Administrativa</label>
-        <select id="ra" name="ra">
+        <label><i class="fas fa-map-marker-alt"></i> Região Administrativa</label>
+        <select name="ra">
           <option value="">Todas</option>
           {% for r in todas_ras %}
-            <option value="{{ r.descricao_ra }}" {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>
+            <option value="{{ r.descricao_ra }}"
+              {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>
               {{ r.descricao_ra }}
             </option>
           {% endfor %}
         </select>
       </div>
 
+      <!-- Tipo de Demanda -->
       <div class="form-group">
-        <label for="servico"><i class="fas fa-list"></i> Tipo de Demanda</label>
-        <select id="servico" name="servico">
-          <option value="">Todas</option>
-          {% for s in todas_demandas %}
-            <option value="{{ s.descricao }}" {% if request.args.get('servico') == s.descricao %}selected{% endif %}>
-              {{ s.descricao }}
+        <label><i class="fas fa-wrench"></i> Tipo de Demanda (Serviço)</label>
+        <select name="servico">
+          <option value="">Todos</option>
+          {% for d in todas_demandas %}
+            <option value="{{ d.descricao }}"
+              {% if request.args.get('servico') == d.descricao %}selected{% endif %}>
+              {{ d.descricao }}
             </option>
           {% endfor %}
         </select>
       </div>
 
+      <!-- Diretoria -->
       <div class="form-group">
-        <label for="diretoria"><i class="fas fa-building"></i> Diretoria de Destino</label>
-        <select id="diretoria" name="diretoria">
+        <label><i class="fas fa-building"></i> Diretoria de Destino</label>
+        <select name="diretoria">
           <option value="">Todas</option>
           {% for d in diretorias %}
-            <option value="{{ d }}" {% if request.args.get('diretoria') == d %}selected{% endif %}>
+            <option value="{{ d }}"
+              {% if request.args.get('diretoria') == d %}selected{% endif %}>
               {{ d }}
             </option>
           {% endfor %}
         </select>
       </div>
 
+      <!-- Status -->
       <div class="form-group">
-        <label for="status"><i class="fas fa-flag"></i> Status Atual</label>
-        <select id="status" name="status">
+        <label><i class="fas fa-flag"></i> Status Atual</label>
+        <select name="status">
           <option value="">Todos</option>
           {% for s in todos_status %}
-            <option value="{{ s.descricao }}" {% if request.args.get('status') == s.descricao %}selected{% endif %}>
+            <option value="{{ s.descricao }}"
+              {% if request.args.get('status') == s.descricao %}selected{% endif %}>
               {{ s.descricao }}
             </option>
           {% endfor %}
         </select>
       </div>
 
+      <!-- Data Inicial -->
       <div class="form-group">
-        <label for="inicio"><i class="fas fa-calendar-plus"></i> Data Início</label>
-        <input type="date" id="inicio" name="inicio" value="{{ request.args.get('inicio','') }}">
+        <label><i class="fas fa-calendar-plus"></i> Data Início</label>
+        <input type="date" name="inicio" value="{{ request.args.get('inicio', '') }}">
       </div>
 
+      <!-- Data Final -->
       <div class="form-group">
-        <label for="fim"><i class="fas fa-calendar-alt"></i> Data Fim</label>
-        <input type="date" id="fim" name="fim" value="{{ request.args.get('fim','') }}">
+        <label><i class="fas fa-calendar-alt"></i> Data Fim</label>
+        <input type="date" name="fim" value="{{ request.args.get('fim', '') }}">
       </div>
 
     </div>
 
     <!-- Botões -->
-    <div class="button-toolbar" style="justify-content:center; margin-top:1.5rem; flex-wrap:wrap; gap:1rem;">
+    <div class="button-toolbar">
       <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Aplicar Filtros</button>
-      <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="btn btn-outline-gray"><i class="fas fa-eraser"></i> Limpar</a>
+      <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="btn btn-outline-gray">
+        <i class="fas fa-eraser"></i> Limpar
+      </a>
     </div>
 
   </form>
 
-  <!-- =================== -->
-  <!-- 📊 CARDS DE INDICADORES -->
-  <!-- =================== -->
-  <div class="card-results" style="margin-top:2rem;">
-    <div class="form-grid">
+  <!-- 📊 CARDS -->
+  <div class="card-grid">
 
-      <div class="info-card">
-        <h3>Total de Registros Encontrados</h3>
-        <div class="info-value">{{ total_resultados }}</div>
-      </div>
-
-      <div class="info-card">
-        <h3>Total de RAs Envolvidas</h3>
-        <div class="info-value">{{ total_ras }}</div>
-      </div>
-
-      <div class="info-card">
-        <h3>Demandas Distintas</h3>
-        <div class="info-value">{{ total_demandas }}</div>
-      </div>
-
+    <div class="info-card">
+      <h3>Total de Registros Encontrados</h3>
+      <div class="info-value">{{ total_resultados }}</div>
     </div>
+
+    <div class="info-card">
+      <h3>Total de RAs Envolvidas</h3>
+      <div class="info-value">{{ total_ras }}</div>
+    </div>
+
+    <div class="info-card">
+      <h3>Demandas Distintas</h3>
+      <div class="info-value">{{ total_demandas }}</div>
+    </div>
+
   </div>
 
-  <!-- =================== -->
   <!-- 📈 GRÁFICOS -->
-  <!-- =================== -->
-
   <h2 style="color:#003c7a; margin-top:2rem;">Gráficos</h2>
 
   <div id="grafico_status"></div>
@@ -128,176 +136,72 @@
     const dados = `{{ session.get('dados_relatorio', []) | tojson }}`;
 
     function gerarGrafico(id, titulo, campo) {
-      if (!dados || dados.length === 0) return;
+      if (!dados || dados.length === 0)
+        return;
 
       const contagem = {};
-      dados.forEach(d => {
-        const chave = d[campo] || "Não informado";
+      dados.forEach(item => {
+        const chave = item[campo] || "Não informado";
         contagem[chave] = (contagem[chave] || 0) + 1;
       });
 
-      Plotly.newPlot(
-        id,
-        [{
-          x: Object.keys(contagem),
-          y: Object.values(contagem),
-          type: 'bar'
-        }],
-        {
-          title: titulo,
-          margin: { t: 40, b: 120 },
-          xaxis: { automargin: true }
-        }
-      );
+      Plotly.newPlot(id, [{
+        x: Object.keys(contagem),
+        y: Object.values(contagem),
+        type: 'bar'
+      }], {
+        title: titulo,
+        xaxis: { automargin: true },
+        margin: { t: 40, b: 120 }
+      });
     }
 
-    gerarGrafico('grafico_status', 'Distribuição por Status Atual', 'Status');
-    gerarGrafico('grafico_ra', 'Processos por RA de Origem', 'RA');
-    gerarGrafico('grafico_diretoria', 'Distribuição por Diretoria', 'Diretoria');
+    gerarGrafico("grafico_status", "Distribuição por Status Atual", "Status");
+    gerarGrafico("grafico_ra", "Processos por RA de Origem", "RA");
+    gerarGrafico("grafico_diretoria", "Distribuição por Diretoria", "Diretoria");
   </script>
 
-  <!-- =================== -->
-  <!-- 📁 TABELA DE RESULTADOS -->
-  <!-- =================== -->
+  <!-- 📄 TABELA -->
+  <h2 style="color:#003c7a; margin-top:2rem;">Tabela de Resultados</h2>
 
-  <div class="card-results" style="margin-top:2rem;">
+  <div class="export-buttons">
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}" class="btn btn-outline-blue"><i class="fas fa-file-csv"></i> CSV</a>
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}" class="btn btn-outline-blue"><i class="fas fa-file-excel"></i> XLSX</a>
+  </div>
 
-    <div class="export-bar">
-      <span>Exportar resultados:</span>
-      <div style="display:flex;gap:0.5rem;">
-        <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}" class="btn btn-outline-blue btn-sm"><i class="fas fa-file-csv"></i> CSV</a>
-        <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}" class="btn btn-outline-blue btn-sm"><i class="fas fa-file-excel"></i> XLSX</a>
-      </div>
-    </div>
+  <div class="table-area">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Nº Processo</th>
+          <th>RA</th>
+          <th>Status</th>
+          <th>Diretoria</th>
+          <th>Serviço</th>
+          <th>Responsável</th>
+          <th>Observação</th>
+        </tr>
+      </thead>
 
-    <div class="table-responsive">
-      <table class="styled-table">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Nº Processo</th>
-            <th>RA</th>
-            <th>Status</th>
-            <th>Diretoria</th>
-            <th>Serviço</th>
-            <th>Responsável</th>
-            <th>Observação</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for mov, user, entrada, processo, demanda in resultados %}
-            <tr>
-              <td>{{ mov.data.strftime("%d/%m/%Y %H:%M") }}</td>
-              <td>{{ processo.numero_processo }}</td>
-              <td>{{ entrada.ra_origem }}</td>
-              <td>{{ mov.novo_status }}</td>
-              <td>{{ processo.diretoria_destino }}</td>
-              <td>{{ demanda.descricao if demanda else "" }}</td>
-              <td>{{ user.usuario }}</td>
-              <td>{{ mov.observacao }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+      <tbody>
+        {% for mov, user, entrada, processo, demanda in resultados %}
+        <tr>
+          <td>{{ mov.data.strftime("%d/%m/%Y %H:%M") }}</td>
+          <td>{{ processo.numero_processo }}</td>
+          <td>{{ entrada.ra_origem }}</td>
+          <td>{{ mov.novo_status }}</td>
+          <td>{{ processo.diretoria_destino }}</td>
+          <td>{{ demanda.descricao if demanda else "" }}</td>
+          <td>{{ user.usuario }}</td>
+          <td>{{ mov.observacao }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+
+    </table>
   </div>
 
 </section>
-
-<!-- =================== -->
-<!-- 🎨 ESTILO FINAL -->
-<!-- =================== -->
-<style>
-  form.card-form {
-    background:white;
-    padding:2rem 2.5rem;
-    border-radius:12px;
-    box-shadow:0 3px 10px rgba(0,0,0,0.1);
-  }
-
-  .form-grid {
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(250px,1fr));
-    gap:1rem 1.5rem;
-  }
-
-  .form-group label {
-    display:block;
-    font-weight:600;
-    color:#002d62;
-    margin-bottom:0.3rem;
-  }
-
-  input, select {
-    width:100%;
-    padding:0.6rem 0.8rem;
-    border:1px solid #cfd8dc;
-    border-radius:8px;
-    font-size:0.95rem;
-  }
-
-  input:focus, select:focus {
-    border-color:#005CA9;
-    box-shadow:0 0 0 2px rgba(0,92,169,0.2);
-  }
-
-  .button-toolbar { display:flex; align-items:center; gap:1rem; }
-
-  .card-results {
-    background:white;
-    padding:1.5rem 2rem;
-    border-radius:12px;
-    box-shadow:0 3px 10px rgba(0,0,0,0.1);
-  }
-
-  .info-card {
-    text-align:center;
-    padding:1.4rem;
-    border-radius:12px;
-    border:1px solid #dde3ea;
-    background:#fff;
-  }
-
-  .info-card h3 {
-    color:#003c7a;
-    font-weight:600;
-    margin-bottom:0.4rem;
-  }
-
-  .info-value {
-    font-size:2rem;
-    font-weight:700;
-    color:#005ca9;
-  }
-
-  table.styled-table {
-    width:100%;
-    border-collapse:collapse;
-    margin-top:1rem;
-  }
-
-  table.styled-table th, table.styled-table td {
-    padding:0.75rem 1rem;
-    text-align:left;
-  }
-
-  table.styled-table th {
-    background:#004a8f;
-    color:white;
-    font-weight:600;
-  }
-
-  table.styled-table tr:nth-child(even) { background:#f8f9fa; }
-
-  .export-bar {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:1rem;
-  }
-
-  .btn-sm { padding:0.5rem 1rem; font-size:0.85rem; }
-
-</style>
 
 {% endblock %}
