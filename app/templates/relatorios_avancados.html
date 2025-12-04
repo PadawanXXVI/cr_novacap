@@ -8,13 +8,14 @@
 
 <section class="page-section fade-in">
 
-  <!-- 🔹 Cabeçalho -->
+  <!-- Cabeçalho -->
   <header class="text-center" style="margin-bottom: 2rem;">
     <h1 style="color:#004a8f; font-size:clamp(1.8rem,3vw,2.3rem); font-weight:700;">
       <i class="fas fa-chart-line"></i> Relatórios Avançados
     </h1>
-    <p style="color:#555; font-size:1.05rem; max-width:800px; margin:0.6rem auto; line-height:1.6;">
-      Utilize os filtros abaixo para gerar análises detalhadas. Tabelas e gráficos refletem exatamente os filtros selecionados.
+    <p style="color:#555; font-size:1.05rem; max-width:800px; margin:0.6rem auto;">
+      Utilize os filtros abaixo para gerar análises detalhadas.  
+      Tabelas e gráficos refletem exatamente os filtros selecionados.
     </p>
   </header>
 
@@ -136,8 +137,7 @@
     const dados = `{{ session.get('dados_relatorio', []) | tojson }}`;
 
     function gerarGrafico(id, titulo, campo) {
-      if (!dados || dados.length === 0)
-        return;
+      if (!dados || dados.length === 0) return;
 
       const contagem = {};
       dados.forEach(item => {
@@ -165,8 +165,12 @@
   <h2 style="color:#003c7a; margin-top:2rem;">Tabela de Resultados</h2>
 
   <div class="export-buttons">
-    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}" class="btn btn-outline-blue"><i class="fas fa-file-csv"></i> CSV</a>
-    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}" class="btn btn-outline-blue"><i class="fas fa-file-excel"></i> XLSX</a>
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}" class="btn btn-outline-blue">
+      <i class="fas fa-file-csv"></i> CSV
+    </a>
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}" class="btn btn-outline-blue">
+      <i class="fas fa-file-excel"></i> XLSX
+    </a>
   </div>
 
   <div class="table-area">
@@ -192,7 +196,7 @@
           <td>{{ entrada.ra_origem }}</td>
           <td>{{ mov.novo_status }}</td>
           <td>{{ processo.diretoria_destino }}</td>
-          <td>{{ demanda.descricao if demanda else "" }}</td>
+          <td>{{ demanda.descricao if demanda else '' }}</td>
           <td>{{ user.usuario }}</td>
           <td>{{ mov.observacao }}</td>
         </tr>
