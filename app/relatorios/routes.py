@@ -31,9 +31,16 @@ from app.relatorios import relatorios_bp
 @relatorios_bp.route('/avancados')
 @login_required
 def relatorios_avancados():
+    """
+    Tela de Relatórios Avançados com:
+      - Filtros inteligentes (Diretoria → Departamento → Demanda)
+      - Tabela de resultados
+      - Cards numéricos
+      - Geração de dados estruturados para gráficos (session)
+    """
 
     # ---------------------------------------------
-    # LISTAS PARA SELECTS DO HTML
+    # LISTAS PARA OS SELECTS
     # ---------------------------------------------
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
@@ -42,7 +49,7 @@ def relatorios_avancados():
     todos_departamentos = Departamento.query.order_by(Departamento.nome).all()
 
     # ---------------------------------------------
-    # FILTROS DO HTML
+    # FILTROS RECEBIDOS DO HTML
     # ---------------------------------------------
     status_sel = request.args.get("status")
     ra_sel = request.args.get("ra")
@@ -53,7 +60,7 @@ def relatorios_avancados():
     fim = request.args.get("fim")
 
     # ---------------------------------------------
-    # QUERY BASE (JOIN COMPLETO ENTRE AS TABELAS)
+    # QUERY BASE COM JOINS CORRETOS
     # ---------------------------------------------
     query = (
         db.session.query(
@@ -77,27 +84,27 @@ def relatorios_avancados():
     # APLICAÇÃO INTELIGENTE DOS FILTROS
     # ---------------------------------------------
 
-    # Filtro 1 — Diretoria
+    # Diretoria
     if diretoria_sel:
         query = query.filter(Diretoria.descricao_exibicao == diretoria_sel)
 
-    # Filtro 2 — Departamento
+    # Departamento
     if departamento_sel:
         query = query.filter(Departamento.nome == departamento_sel)
 
-    # Filtro 3 — Demanda
+    # Demanda / Serviço
     if demanda_sel:
         query = query.filter(Demanda.descricao == demanda_sel)
 
-    # Filtro 4 — Região Administrativa
+    # Região Administrativa
     if ra_sel:
         query = query.filter(EntradaProcesso.ra_origem == ra_sel)
 
-    # Filtro 5 — Status
+    # Status
     if status_sel:
         query = query.filter(Movimentacao.novo_status == status_sel)
 
-    # Filtro 6 — Datas
+    # Intervalo de Datas
     if inicio and fim:
         try:
             dt_inicio = datetime.strptime(inicio, "%Y-%m-%d")
@@ -107,7 +114,7 @@ def relatorios_avancados():
             flash("Formato de data inválido. Use AAAA-MM-DD.", "warning")
 
     # ---------------------------------------------
-    # EXECUTA QUERY
+    # EXECUTA CONSULTA
     # ---------------------------------------------
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
@@ -132,19 +139,36 @@ def relatorios_avancados():
             "Observação": mov.observacao or ""
         })
 
-        ras_distintas.add(entrada.ra_origem)
-        demandas_distintas.add(demanda.descricao)
+        if entrada.ra_origem:
+            ras_distintas.add(entrada.ra_origem)
+        if demanda and demanda.descricao:
+            demandas_distintas.add(demanda.descricao)
 
     df = pd.DataFrame(dados)
     session["dados_relatorio"] = df.to_dict(orient="records")
 
-    # Totais dos cards
     total_resultados = len(df)
     total_ras = len(ras_distintas)
     total_demandas = len(demandas_distintas)
 
     # ---------------------------------------------
-    # RENDERIZA HTML
+    # MAPA PARA FILTROS INTELIGENTES
+    # Diretoria → Departamento → Demanda
+    # ---------------------------------------------
+    demandas_mapeadas = [
+        {
+            "descricao": d.descricao,
+            "departamento": d.departamento.nome if d.departamento else "",
+            "diretoria": (
+                d.departamento.diretoria.descricao_exibicao
+                if d.departamento and d.departamento.diretoria else ""
+            )
+        }
+        for d in todas_demandas
+    ]
+
+    # ---------------------------------------------
+    # RENDERIZA TEMPLATE
     # ---------------------------------------------
     return render_template(
         "relatorios_avancados.html",
@@ -156,19 +180,19 @@ def relatorios_avancados():
         resultados=resultados,
         total_resultados=total_resultados,
         total_ras=total_ras,
-        total_demandas=total_demandas
+        total_demandas=total_demandas,
+        demandas_mapeadas=demandas_mapeadas
     )
 
 
 # ==========================================================
-# 📄 EXPORTAÇÃO CSV / XLSX — TOTALMENTE FUNCIONAL
+# 📄 EXPORTAÇÃO CSV / XLSX
 # ==========================================================
 @relatorios_bp.route('/exportar')
 @login_required
 def exportar_relatorios():
 
     dados = session.get("dados_relatorio", [])
-
     if not dados:
         flash("Nenhum dado disponível para exportação.", "warning")
         return redirect(url_for("relatorios_bp.relatorios_avancados"))
@@ -177,21 +201,18 @@ def exportar_relatorios():
     formato = request.args.get("formato", "csv").lower()
     nome = f"Relatorio_Avancado_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
-    # -------- XLSX --------
     if formato == "xlsx":
         output = BytesIO()
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             df.to_excel(writer, index=False, sheet_name="Relatório")
         output.seek(0)
-
         return send_file(
             output,
             as_attachment=True,
             download_name=f"{nome}.xlsx",
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
 
-    # -------- CSV --------
     csv = df.to_csv(index=False, sep=";", encoding="utf-8-sig")
     response = make_response(csv)
     response.headers["Content-Disposition"] = f"attachment; filename={nome}.csv"

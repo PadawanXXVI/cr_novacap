@@ -1,333 +1,261 @@
-/* ==========================================================
-🌐 CR-NOVACAP - SISTEMA DE CONTROLE DE PROCESSOS (v3.6)
-Design Institucional Moderno + Responsivo — Padrão GDF (2025)
-========================================================== */
+/* ============================================================
+   CR-NOVACAP — Relatórios Avançados
+   Layout alinhado ao consultar_processos.html
+   ============================================================ */
 
-/* ==== RESET E BASE ==== */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-html, body {
-  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
-  background: #f4f6f9;
-  color: #2b2b2b;
-  line-height: 1.6;
-  font-size: 16px;
-  scroll-behavior: smooth;
+/* --------- CONTAINER PRINCIPAL --------- */
+.page-section {
+    max-width: 1200px;
+    margin: 2rem auto;
 }
 
-/* ==== VARIÁVEIS DE TEMA ==== */
-:root {
-  --primary: #005CA9;
-  --primary-dark: #003C7A;
-  --accent: #00A86B;
-  --danger: #DC3545;
-  --warning: #FFC107;
-  --light-bg: #FFFFFF;
-  --gray-bg: #F8F9FA;
-  --text-dark: #212529;
-  --text-muted: #6C757D;
-  --border-color: #DEE2E6;
-  --shadow: 0 3px 10px rgba(0,0,0,0.08);
-  --radius: 10px;
+/* Texto introdutório dos filtros */
+.intro-filtros {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 1rem;
 }
 
-/* ==========================================================
-🏛 LAYOUT PRINCIPAL
-========================================================== */
-.container {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: var(--light-bg);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-@media (max-width: 768px) {
-  .container { padding: 1.25rem; margin: 1rem; }
+/* --------- CAIXA DE FILTROS --------- */
+.card-form {
+    background: #ffffff;
+    padding: 2rem 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    border: 1px solid #e0e6eb;
 }
 
-/* ==========================================================
-🔵 CABEÇALHO INSTITUCIONAL
-========================================================== */
-.navbar {
-  background: linear-gradient(90deg, var(--primary-dark), var(--primary));
-  color: #fff;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: var(--shadow);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-.navbar a {
-  color: #fff;
-  text-decoration: none;
-  margin-left: 1.25rem;
-  font-weight: 500;
-  transition: 0.2s;
-}
-.navbar a:hover { color: var(--warning); }
-.navbar .logo-link { margin-left: 0; }
-
-/* ==========================================================
-📋 CABEÇALHO DAS PÁGINAS
-========================================================== */
-.page-header {
-  text-align: left;
-  margin-bottom: 2rem;
-}
-.page-header h1 {
-  color: var(--primary-dark);
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
-  font-weight: 700;
-}
-.page-header p {
-  color: var(--text-muted);
-  font-size: 1.05rem;
-  max-width: 740px;
-  line-height: 1.5;
-}
-
-/* ==========================================================
-📦 FORMULÁRIOS / CARDS
-========================================================== */
-.filter-card {
-  background: var(--light-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 2rem;
-  margin-bottom: 2rem;
-  transition: 0.25s;
-}
-.filter-card:hover {
-  box-shadow: 0 8px 22px rgba(0, 92, 169, 0.15);
-}
 .form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.25rem 1.5rem;
-}
-label {
-  display: block;
-  margin-bottom: .4rem;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-label i { color: var(--primary); margin-right: 6px; }
-
-input, select, textarea {
-  width: 100%;
-  padding: .8rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  background: #fff;
-  transition: all .25s ease;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0,96,168,.15);
-  outline: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem 1.5rem;
 }
 
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #002d62;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+}
+
+/* --------- CAMPOS DE INPUT & SELECT --------- */
+.card-form input,
+.card-form select {
+    width: 100%;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid #cfd8dc;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: white;
+    transition: 0.2s ease;
+    appearance: none;
+}
+
+.card-form input:focus,
+.card-form select:focus {
+    border-color: #005CA9;
+    box-shadow: 0 0 0 2px rgba(0,92,169,0.20);
+    outline: none;
+}
+
+/* Ícone da seta do select */
+.card-form select {
+    background-image:
+        linear-gradient(45deg, transparent 50%, #777 50%),
+        linear-gradient(135deg, #777 50%, transparent 50%),
+        linear-gradient(to right, #eee, #eee);
+    background-position:
+        calc(100% - 20px) calc(1rem + 2px),
+        calc(100% - 15px) calc(1rem + 2px),
+        calc(100% - 2.5rem) 0;
+    background-size:
+        6px 6px,
+        6px 6px,
+        2.3rem 100%;
+    background-repeat: no-repeat;
+}
+
+/* Placeholder dos selects (opção vazia) */
+.card-form select option[value=""] {
+    color: #777;
+}
+
+/* --------- BOTÕES --------- */
 .button-toolbar {
-  margin-top: 1.5rem;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.8rem;
-  flex-wrap: wrap;
-}
-@media (max-width: 768px) {
-  .button-toolbar { justify-content: center; }
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
 }
 
-/* ==========================================================
-📦 CARDS GENÉRICOS
-========================================================== */
-.card {
-  background: var(--light-bg);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
+.btn {
+    padding: 0.8rem 1.6rem;
+    font-weight: 600;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.95rem;
+    cursor: pointer;
 }
 
-/* ==========================================================
-🟦 BOTÕES MODERNOS — BASE
-========================================================== */
-button, .btn, .action-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-  padding: .85rem 1.8rem;
-  font-weight: 600;
-  font-size: 1rem;
-  border-radius: var(--radius);
-  border: none;
-  cursor: pointer;
-  text-decoration: none !important;
-  transition: all .2s ease-in-out;
-}
-button:hover, .btn:hover, .action-button:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.05);
-}
-
-/* Botão principal azul */
+/* Botão primário */
 .btn-primary {
-  background: var(--primary);
-  color: #fff !important;
+    background: linear-gradient(90deg, #004a8f, #007bff);
+    color: white;
+    border: none;
 }
-.btn-primary:hover { background: var(--primary-dark); }
-
-/* Botão contornado azul */
-.btn-outline-blue {
-  border: 2px solid var(--primary);
-  background: transparent;
-  color: var(--primary) !important;
-}
-.btn-outline-blue:hover {
-  background: var(--primary);
-  color: #fff !important;
+.btn-primary:hover {
+    background: linear-gradient(90deg, #003d7a, #0066e4);
 }
 
-/* CINZA */
+/* Botão cinza */
 .btn-outline-gray {
-  border: 2px solid var(--text-muted);
-  color: var(--text-muted) !important;
-  background: transparent;
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
 }
 .btn-outline-gray:hover {
-  background: var(--text-muted);
-  color: #fff !important;
+    background: #6c757d;
+    color: white;
 }
 
-/* VERMELHO */
-.btn-danger {
-  background: var(--danger);
-  color: #fff !important;
+/* Botão azul outline (exportação) */
+.btn-outline-blue {
+    border: 2px solid #005CA9;
+    color: #005CA9;
+    background: transparent;
 }
-.btn-danger:hover { background: #b02a37; }
-
-/* ==========================================================
-🟦 BOTÕES PADRONIZADOS — ACTION BUTTONS
-========================================================== */
-.btn-primary-blue {
-  background: linear-gradient(90deg, #0057A6, #007BFF);
-  color: #fff !important;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
-}
-.btn-primary-blue:hover { filter: brightness(1.1); }
-
-.btn-outline-blue-strong {
-  background: #fff;
-  border: 2px solid #0057A6;
-  color: #0057A6 !important;
-}
-.btn-outline-blue-strong:hover {
-  background: #0057A6;
-  color: #fff !important;
+.btn-outline-blue:hover {
+    background: #005CA9;
+    color: white;
 }
 
-/* ==========================================================
-📊 TABELAS
-========================================================== */
-.table-responsive {
-  background: #fff;
-  border-radius: var(--radius);
-  overflow-x: auto;
-  box-shadow: var(--shadow);
-  margin-top: 1.5rem;
+/* --------- CARDS DE INDICADORES --------- */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.4rem;
+    margin-top: 2rem;
 }
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-table th, table td {
-  padding: .9rem 1rem;
-  border: 1px solid var(--border-color);
-}
-table th {
-  background: var(--primary);
-  color: #fff;
-}
-table tr:nth-child(even) { background: var(--gray-bg); }
 
-/* ==========================================================
-📊 CARDS — RELATÓRIOS GERENCIAIS
-========================================================== */
 .info-card {
-  padding: 1.8rem;
-  border-radius: var(--radius);
-  background: var(--light-bg);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
-  text-align: center;
+    padding: 1.4rem 1.2rem;
+    border-radius: 12px;
+    background: white;
+    border: 1px solid #dce3e9;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    text-align: center;
+    transition: 0.2s ease;
 }
+
+.info-card:hover {
+    transform: scale(1.02);
+}
+
 .info-card h3 {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--primary-dark);
+    font-size: 1rem;
+    color: #003c7a;
+    margin-bottom: 0.4rem;
 }
+
 .info-value {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--primary);
+    font-size: 2rem;
+    font-weight: 700;
+    color: #005ca9;
 }
 
-/* ==========================================================
-🌙 MODO ESCURO
-========================================================== */
-body.dark-mode {
-  background-color: #1C1F26;
-  color: #E9ECEF;
-}
-body.dark-mode .container,
-body.dark-mode .filter-card,
-body.dark-mode .card {
-  background-color: #2B2F38;
-  border-color: #3A3F4B;
-}
-body.dark-mode table th { background: #004A8F; }
-body.dark-mode table td { background: #2E323C; }
-
-/* Botões dark */
-body.dark-mode .btn-primary-blue {
-  background: linear-gradient(90deg, #0062CC, #00A3FF);
-}
-body.dark-mode .btn-outline-blue-strong {
-  border-color: #66B2FF;
-  color: #E9ECEF !important;
-}
-body.dark-mode .btn-outline-blue-strong:hover {
-  background: #66B2FF;
-  color: #1C1F26 !important;
+/* --------- TÍTULOS SEÇÕES --------- */
+.section-title-graficos,
+.section-title-tabela {
+    color: #003c7a;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-/* ==========================================================
-⚙ RODAPÉ
-========================================================== */
-footer {
-  text-align: center;
-  color: var(--text-muted);
-  font-size: .9rem;
-  margin-top: 3rem;
-  padding-top: 2rem;
+/* --------- GRÁFICOS --------- */
+.graficos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
 }
 
-/* ==========================================================
-💡 ANIMAÇÕES
-========================================================== */
-.fade-in {
-  animation: fadeIn .6s ease-in-out;
+.grafico-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+    min-height: 260px;
 }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+
+.grafico-vazio {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #777;
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+/* --------- TABELA DE RESULTADOS --------- */
+.export-buttons {
+    display: flex;
+    gap: 0.8rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.table-area {
+    margin-top: 1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+th,
+td {
+    padding: 0.7rem 0.9rem;
+    border: 1px solid #dce3e9;
+}
+
+th {
+    background: #004a8f;
+    color: white;
+    font-weight: 600;
+    font-size: 0.92rem;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+tr:hover {
+    background: #eef5ff;
+}
+
+/* --------- RESPONSIVIDADE --------- */
+@media (max-width: 768px) {
+    .card-form {
+        padding: 1.4rem 1.2rem;
+    }
+
+    .info-value {
+        font-size: 1.6rem;
+    }
 }

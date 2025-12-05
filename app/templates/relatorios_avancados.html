@@ -13,8 +13,8 @@
       <i class="fas fa-chart-line"></i> Relatórios Avançados
     </h1>
     <p style="color:#555; font-size:1.05rem; max-width:800px; margin:0.6rem auto;">
-      Utilize os filtros abaixo para gerar análises detalhadas.  
-      Os resultados, totais e gráficos refletem exatamente os filtros aplicados.
+      Utilize os filtros abaixo para gerar análises detalhadas.
+      Os resultados, totais e gráficos refletem exatamente a combinação aplicada.
     </p>
   </header>
 
@@ -25,6 +25,8 @@
 
     <div class="intro-filtros">
       Os filtros podem ser usados isoladamente ou em conjunto, sem ordem obrigatória.
+      Ao selecionar uma Diretoria, os Departamentos e Demandas são ajustados automaticamente
+      conforme a cadeia funcional (Diretoria → Departamento → Demanda.
     </div>
 
     <div class="form-grid">
@@ -32,7 +34,7 @@
       <!-- 1. Diretoria -->
       <div class="form-group">
         <label><i class="fas fa-building"></i> Diretoria</label>
-        <select name="diretoria">
+        <select name="diretoria" id="filtro-diretoria">
           <option value="">Todas</option>
           {% for d in todas_diretorias %}
             <option value="{{ d.descricao_exibicao }}"
@@ -46,7 +48,7 @@
       <!-- 2. Departamento -->
       <div class="form-group">
         <label><i class="fas fa-sitemap"></i> Departamento</label>
-        <select name="departamento">
+        <select name="departamento" id="filtro-departamento">
           <option value="">Todos</option>
           {% for dep in todos_departamentos %}
             <option value="{{ dep.nome }}"
@@ -57,10 +59,10 @@
         </select>
       </div>
 
-      <!-- 3. Demanda -->
+      <!-- 3. Demanda / Serviço -->
       <div class="form-group">
         <label><i class="fas fa-wrench"></i> Tipo de Demanda (Serviço)</label>
-        <select name="servico">
+        <select name="servico" id="filtro-servico">
           <option value="">Todas</option>
           {% for d in todas_demandas %}
             <option value="{{ d.descricao }}"
@@ -85,7 +87,7 @@
         </select>
       </div>
 
-      <!-- 5. Status -->
+      <!-- 5. Status Atual -->
       <div class="form-group">
         <label><i class="fas fa-flag"></i> Status Atual</label>
         <select name="status">
@@ -162,54 +164,198 @@
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
   <script>
-    const dados = JSON.parse(`{{ session.get("dados_relatorio", []) | tojson | safe }}`);
+    (function () {
+      // -----------------------------
+      // DADOS VINDOS DA ROTA (Jinja → JS)
+      // -----------------------------
+      const dados = JSON.parse('{{ session.get("dados_relatorio", []) | tojson | safe }}');
+      const mapaDemandas = JSON.parse('{{ demandas_mapeadas | tojson | safe }}');
 
-    function renderMensagemVazia(id) {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = '<p class="grafico-vazio">Nenhum dado disponível para exibir.</p>';
-    }
+      // -----------------------------
+      // FILTROS INTELIGENTES (UX)
+      // -----------------------------
+      document.addEventListener('DOMContentLoaded', function () {
+        const selectDiretoria    = document.getElementById('filtro-diretoria');
+        const selectDepartamento = document.getElementById('filtro-departamento');
+        const selectServico      = document.getElementById('filtro-servico');
 
-    function gerarGraficoBarra(id, titulo, campo, topN = null) {
-      if (!dados || dados.length === 0) {
-        renderMensagemVazia(id);
-        return;
-      }
+        const valorInicialDiretoria    = selectDiretoria.value;
+        const valorInicialDepartamento = selectDepartamento.value;
+        const valorInicialServico      = selectServico.value;
 
-      const contagem = {};
-      dados.forEach(item => {
-        const chave = item[campo] || "Não informado";
-        contagem[chave] = (contagem[chave] || 0) + 1;
+        function atualizarDepartamentos() {
+          const dir = selectDiretoria.value;
+          const departamentosSet = new Set();
+
+          mapaDemandas.forEach(function (item) {
+            if (!dir || item.diretoria === dir) {
+              if (item.departamento) {
+                departamentosSet.add(item.departamento);
+              }
+            }
+          });
+
+          const selecionadoAtual = selectDepartamento.value;
+
+          // limpa opções
+          selectDepartamento.innerHTML = '';
+          const optTodos = document.createElement('option');
+          optTodos.value = '';
+          optTodos.textContent = 'Todos';
+          selectDepartamento.appendChild(optTodos);
+
+          Array.from(departamentosSet)
+            .sort()
+            .forEach(function (nome) {
+              const opt = document.createElement('option');
+              opt.value = nome;
+              opt.textContent = nome;
+              selectDepartamento.appendChild(opt);
+            });
+
+          // tenta manter seleção anterior se ainda existir
+          if (departamentosSet.has(selecionadoAtual)) {
+            selectDepartamento.value = selecionadoAtual;
+          } else if (valorInicialDepartamento && departamentosSet.has(valorInicialDepartamento)) {
+            selectDepartamento.value = valorInicialDepartamento;
+          }
+        }
+
+        function atualizarDemandas() {
+          const dir = selectDiretoria.value;
+          const dep = selectDepartamento.value;
+
+          const demandasSet = new Set();
+          mapaDemandas.forEach(function (item) {
+            if (dir && item.diretoria !== dir) return;
+            if (dep && item.departamento !== dep) return;
+            if (item.descricao) {
+              demandasSet.add(item.descricao);
+            }
+          });
+
+          const selecionadoAtual = selectServico.value;
+
+          selectServico.innerHTML = '';
+          const optTodas = document.createElement('option');
+          optTodas.value = '';
+          optTodas.textContent = 'Todas';
+          selectServico.appendChild(optTodas);
+
+          // Se não houver diretoria/dep selecionados, mantém todas as demandas originais
+          if (!dir && !dep && demandasSet.size === 0) {
+            {% for d in todas_demandas %}
+            (function () {
+              const opt = document.createElement('option');
+              opt.value = "{{ d.descricao }}";
+              opt.textContent = "{{ d.descricao }}";
+              selectServico.appendChild(opt);
+            })();
+            {% endfor %}
+          } else {
+            Array.from(demandasSet)
+              .sort()
+              .forEach(function (desc) {
+                const opt = document.createElement('option');
+                opt.value = desc;
+                opt.textContent = desc;
+                selectServico.appendChild(opt);
+              });
+          }
+
+          const arrDemandas = Array.from(demandasSet);
+
+          if (arrDemandas.includes(selecionadoAtual)) {
+            selectServico.value = selecionadoAtual;
+          } else if (valorInicialServico && arrDemandas.includes(valorInicialServico)) {
+            selectServico.value = valorInicialServico;
+          }
+        }
+
+        // listeners
+        selectDiretoria.addEventListener('change', function () {
+          atualizarDepartamentos();
+          atualizarDemandas();
+        });
+
+        selectDepartamento.addEventListener('change', function () {
+          atualizarDemandas();
+        });
+
+        // primeira carga
+        atualizarDepartamentos();
+        atualizarDemandas();
       });
 
-      let pares = Object.keys(contagem).map(k => ({ label: k, valor: contagem[k] }));
-      pares.sort((a, b) => b.valor - a.valor);
-
-      if (topN && pares.length > topN) pares = pares.slice(0, topN);
-
-      const labels = pares.map(p => p.label);
-      const valores = pares.map(p => p.valor);
-
-      if (!labels.length) {
-        renderMensagemVazia(id);
-        return;
+      // -----------------------------
+      // GRÁFICOS (Plotly)
+      // -----------------------------
+      function renderMensagemVazia(id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.innerHTML = '<p class="grafico-vazio">Nenhum dado para exibir com os filtros selecionados.</p>';
+        }
       }
 
-      Plotly.newPlot(id, [{
-        x: labels,
-        y: valores,
-        type: "bar"
-      }], {
-        title: titulo,
-        xaxis: { automargin: true, tickangle: -30 },
-        yaxis: { title: "Qtd. Processos" },
-        margin: { t: 50, b: 120, l: 60, r: 20 }
-      });
-    }
+      function gerarGraficoBarra(id, titulo, campo, topN) {
+        if (!dados || !dados.length) {
+          renderMensagemVazia(id);
+          return;
+        }
 
-    gerarGraficoBarra("grafico_status", "Distribuição por Status", "Status");
-    gerarGraficoBarra("grafico_ra", "Top 10 RAs por quantidade", "RA", 10);
-    gerarGraficoBarra("grafico_diretoria", "Distribuição por Diretoria", "Diretoria");
-    gerarGraficoBarra("grafico_departamento", "Distribuição por Departamento", "Departamento");
+        var contagem = {};
+        dados.forEach(function (item) {
+          var chave = item[campo] || "Não informado";
+          contagem[chave] = (contagem[chave] || 0) + 1;
+        });
+
+        var pares = Object.keys(contagem).map(function (k) {
+          return { label: k, valor: contagem[k] };
+        });
+
+        pares.sort(function (a, b) { return b.valor - a.valor; });
+
+        if (topN && pares.length > topN) {
+          pares = pares.slice(0, topN);
+        }
+
+        var labels = pares.map(function (p) { return p.label; });
+        var valores = pares.map(function (p) { return p.valor; });
+
+        if (!labels.length) {
+          renderMensagemVazia(id);
+          return;
+        }
+
+        Plotly.newPlot(id, [{
+          x: labels,
+          y: valores,
+          type: 'bar'
+        }], {
+          title: titulo,
+          xaxis: {
+            automargin: true,
+            tickangle: -30
+          },
+          yaxis: { title: 'Qtd. Processos' },
+          margin: { t: 50, b: 120, l: 60, r: 20 }
+        }, {
+          responsive: true
+        });
+      }
+
+      // Status geral dos registros filtrados
+      gerarGraficoBarra("grafico_status", "Distribuição por Status", "Status");
+
+      // Top 10 RAs
+      gerarGraficoBarra("grafico_ra", "Top RAs por quantidade de processos", "RA", 10);
+
+      // Diretoria
+      gerarGraficoBarra("grafico_diretoria", "Distribuição por Diretoria", "Diretoria");
+
+      // Departamentos
+      gerarGraficoBarra("grafico_departamento", "Distribuição por Departamento", "Departamento");
+    })();
   </script>
 
   <!-- 📄 TABELA -->
@@ -218,10 +364,12 @@
   </h2>
 
   <div class="export-buttons">
-    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}" class="btn btn-outline-blue">
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}"
+       class="btn btn-outline-blue">
       <i class="fas fa-file-csv"></i> CSV
     </a>
-    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}" class="btn btn-outline-blue">
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}"
+       class="btn btn-outline-blue">
       <i class="fas fa-file-excel"></i> XLSX
     </a>
   </div>
@@ -261,5 +409,8 @@
   </div>
 
 </section>
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 {% endblock %}
