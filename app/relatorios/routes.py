@@ -1,12 +1,39 @@
+# app/relatorios/routes.py
+from datetime import datetime
+from io import BytesIO
+import pandas as pd
+
+from flask import (
+    render_template, request, redirect, url_for, flash, session,
+    send_file, make_response
+)
+from flask_login import login_required
+
+from app.ext import db
+from app.models.modelos import (
+    Movimentacao,
+    Usuario,
+    EntradaProcesso,
+    Processo,
+    Demanda,
+    Status,
+    RegiaoAdministrativa,
+    Diretoria,
+    Departamento          # 🔥 IMPORTANTE: antes estava faltando!
+)
+
+from app.relatorios import relatorios_bp
+
+
 # ==========================================================
-# 🔎 RELATÓRIO AVANÇADO — COMPLETO E CORRIGIDO
+# 🔎 RELATÓRIO AVANÇADO COMPLETO
 # ==========================================================
 @relatorios_bp.route('/avancados')
 @login_required
 def relatorios_avancados():
 
     # ---------------------------------------------
-    # LISTAS PARA OS SELECTS DO HTML
+    # LISTAS PARA OS SELECTS
     # ---------------------------------------------
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
@@ -15,7 +42,7 @@ def relatorios_avancados():
     todos_departamentos = Departamento.query.order_by(Departamento.nome).all()
 
     # ---------------------------------------------
-    # FILTROS RECEBIDOS
+    # FILTROS RECEBIDOS DO HTML
     # ---------------------------------------------
     status_sel = request.args.get("status")
     ra_sel = request.args.get("ra")
@@ -26,7 +53,7 @@ def relatorios_avancados():
     fim = request.args.get("fim")
 
     # ---------------------------------------------
-    # QUERY BASE (AGORA COMPLETA COM TODOS JOINS)
+    # QUERY BASE (JOIN COMPLETO)
     # ---------------------------------------------
     query = (
         db.session.query(
@@ -76,7 +103,7 @@ def relatorios_avancados():
             dt_inicio = datetime.strptime(inicio, "%Y-%m-%d")
             dt_fim = datetime.strptime(fim, "%Y-%m-%d")
             query = query.filter(Movimentacao.data.between(dt_inicio, dt_fim))
-        except ValueError:
+        except:
             flash("Formato de data inválido. Use AAAA-MM-DD.", "warning")
 
     # ---------------------------------------------
@@ -85,14 +112,13 @@ def relatorios_avancados():
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
     # ---------------------------------------------
-    # MONTA DATAFRAME COMPLETO PARA GRÁFICOS
+    # MONTA DATAFRAME PARA GRÁFICOS E EXPORTAÇÃO
     # ---------------------------------------------
     dados = []
     ras_distintas = set()
     demandas_distintas = set()
 
     for mov, user, entrada, processo, demanda, departamento, diretoria in resultados:
-
         dados.append({
             "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
             "Número do Processo": processo.numero_processo,
@@ -111,9 +137,7 @@ def relatorios_avancados():
     df = pd.DataFrame(dados)
     session["dados_relatorio"] = df.to_dict(orient="records")
 
-    # =============================================
-    # TOTAIS PARA OS CARDS
-    # =============================================
+    # Totais dos cards
     total_resultados = len(df)
     total_ras = len(ras_distintas)
     total_demandas = len(demandas_distintas)

@@ -13,8 +13,8 @@
       <i class="fas fa-chart-line"></i> Relatórios Avançados
     </h1>
     <p style="color:#555; font-size:1.05rem; max-width:800px; margin:0.6rem auto;">
-      Utilize os filtros abaixo para gerar análises detalhadas.
-      Os resultados, totais e gráficos refletem exatamente a combinação de filtros aplicada.
+      Utilize os filtros abaixo para gerar análises detalhadas.  
+      Os resultados, totais e gráficos refletem exatamente os filtros aplicados.
     </p>
   </header>
 
@@ -57,7 +57,7 @@
         </select>
       </div>
 
-      <!-- 3. Demanda / Serviço -->
+      <!-- 3. Demanda -->
       <div class="form-group">
         <label><i class="fas fa-wrench"></i> Tipo de Demanda (Serviço)</label>
         <select name="servico">
@@ -85,7 +85,7 @@
         </select>
       </div>
 
-      <!-- 5. Status Atual -->
+      <!-- 5. Status -->
       <div class="form-group">
         <label><i class="fas fa-flag"></i> Status Atual</label>
         <select name="status">
@@ -162,18 +162,15 @@
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
   <script>
-    // Dados do relatório enviados pela rota (DataFrame -> dict -> JSON)
-    const dados = JSON.parse {{ session.get('dados_relatorio', []) | tojson | safe }};
+    const dados = JSON.parse(`{{ session.get("dados_relatorio", []) | tojson | safe }}`);
 
     function renderMensagemVazia(id) {
       const el = document.getElementById(id);
-      if (el) {
-        el.innerHTML = '<p class="grafico-vazio">Nenhum dado para exibir com os filtros selecionados.</p>';
-      }
+      if (el) el.innerHTML = '<p class="grafico-vazio">Nenhum dado disponível para exibir.</p>';
     }
 
     function gerarGraficoBarra(id, titulo, campo, topN = null) {
-      if (!dados || !dados.length) {
+      if (!dados || dados.length === 0) {
         renderMensagemVazia(id);
         return;
       }
@@ -185,14 +182,9 @@
       });
 
       let pares = Object.keys(contagem).map(k => ({ label: k, valor: contagem[k] }));
-
-      // Ordena do maior para o menor
       pares.sort((a, b) => b.valor - a.valor);
 
-      // Limita ao topN (ex.: top 10 RAs)
-      if (topN && pares.length > topN) {
-        pares = pares.slice(0, topN);
-      }
+      if (topN && pares.length > topN) pares = pares.slice(0, topN);
 
       const labels = pares.map(p => p.label);
       const valores = pares.map(p => p.valor);
@@ -205,30 +197,18 @@
       Plotly.newPlot(id, [{
         x: labels,
         y: valores,
-        type: 'bar'
+        type: "bar"
       }], {
         title: titulo,
-        xaxis: {
-          automargin: true,
-          tickangle: -30
-        },
-        yaxis: { title: 'Qtd. Processos' },
+        xaxis: { automargin: true, tickangle: -30 },
+        yaxis: { title: "Qtd. Processos" },
         margin: { t: 50, b: 120, l: 60, r: 20 }
-      }, {
-        responsive: true
       });
     }
 
-    // Status de todos os registros filtrados
     gerarGraficoBarra("grafico_status", "Distribuição por Status", "Status");
-
-    // Top 10 RAs (ou menos, se tiver menos de 10)
-    gerarGraficoBarra("grafico_ra", "Top RAs por quantidade de processos", "RA", 10);
-
-    // Diretoria — ideal quando se filtra só RA, Status ou período
+    gerarGraficoBarra("grafico_ra", "Top 10 RAs por quantidade", "RA", 10);
     gerarGraficoBarra("grafico_diretoria", "Distribuição por Diretoria", "Diretoria");
-
-    // Departamentos dentro das diretorias
     gerarGraficoBarra("grafico_departamento", "Distribuição por Departamento", "Departamento");
   </script>
 
@@ -238,12 +218,10 @@
   </h2>
 
   <div class="export-buttons">
-    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}"
-       class="btn btn-outline-blue">
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}" class="btn btn-outline-blue">
       <i class="fas fa-file-csv"></i> CSV
     </a>
-    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}"
-       class="btn btn-outline-blue">
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}" class="btn btn-outline-blue">
       <i class="fas fa-file-excel"></i> XLSX
     </a>
   </div>
