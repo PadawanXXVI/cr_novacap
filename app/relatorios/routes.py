@@ -1,12 +1,4 @@
 # app/relatorios/routes.py
-"""
-Módulo de Relatórios — CR-NOVACAP
----------------------------------
-Este módulo contém:
- - Relatórios avançados (com filtros combinados)
- - Exportações CSV/XLSX
- - Suporte ao Painel BI
-"""
 
 from datetime import datetime
 from io import BytesIO
@@ -21,71 +13,82 @@ from flask_login import login_required
 from app.ext import db
 from app.models.modelos import (
     Movimentacao, Usuario, EntradaProcesso, Processo,
-    Demanda, Status, RegiaoAdministrativa, Diretoria
+    Demanda, Status, RegiaoAdministrativa,
+    Diretoria, Departamento
 )
 
 from app.relatorios import relatorios_bp
 
 
 # ==========================================================
-# 🔎 1 — RELATÓRIO AVANÇADO
+# 🔎 RELATÓRIO AVANÇADO — COMPLETO
 # ==========================================================
 @relatorios_bp.route('/avancados')
 @login_required
 def relatorios_avancados():
-    """Tela principal de Relatórios Avançados com filtros, totais e resultados."""
 
-    # Listas exibidas nos filtros
+    # Listas para filtros
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
     todas_demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
+    todas_diretorias = Diretoria.query.all()
+    todos_departamentos = Departamento.query.order_by(Departamento.nome.asc()).all()
 
-    # Diretoria exibida = descricao_exibicao da tabela
-    diretorias_db = Diretoria.query.all()
-    diretorias_exibicao = [d.descricao_exibicao for d in diretorias_db]
-
-    # Filtros recebidos do HTML
+    # Filtros recebidos via GET
     status_sel = request.args.get('status')
     ra_sel = request.args.get('ra')
-    diretorias_sel = request.args.get('diretoria')
+    diretoria_sel = request.args.get('diretoria')
+    departamento_sel = request.args.get('departamento')
     demanda_sel = request.args.get('servico')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
 
-    # Query base
+    # ==========================================================
+    # QUERY BASE — Agora com JOINs de Diretorias e Departamentos
+    # ==========================================================
     query = (
-        db.session.query(Movimentacao, Usuario, EntradaProcesso, Processo, Demanda)
+        db.session.query(
+            Movimentacao,
+            Usuario,
+            EntradaProcesso,
+            Processo,
+            Demanda,
+            Departamento,
+            Diretoria
+        )
         .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
         .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada)
         .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
         .join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
+        .join(Departamento, Demanda.id_departamento == Departamento.id_departamento)
+        .join(Diretoria, Departamento.id_diretoria == Diretoria.id_diretoria)
     )
 
     # ==========================================================
     # FILTROS
     # ==========================================================
 
-    # --- Status ---
-    if status_sel and status_sel != "":
+    # Status
+    if status_sel:
         query = query.filter(Movimentacao.novo_status == status_sel)
 
-    # --- Região Administrativa ---
-    if ra_sel and ra_sel != "":
+    # Região Administrativa
+    if ra_sel:
         query = query.filter(EntradaProcesso.ra_origem == ra_sel)
 
-    # --- Diretoria de Destino ---
-    if diretorias_sel and diretorias_sel != "":
-        # encontra a diretoria certa no banco
-        diretoria_db = Diretoria.query.filter_by(descricao_exibicao=diretorias_sel).first()
-        if diretoria_db:
-            nome_salvo = diretoria_db.nome_completo  # ex.: "Diretoria das Cidades"
-            query = query.filter(Processo.diretoria_destino == nome_salvo)
+    # Diretoria
+    if diretoria_sel:
+        query = query.filter(Diretoria.descricao_exibicao == diretoria_sel)
 
-    # --- Demanda / Serviço ---
-    if demanda_sel and demanda_sel != "":
+    # Departamento
+    if departamento_sel:
+        query = query.filter(Departamento.nome == departamento_sel)
+
+    # Demanda (Serviço)
+    if demanda_sel:
         query = query.filter(Demanda.descricao == demanda_sel)
 
-    # --- Datas ---
+    # Intervalo de datas
     if inicio and fim:
         try:
             dt_inicio = datetime.strptime(inicio, "%Y-%m-%d")
@@ -100,45 +103,46 @@ def relatorios_avancados():
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
     # ==========================================================
-    # MONTA DATAFRAME PARA EXPORTAÇÃO E GRÁFICOS
+    # MONTA DATAFRAME PARA GRÁFICOS E EXPORTAÇÃO
     # ==========================================================
     dados = []
     ras_distintas = set()
     demandas_distintas = set()
 
-    for mov, user, entrada, processo, demanda in resultados:
+    for mov, user, entrada, processo, demanda, departamento, diretoria in resultados:
         dados.append({
             "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
             "Número do Processo": processo.numero_processo,
             "RA": entrada.ra_origem,
             "Status": mov.novo_status,
-            "Diretoria": processo.diretoria_destino,
-            "Serviço": demanda.descricao if demanda else "",
+            "Diretoria": diretoria.descricao_exibicao,
+            "Departamento": departamento.nome,
+            "Serviço": demanda.descricao,
             "Responsável": user.usuario,
             "Observação": mov.observacao or ""
         })
 
         ras_distintas.add(entrada.ra_origem)
-        if demanda:
-            demandas_distintas.add(demanda.descricao)
+        demandas_distintas.add(demanda.descricao)
 
     df = pd.DataFrame(dados)
 
-    # Salva sessão para exportação
+    # Guarda para exportação
     session['dados_relatorio'] = df.to_dict(orient='records')
 
-    # Totais dos cards
+    # Totais para os cards
     total_resultados = len(resultados)
     total_ras = len(ras_distintas)
     total_demandas = len(demandas_distintas)
 
-    # Renderiza HTML
+    # Renderiza HTML corrigido
     return render_template(
         'relatorios_avancados.html',
         todos_status=todos_status,
         todas_ras=todas_ras,
         todas_demandas=todas_demandas,
-        diretorias=diretorias_exibicao,
+        todas_diretorias=todas_diretorias,
+        todos_departamentos=todos_departamentos,
         resultados=resultados,
         total_resultados=total_resultados,
         total_ras=total_ras,
@@ -147,13 +151,12 @@ def relatorios_avancados():
 
 
 # ==========================================================
-# 📄 2 — EXPORTAÇÃO CSV / XLSX
+# 📄 EXPORTAÇÃO — Ajustada e compatível
 # ==========================================================
 @relatorios_bp.route('/exportar')
 @login_required
 def exportar_relatorios():
-    """Exporta CSV ou XLSX com base nos dados filtrados."""
-    
+
     dados = session.get('dados_relatorio', [])
     if not dados:
         flash("Nenhum dado disponível para exportação.", "warning")
