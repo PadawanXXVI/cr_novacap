@@ -3,7 +3,6 @@
 
 {% block content %}
 
-<!-- Carrega o CSS moderno -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/relatorios.css') }}">
 
 <section class="page-section fade-in">
@@ -38,29 +37,15 @@
         </select>
       </div>
 
-      <!-- Tipo de Demanda -->
+      <!-- Demanda -->
       <div class="form-group">
         <label><i class="fas fa-wrench"></i> Tipo de Demanda (Serviço)</label>
         <select name="servico">
-          <option value="">Todos</option>
+          <option value="">Todas</option>
           {% for d in todas_demandas %}
             <option value="{{ d.descricao }}"
               {% if request.args.get('servico') == d.descricao %}selected{% endif %}>
               {{ d.descricao }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Diretoria -->
-      <div class="form-group">
-        <label><i class="fas fa-building"></i> Diretoria de Destino</label>
-        <select name="diretoria">
-          <option value="">Todas</option>
-          {% for d in diretorias %}
-            <option value="{{ d }}"
-              {% if request.args.get('diretoria') == d %}selected{% endif %}>
-              {{ d }}
             </option>
           {% endfor %}
         </select>
@@ -80,13 +65,41 @@
         </select>
       </div>
 
-      <!-- Data Inicial -->
+      <!-- Diretoria -->
+      <div class="form-group">
+        <label><i class="fas fa-building"></i> Diretoria</label>
+        <select name="diretoria">
+          <option value="">Todas</option>
+          {% for d in todas_diretorias %}
+            <option value="{{ d.descricao_exibicao }}"
+              {% if request.args.get('diretoria') == d.descricao_exibicao %}selected{% endif %}>
+              {{ d.descricao_exibicao }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Departamento -->
+      <div class="form-group">
+        <label><i class="fas fa-sitemap"></i> Departamento</label>
+        <select name="departamento">
+          <option value="">Todos</option>
+          {% for dep in todos_departamentos %}
+            <option value="{{ dep.nome }}"
+              {% if request.args.get('departamento') == dep.nome %}selected{% endif %}>
+              {{ dep.nome }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Data Início -->
       <div class="form-group">
         <label><i class="fas fa-calendar-plus"></i> Data Início</label>
         <input type="date" name="inicio" value="{{ request.args.get('inicio', '') }}">
       </div>
 
-      <!-- Data Final -->
+      <!-- Data Fim -->
       <div class="form-group">
         <label><i class="fas fa-calendar-alt"></i> Data Fim</label>
         <input type="date" name="fim" value="{{ request.args.get('fim', '') }}">
@@ -130,11 +143,12 @@
   <div id="grafico_status"></div>
   <div id="grafico_ra"></div>
   <div id="grafico_diretoria"></div>
+  <div id="grafico_departamento"></div>
 
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
   <script>
-    const dados = `{{ session.get('dados_relatorio', []) | tojson }}`;
+    const dados = JSON.parse('{{ session.get("dados_relatorio", []) | tojson | safe }}');
 
     function gerarGrafico(id, titulo, campo) {
       if (!dados || dados.length === 0) return;
@@ -156,9 +170,10 @@
       });
     }
 
-    gerarGrafico("grafico_status", "Distribuição por Status Atual", "Status");
-    gerarGrafico("grafico_ra", "Processos por RA de Origem", "RA");
+    gerarGrafico("grafico_status", "Distribuição por Status", "Status");
+    gerarGrafico("grafico_ra", "Distribuição por RA", "RA");
     gerarGrafico("grafico_diretoria", "Distribuição por Diretoria", "Diretoria");
+    gerarGrafico("grafico_departamento", "Distribuição por Departamento", "Departamento");
   </script>
 
   <!-- 📄 TABELA -->
@@ -182,6 +197,7 @@
           <th>RA</th>
           <th>Status</th>
           <th>Diretoria</th>
+          <th>Departamento</th>
           <th>Serviço</th>
           <th>Responsável</th>
           <th>Observação</th>
@@ -189,20 +205,20 @@
       </thead>
 
       <tbody>
-        {% for mov, user, entrada, processo, demanda in resultados %}
+        {% for mov, user, entrada, processo, demanda, departamento, diretoria in resultados %}
         <tr>
           <td>{{ mov.data.strftime("%d/%m/%Y %H:%M") }}</td>
           <td>{{ processo.numero_processo }}</td>
           <td>{{ entrada.ra_origem }}</td>
           <td>{{ mov.novo_status }}</td>
-          <td>{{ processo.diretoria_destino }}</td>
-          <td>{{ demanda.descricao if demanda else '' }}</td>
+          <td>{{ diretoria.descricao_exibicao }}</td>
+          <td>{{ departamento.nome }}</td>
+          <td>{{ demanda.descricao }}</td>
           <td>{{ user.usuario }}</td>
           <td>{{ mov.observacao }}</td>
         </tr>
         {% endfor %}
       </tbody>
-
     </table>
   </div>
 

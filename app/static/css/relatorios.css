@@ -1,6 +1,6 @@
 /* ============================================================
    CR-NOVACAP — Relatórios Avançados
-   Estilos 100% padronizados com consultar_processos.html
+   Estilo moderno padronizado com consultar_processos.html
    ============================================================ */
 
 /* --------- CONTAINER PRINCIPAL --------- */
@@ -19,6 +19,7 @@
     border: 1px solid #e0e6eb;
 }
 
+/* GRID DOS FILTROS — responsivo */
 .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -34,34 +35,35 @@
 }
 
 /* --------- CAMPOS DE INPUT & SELECT --------- */
-input, select {
+input,
+select {
     width: 100%;
-    padding: 0.65rem 0.8rem;
+    padding: 0.65rem 0.85rem;
     border: 1px solid #cfd8dc;
     border-radius: 8px;
     font-size: 0.95rem;
-    background: white;
-    transition: 0.2s ease;
+    background: #ffffff;
+    transition: 0.25s ease;
     appearance: none;
 }
 
 input:focus,
 select:focus {
     border-color: #005CA9;
-    box-shadow: 0 0 0 2px rgba(0,92,169,0.20);
+    box-shadow: 0 0 0 2px rgba(0,92,169,0.25);
     outline: none;
 }
 
-/* Ícone da seta do select */
+/* --------- SELECT — seta moderna --------- */
 select {
     background-image:
-        linear-gradient(45deg, transparent 50%, #777 50%),
-        linear-gradient(135deg, #777 50%, transparent 50%),
-        linear-gradient(to right, #eee, #eee);
+        linear-gradient(45deg, transparent 50%, #555 50%),
+        linear-gradient(135deg, #555 50%, transparent 50%),
+        linear-gradient(to right, #eeeeee, #eeeeee);
     background-position:
-        calc(100% - 20px) calc(1rem + 2px),
-        calc(100% - 15px) calc(1rem + 2px),
-        calc(100% - 2.5rem) 0;
+        calc(100% - 20px) 1.15rem,
+        calc(100% - 15px) 1.15rem,
+        calc(100% - 2.6rem) 0;
     background-size:
         6px 6px,
         6px 6px,
@@ -69,7 +71,7 @@ select {
     background-repeat: no-repeat;
 }
 
-/* Placeholder dos selects */
+/* Placeholder padrão dos selects */
 select option[value=""] {
     color: #777;
 }
@@ -78,65 +80,45 @@ select option[value=""] {
 .button-toolbar {
     display: flex;
     align-items: center;
-    gap: 1rem;
     justify-content: center;
+    gap: 1rem;
     margin-top: 1.5rem;
     flex-wrap: wrap;
 }
 
 .btn {
-    padding: 0.8rem 1.6rem;
+    padding: 0.85rem 1.6rem;
     font-weight: 600;
     border-radius: 8px;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.45rem;
     text-decoration: none;
-    transition: all 0.2s ease-in-out;
-    font-size: 0.95rem;
-    cursor: pointer;
+    transition: 0.25s ease-in-out;
+    font-size: 0.97rem;
 }
 
 /* Botão primário */
 .btn-primary {
     background: linear-gradient(90deg, #004a8f, #007bff);
-    color: white;
+    color: white !important;
     border: none;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
 }
 .btn-primary:hover {
     background: linear-gradient(90deg, #003d7a, #0066e4);
+    transform: translateY(-2px);
 }
 
-/* Botão neutral / outline */
+/* Botão outline cinza */
 .btn-outline-gray {
     border: 2px solid #6c757d;
-    color: #6c757d;
+    color: #6c757d !important;
     background: transparent;
 }
 .btn-outline-gray:hover {
     background: #6c757d;
-    color: white;
-}
-
-/* Botão cinza (limpar) */
-.btn-outline-light {
-    border: 2px solid #b0b0b0;
-    color: #555;
-    background: transparent;
-}
-.btn-outline-light:hover {
-    background: #b0b0b0;
-    color: white;
-}
-
-/* Botão vermelho padrão */
-.btn-danger {
-    background: #dc3545;
-    color: white;
-    border: none;
-}
-.btn-danger:hover {
-    background: #c82333;
+    color: white !important;
 }
 
 /* --------- CARDS DE INDICADORES --------- */
@@ -148,23 +130,23 @@ select option[value=""] {
 }
 
 .info-card {
-    padding: 1.4rem 1.2rem;
+    padding: 1.5rem;
     border-radius: 12px;
-    background: white;
+    background: #ffffff;
     border: 1px solid #dce3e9;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
     text-align: center;
-    transition: 0.2s ease;
+    transition: 0.25s ease;
 }
 
 .info-card:hover {
-    transform: scale(1.02);
+    transform: translateY(-4px);
 }
 
 .info-card h3 {
     font-size: 1rem;
     color: #003c7a;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
 }
 
 .info-value {
@@ -176,22 +158,25 @@ select option[value=""] {
 /* --------- GRÁFICOS --------- */
 #grafico_status,
 #grafico_ra,
-#grafico_diretoria {
-    margin-top: 1.5rem;
-    background: white;
-    border-radius: 10px;
-    padding: 1rem;
+#grafico_diretoria,
+#grafico_departamento {
+    margin-top: 1.7rem;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.2rem;
     border: 1px solid #e0e0e0;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
 }
 
-/* --------- TABELA DE RESULTADOS --------- */
+/* --------- EXPORTAÇÃO --------- */
 .export-buttons {
     display: flex;
     gap: 0.8rem;
-    margin: 1rem 0;
+    margin: 1.5rem 0 0.8rem;
     flex-wrap: wrap;
 }
 
+/* --------- ÁREA DA TABELA --------- */
 .table-area {
     margin-top: 2rem;
 }
@@ -200,10 +185,12 @@ table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
+    background: white;
 }
 
-th, td {
-    padding: 0.7rem 0.9rem;
+th,
+td {
+    padding: 0.75rem 1rem;
     border: 1px solid #dce3e9;
 }
 
@@ -214,13 +201,13 @@ th {
     font-size: 0.92rem;
     position: sticky;
     top: 0;
-    z-index: 5;
+    z-index: 3;
 }
 
 tr:nth-child(even) {
-    background: #f8f9fa;
+    background: #f6f9fb;
 }
 
 tr:hover {
-    background: #eef5ff;
+    background: #ecf4ff;
 }
