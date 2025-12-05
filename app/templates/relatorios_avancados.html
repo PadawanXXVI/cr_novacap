@@ -13,59 +13,23 @@
       <i class="fas fa-chart-line"></i> Relatórios Avançados
     </h1>
     <p style="color:#555; font-size:1.05rem; max-width:800px; margin:0.6rem auto;">
-      Utilize os filtros abaixo para gerar análises detalhadas.  
-      Tabelas e gráficos refletem exatamente os filtros selecionados.
+      Utilize os filtros abaixo para gerar análises detalhadas.
+      Os resultados, totais e gráficos refletem exatamente a combinação de filtros aplicada.
     </p>
   </header>
 
   <!-- 🔍 FILTROS -->
-  <form method="GET" action="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="card-form">
+  <form method="GET"
+        action="{{ url_for('relatorios_bp.relatorios_avancados') }}"
+        class="card-form">
+
+    <div class="intro-filtros">
+      Os filtros podem ser usados isoladamente ou em conjunto, sem ordem obrigatória.
+    </div>
 
     <div class="form-grid">
 
-      <!-- RA -->
-      <div class="form-group">
-        <label><i class="fas fa-map-marker-alt"></i> Região Administrativa</label>
-        <select name="ra">
-          <option value="">Todas</option>
-          {% for r in todas_ras %}
-            <option value="{{ r.descricao_ra }}"
-              {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>
-              {{ r.descricao_ra }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Demanda -->
-      <div class="form-group">
-        <label><i class="fas fa-wrench"></i> Tipo de Demanda (Serviço)</label>
-        <select name="servico">
-          <option value="">Todas</option>
-          {% for d in todas_demandas %}
-            <option value="{{ d.descricao }}"
-              {% if request.args.get('servico') == d.descricao %}selected{% endif %}>
-              {{ d.descricao }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Status -->
-      <div class="form-group">
-        <label><i class="fas fa-flag"></i> Status Atual</label>
-        <select name="status">
-          <option value="">Todos</option>
-          {% for s in todos_status %}
-            <option value="{{ s.descricao }}"
-              {% if request.args.get('status') == s.descricao %}selected{% endif %}>
-              {{ s.descricao }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Diretoria -->
+      <!-- 1. Diretoria -->
       <div class="form-group">
         <label><i class="fas fa-building"></i> Diretoria</label>
         <select name="diretoria">
@@ -79,7 +43,7 @@
         </select>
       </div>
 
-      <!-- Departamento -->
+      <!-- 2. Departamento -->
       <div class="form-group">
         <label><i class="fas fa-sitemap"></i> Departamento</label>
         <select name="departamento">
@@ -93,13 +57,55 @@
         </select>
       </div>
 
-      <!-- Data Início -->
+      <!-- 3. Demanda / Serviço -->
+      <div class="form-group">
+        <label><i class="fas fa-wrench"></i> Tipo de Demanda (Serviço)</label>
+        <select name="servico">
+          <option value="">Todas</option>
+          {% for d in todas_demandas %}
+            <option value="{{ d.descricao }}"
+              {% if request.args.get('servico') == d.descricao %}selected{% endif %}>
+              {{ d.descricao }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- 4. Região Administrativa -->
+      <div class="form-group">
+        <label><i class="fas fa-map-marker-alt"></i> Região Administrativa</label>
+        <select name="ra">
+          <option value="">Todas</option>
+          {% for r in todas_ras %}
+            <option value="{{ r.descricao_ra }}"
+              {% if request.args.get('ra') == r.descricao_ra %}selected{% endif %}>
+              {{ r.descricao_ra }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- 5. Status Atual -->
+      <div class="form-group">
+        <label><i class="fas fa-flag"></i> Status Atual</label>
+        <select name="status">
+          <option value="">Todos</option>
+          {% for s in todos_status %}
+            <option value="{{ s.descricao }}"
+              {% if request.args.get('status') == s.descricao %}selected{% endif %}>
+              {{ s.descricao }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- 6. Data Início -->
       <div class="form-group">
         <label><i class="fas fa-calendar-plus"></i> Data Início</label>
         <input type="date" name="inicio" value="{{ request.args.get('inicio', '') }}">
       </div>
 
-      <!-- Data Fim -->
+      <!-- 7. Data Fim -->
       <div class="form-group">
         <label><i class="fas fa-calendar-alt"></i> Data Fim</label>
         <input type="date" name="fim" value="{{ request.args.get('fim', '') }}">
@@ -109,8 +115,12 @@
 
     <!-- Botões -->
     <div class="button-toolbar">
-      <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Aplicar Filtros</button>
-      <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}" class="btn btn-outline-gray">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-filter"></i> Aplicar Filtros
+      </button>
+
+      <a href="{{ url_for('relatorios_bp.relatorios_avancados') }}"
+         class="btn btn-outline-gray">
         <i class="fas fa-eraser"></i> Limpar
       </a>
     </div>
@@ -138,20 +148,35 @@
   </div>
 
   <!-- 📈 GRÁFICOS -->
-  <h2 style="color:#003c7a; margin-top:2rem;">Gráficos</h2>
+  <h2 class="section-title-graficos">
+    <i class="fas fa-chart-bar"></i> Gráficos
+  </h2>
 
-  <div id="grafico_status"></div>
-  <div id="grafico_ra"></div>
-  <div id="grafico_diretoria"></div>
-  <div id="grafico_departamento"></div>
+  <div class="graficos-grid">
+    <div id="grafico_status" class="grafico-card"></div>
+    <div id="grafico_ra" class="grafico-card"></div>
+    <div id="grafico_diretoria" class="grafico-card"></div>
+    <div id="grafico_departamento" class="grafico-card"></div>
+  </div>
 
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
   <script>
-    const dados = JSON.parse('{{ session.get("dados_relatorio", []) | tojson | safe }}');
+    // Dados do relatório enviados pela rota (DataFrame -> dict -> JSON)
+    const dados = JSON.parse {{ session.get('dados_relatorio', []) | tojson | safe }};
 
-    function gerarGrafico(id, titulo, campo) {
-      if (!dados || dados.length === 0) return;
+    function renderMensagemVazia(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.innerHTML = '<p class="grafico-vazio">Nenhum dado para exibir com os filtros selecionados.</p>';
+      }
+    }
+
+    function gerarGraficoBarra(id, titulo, campo, topN = null) {
+      if (!dados || !dados.length) {
+        renderMensagemVazia(id);
+        return;
+      }
 
       const contagem = {};
       dados.forEach(item => {
@@ -159,31 +184,66 @@
         contagem[chave] = (contagem[chave] || 0) + 1;
       });
 
+      let pares = Object.keys(contagem).map(k => ({ label: k, valor: contagem[k] }));
+
+      // Ordena do maior para o menor
+      pares.sort((a, b) => b.valor - a.valor);
+
+      // Limita ao topN (ex.: top 10 RAs)
+      if (topN && pares.length > topN) {
+        pares = pares.slice(0, topN);
+      }
+
+      const labels = pares.map(p => p.label);
+      const valores = pares.map(p => p.valor);
+
+      if (!labels.length) {
+        renderMensagemVazia(id);
+        return;
+      }
+
       Plotly.newPlot(id, [{
-        x: Object.keys(contagem),
-        y: Object.values(contagem),
+        x: labels,
+        y: valores,
         type: 'bar'
       }], {
         title: titulo,
-        xaxis: { automargin: true },
-        margin: { t: 40, b: 120 }
+        xaxis: {
+          automargin: true,
+          tickangle: -30
+        },
+        yaxis: { title: 'Qtd. Processos' },
+        margin: { t: 50, b: 120, l: 60, r: 20 }
+      }, {
+        responsive: true
       });
     }
 
-    gerarGrafico("grafico_status", "Distribuição por Status", "Status");
-    gerarGrafico("grafico_ra", "Distribuição por RA", "RA");
-    gerarGrafico("grafico_diretoria", "Distribuição por Diretoria", "Diretoria");
-    gerarGrafico("grafico_departamento", "Distribuição por Departamento", "Departamento");
+    // Status de todos os registros filtrados
+    gerarGraficoBarra("grafico_status", "Distribuição por Status", "Status");
+
+    // Top 10 RAs (ou menos, se tiver menos de 10)
+    gerarGraficoBarra("grafico_ra", "Top RAs por quantidade de processos", "RA", 10);
+
+    // Diretoria — ideal quando se filtra só RA, Status ou período
+    gerarGraficoBarra("grafico_diretoria", "Distribuição por Diretoria", "Diretoria");
+
+    // Departamentos dentro das diretorias
+    gerarGraficoBarra("grafico_departamento", "Distribuição por Departamento", "Departamento");
   </script>
 
   <!-- 📄 TABELA -->
-  <h2 style="color:#003c7a; margin-top:2rem;">Tabela de Resultados</h2>
+  <h2 class="section-title-tabela">
+    <i class="fas fa-table"></i> Tabela de Resultados
+  </h2>
 
   <div class="export-buttons">
-    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}" class="btn btn-outline-blue">
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='csv') }}"
+       class="btn btn-outline-blue">
       <i class="fas fa-file-csv"></i> CSV
     </a>
-    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}" class="btn btn-outline-blue">
+    <a href="{{ url_for('relatorios_bp.exportar_relatorios', formato='xlsx') }}"
+       class="btn btn-outline-blue">
       <i class="fas fa-file-excel"></i> XLSX
     </a>
   </div>
