@@ -30,7 +30,7 @@ echo.
 :: -------------------------------------------------------
 :: 🔍 2. Testar conexão com o banco remoto (10.115.14.61)
 :: -------------------------------------------------------
-set DB_HOST=192.168.15.113
+set DB_HOST=10.115.14.61
 echo Verificando acesso ao banco de dados em %DB_HOST% ...
 ping -n 1 %DB_HOST% >nul
 
