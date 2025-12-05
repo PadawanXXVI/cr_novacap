@@ -19,7 +19,7 @@ from app.models.modelos import (
     Status,
     RegiaoAdministrativa,
     Diretoria,
-    Departamento          # 🔥 IMPORTANTE: antes estava faltando!
+    Departamento
 )
 
 from app.relatorios import relatorios_bp
@@ -33,7 +33,7 @@ from app.relatorios import relatorios_bp
 def relatorios_avancados():
 
     # ---------------------------------------------
-    # LISTAS PARA OS SELECTS
+    # LISTAS PARA SELECTS DO HTML
     # ---------------------------------------------
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
@@ -42,7 +42,7 @@ def relatorios_avancados():
     todos_departamentos = Departamento.query.order_by(Departamento.nome).all()
 
     # ---------------------------------------------
-    # FILTROS RECEBIDOS DO HTML
+    # FILTROS DO HTML
     # ---------------------------------------------
     status_sel = request.args.get("status")
     ra_sel = request.args.get("ra")
@@ -53,7 +53,7 @@ def relatorios_avancados():
     fim = request.args.get("fim")
 
     # ---------------------------------------------
-    # QUERY BASE (JOIN COMPLETO)
+    # QUERY BASE (JOIN COMPLETO ENTRE AS TABELAS)
     # ---------------------------------------------
     query = (
         db.session.query(
@@ -77,37 +77,37 @@ def relatorios_avancados():
     # APLICAÇÃO INTELIGENTE DOS FILTROS
     # ---------------------------------------------
 
-    # 1) Diretoria
+    # Filtro 1 — Diretoria
     if diretoria_sel:
         query = query.filter(Diretoria.descricao_exibicao == diretoria_sel)
 
-    # 2) Departamento
+    # Filtro 2 — Departamento
     if departamento_sel:
         query = query.filter(Departamento.nome == departamento_sel)
 
-    # 3) Demanda
+    # Filtro 3 — Demanda
     if demanda_sel:
         query = query.filter(Demanda.descricao == demanda_sel)
 
-    # 4) Região Administrativa
+    # Filtro 4 — Região Administrativa
     if ra_sel:
         query = query.filter(EntradaProcesso.ra_origem == ra_sel)
 
-    # 5) Status
+    # Filtro 5 — Status
     if status_sel:
         query = query.filter(Movimentacao.novo_status == status_sel)
 
-    # 6) Intervalo de Datas
+    # Filtro 6 — Datas
     if inicio and fim:
         try:
             dt_inicio = datetime.strptime(inicio, "%Y-%m-%d")
             dt_fim = datetime.strptime(fim, "%Y-%m-%d")
             query = query.filter(Movimentacao.data.between(dt_inicio, dt_fim))
-        except:
+        except ValueError:
             flash("Formato de data inválido. Use AAAA-MM-DD.", "warning")
 
     # ---------------------------------------------
-    # EXECUTA CONSULTA
+    # EXECUTA QUERY
     # ---------------------------------------------
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
@@ -119,6 +119,7 @@ def relatorios_avancados():
     demandas_distintas = set()
 
     for mov, user, entrada, processo, demanda, departamento, diretoria in resultados:
+
         dados.append({
             "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
             "Número do Processo": processo.numero_processo,
@@ -143,7 +144,7 @@ def relatorios_avancados():
     total_demandas = len(demandas_distintas)
 
     # ---------------------------------------------
-    # RENDERIZA TEMPLATE
+    # RENDERIZA HTML
     # ---------------------------------------------
     return render_template(
         "relatorios_avancados.html",
@@ -157,3 +158,42 @@ def relatorios_avancados():
         total_ras=total_ras,
         total_demandas=total_demandas
     )
+
+
+# ==========================================================
+# 📄 EXPORTAÇÃO CSV / XLSX — TOTALMENTE FUNCIONAL
+# ==========================================================
+@relatorios_bp.route('/exportar')
+@login_required
+def exportar_relatorios():
+
+    dados = session.get("dados_relatorio", [])
+
+    if not dados:
+        flash("Nenhum dado disponível para exportação.", "warning")
+        return redirect(url_for("relatorios_bp.relatorios_avancados"))
+
+    df = pd.DataFrame(dados)
+    formato = request.args.get("formato", "csv").lower()
+    nome = f"Relatorio_Avancado_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+    # -------- XLSX --------
+    if formato == "xlsx":
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            df.to_excel(writer, index=False, sheet_name="Relatório")
+        output.seek(0)
+
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name=f"{nome}.xlsx",
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+    # -------- CSV --------
+    csv = df.to_csv(index=False, sep=";", encoding="utf-8-sig")
+    response = make_response(csv)
+    response.headers["Content-Disposition"] = f"attachment; filename={nome}.csv"
+    response.headers["Content-Type"] = "text/csv"
+    return response
