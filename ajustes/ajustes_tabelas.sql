@@ -222,7 +222,7 @@ SELECT
 FROM diretorias
 ORDER BY ordem_exibicao;
 
-SELECT * FROM departamentos;
+SELECT * FROM regioes_administrativas;
 
 INSERT INTO departamentos (nome, id_diretoria)
 SELECT x.nome, d.id_diretoria
@@ -240,3 +240,79 @@ JOIN diretorias d
 LEFT JOIN departamentos dp
   ON dp.nome = x.nome
 WHERE dp.id_departamento IS NULL;
+
+select * from status;
+
+USE cr_novacap;
+
+/* 0) Snapshot rápido (antes) */
+SELECT id_status, descricao, ordem_exibicao, finaliza_processo
+FROM status
+ORDER BY id_status;
+
+SELECT COUNT(*) AS total_status FROM status;
+
+/* 1) Garantir consistência mínima (evitar NULL em flags) */
+UPDATE status
+SET finaliza_processo = 0
+WHERE finaliza_processo IS NULL;
+
+/* 2) Inserir NOVOS STATUS (somente se não existirem) */
+START TRANSACTION;
+
+-- 2.1) Improcedente – tramitação via SCTB
+INSERT INTO status (descricao, ordem_exibicao, finaliza_processo)
+SELECT 'Improcedente – tramitação via SCTB', 0, 0
+WHERE NOT EXISTS (
+  SELECT 1 FROM status WHERE descricao = 'Improcedente – tramitação via SCTB'
+);
+
+-- 2.2) Devolvido à RA de origem – parceria (fornecimento de recursos pela NOVACAP)
+INSERT INTO status (descricao, ordem_exibicao, finaliza_processo)
+SELECT 'Devolvido à RA de origem – parceria (fornecimento de recursos pela NOVACAP)', 0, 0
+WHERE NOT EXISTS (
+  SELECT 1 FROM status
+  WHERE descricao = 'Devolvido à RA de origem – parceria (fornecimento de recursos pela NOVACAP)'
+);
+
+-- 2.3) Devolvido à RA de origem – solicitação de fonte orçamentária
+INSERT INTO status (descricao, ordem_exibicao, finaliza_processo)
+SELECT 'Devolvido à RA de origem – solicitação de fonte orçamentária', 0, 0
+WHERE NOT EXISTS (
+  SELECT 1 FROM status
+  WHERE descricao = 'Devolvido à RA de origem – solicitação de fonte orçamentária'
+);
+
+COMMIT;
+
+/* 3) Checar duplicidades por descricao (precisa voltar vazio) */
+SELECT descricao, COUNT(*) AS qtd
+FROM status
+GROUP BY descricao
+HAVING COUNT(*) > 1;
+
+/* 4) (OPCIONAL, RECOMENDADO) Blindar contra duplicidade futura
+      Só execute se o SELECT acima vier vazio.
+*/
+-- ALTER TABLE status
+-- ADD UNIQUE KEY uq_status_descricao (descricao);
+
+/* 5) Recalcular ordem_exibicao em ORDEM ALFABÉTICA (A-Z) pela descricao
+      Mantém IDs intactos; só define a ordem de exibição.
+*/
+WITH ranked AS (
+  SELECT
+    id_status,
+    ROW_NUMBER() OVER (ORDER BY descricao ASC) AS nova_ordem
+  FROM status
+)
+UPDATE status s
+JOIN ranked r ON r.id_status = s.id_status
+SET s.ordem_exibicao = r.nova_ordem;
+
+/* 6) Resultado final (depois) */
+SELECT ordem_exibicao, id_status, descricao, finaliza_processo
+FROM status
+ORDER BY ordem_exibicao;
+
+SELECT COUNT(*) AS total_status_final FROM status;
