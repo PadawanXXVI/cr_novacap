@@ -282,9 +282,9 @@ WHERE finaliza_processo IS NULL;
 START TRANSACTION;
 
 INSERT INTO status (descricao, ordem_exibicao, finaliza_processo)
-SELECT 'Improcedente – tramitação via SCTB', 0, 0
+SELECT 'Improcedente – tramitação via AppPavimentos', 0, 0
 WHERE NOT EXISTS (
-  SELECT 1 FROM status WHERE descricao = 'Improcedente – tramitação via SCTB'
+  SELECT 1 FROM status WHERE descricao = 'Improcedente – tramitação via AppPavimentos'
 );
 
 INSERT INTO status (descricao, ordem_exibicao, finaliza_processo)
