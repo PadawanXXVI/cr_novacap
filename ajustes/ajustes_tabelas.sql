@@ -1,19 +1,38 @@
-use cr_novacap;
+USE cr_novacap;
 
-select * from demandas;
+-- =========================================================
+-- MIGRACAO DB (SOMENTE BANCO) - demandas / diretorias / departamentos / status
+-- =========================================================
 
+/* =========================================================
+   0) CHECKS RAPIDOS (ANTES)
+========================================================= */
+SELECT DATABASE() AS db_atual;
+
+SELECT COUNT(*) AS total_demandas      FROM demandas;
+SELECT COUNT(*) AS total_diretorias    FROM diretorias;
+SELECT COUNT(*) AS total_departamentos FROM departamentos;
+SELECT COUNT(*) AS total_status        FROM status;
+
+-- =========================================================
+-- 1) DEMANDAS
+-- =========================================================
+
+/* 1.1) Ajuste estrutural */
 ALTER TABLE demandas
   ADD COLUMN ativo TINYINT(1) NOT NULL DEFAULT 1,
   ADD COLUMN versao_catalogo VARCHAR(10) NOT NULL DEFAULT 'V1',
   ADD COLUMN substitui_id_demanda INT NULL;
-  
-  DESCRIBE demandas;
-  
-  SELECT versao_catalogo, ativo, COUNT(*) AS qtd
+
+/* 1.2) Checagens */
+DESCRIBE demandas;
+
+SELECT versao_catalogo, ativo, COUNT(*) AS qtd
 FROM demandas
 GROUP BY versao_catalogo, ativo
 ORDER BY versao_catalogo, ativo;
 
+/* 1.3) Inserir catalogo V2 sem duplicar */
 START TRANSACTION;
 
 INSERT INTO demandas (descricao, ativo, versao_catalogo)
@@ -138,7 +157,7 @@ FROM (
     UNION ALL SELECT 'Rua, Via ou Rodovia (Pista) - Recuperação / Melhorias'
     UNION ALL SELECT 'Rua, Via ou Rodovia (Pista) - Roçagem'
     UNION ALL SELECT 'Rua, Via ou Rodovia (Pista) - Sinalização Horizontal'
-    
+
     UNION ALL SELECT 'Tapa-Buraco - Revitalização'
 ) AS v
 LEFT JOIN demandas d
@@ -148,6 +167,7 @@ WHERE d.id_demanda IS NULL;
 
 COMMIT;
 
+/* 1.4) Validacoes pos-insert */
 SELECT versao_catalogo, ativo, COUNT(*) AS qtd
 FROM demandas
 GROUP BY versao_catalogo, ativo
@@ -159,51 +179,47 @@ WHERE versao_catalogo = 'V2'
 GROUP BY descricao
 HAVING COUNT(*) > 1;
 
+-- =========================================================
+-- 2) DIRETORIAS
+-- =========================================================
+
+/* 2.1) Ajuste estrutural */
 ALTER TABLE diretorias
   ADD COLUMN tipo VARCHAR(12) NOT NULL DEFAULT 'INTERNA',
   ADD COLUMN ativo TINYINT(1) NOT NULL DEFAULT 1,
   ADD COLUMN ordem_exibicao INT NOT NULL DEFAULT 0;
-  
-  SELECT * FROM diretorias;
-  
-START TRANSACTION;
 
-SHOW CREATE TABLE diretorias;
-SHOW FULL COLUMNS FROM diretorias;
-
-SELECT * FROM diretorias ORDER BY id_diretoria;
-
+/* 2.2) Normalizar flags e tipos */
 UPDATE diretorias
 SET ativo = 1
 WHERE ativo IS NULL;
 
--- Diretorias internas
 UPDATE diretorias
 SET tipo = 'INTERNA'
 WHERE sigla IN ('DC','DO','DP','DS','DJ');
 
--- Externa (não tramita)
 UPDATE diretorias
 SET tipo = 'EXTERNA'
 WHERE sigla = 'EXT';
 
--- Sistemas
 UPDATE diretorias
 SET tipo = 'SISTEMA'
 WHERE sigla IN ('SGIA','SCTB');
 
+/* 2.3) Garantir registros ausentes */
+START TRANSACTION;
+
 INSERT INTO diretorias (nome_completo, sigla, tipo, ativo, ordem_exibicao)
 SELECT 'Diretoria Jurídica', 'DJ', 'INTERNA', 1, 5
-WHERE NOT EXISTS (
-    SELECT 1 FROM diretorias WHERE sigla = 'DJ'
-);
+WHERE NOT EXISTS (SELECT 1 FROM diretorias WHERE sigla = 'DJ');
 
 INSERT INTO diretorias (nome_completo, sigla, tipo, ativo, ordem_exibicao)
 SELECT 'Tramita via SCTB', 'SCTB', 'SISTEMA', 1, 91
-WHERE NOT EXISTS (
-    SELECT 1 FROM diretorias WHERE sigla = 'SCTB'
-);
+WHERE NOT EXISTS (SELECT 1 FROM diretorias WHERE sigla = 'SCTB');
 
+COMMIT;
+
+/* 2.4) Ordem de exibicao (conforme seu padrao atual) */
 UPDATE diretorias SET ordem_exibicao = 1  WHERE sigla = 'DC';
 UPDATE diretorias SET ordem_exibicao = 2  WHERE sigla = 'DO';
 UPDATE diretorias SET ordem_exibicao = 3  WHERE sigla = 'DP';
@@ -214,26 +230,24 @@ UPDATE diretorias SET ordem_exibicao = 90 WHERE sigla = 'SGIA';
 UPDATE diretorias SET ordem_exibicao = 91 WHERE sigla = 'SCTB';
 UPDATE diretorias SET ordem_exibicao = 99 WHERE sigla = 'EXT';
 
-SELECT
-  ordem_exibicao,
-  sigla,
-  descricao_exibicao,
-  tipo
+/* 2.5) Validacao */
+SELECT ordem_exibicao, sigla, descricao_exibicao, tipo
 FROM diretorias
 ORDER BY ordem_exibicao;
 
-SELECT * FROM regioes_administrativas;
+-- =========================================================
+-- 3) DEPARTAMENTOS (inserir DJ)
+-- =========================================================
+
+START TRANSACTION;
 
 INSERT INTO departamentos (nome, id_diretoria)
 SELECT x.nome, d.id_diretoria
 FROM (
     SELECT 'Departamento Jurídico Civil (DJC)'        AS nome
-    UNION ALL
-    SELECT 'Departamento Jurídico Consultivo (DCO)'
-    UNION ALL
-    SELECT 'Departamento Jurídico Preventivo (DJP)'
-    UNION ALL
-    SELECT 'Departamento Jurídico Trabalhista (DJT)'
+    UNION ALL SELECT 'Departamento Jurídico Consultivo (DCO)'
+    UNION ALL SELECT 'Departamento Jurídico Preventivo (DJP)'
+    UNION ALL SELECT 'Departamento Jurídico Trabalhista (DJT)'
 ) x
 JOIN diretorias d
   ON d.sigla = 'DJ'
@@ -241,33 +255,38 @@ LEFT JOIN departamentos dp
   ON dp.nome = x.nome
 WHERE dp.id_departamento IS NULL;
 
-select * from status;
+COMMIT;
 
-USE cr_novacap;
+/* 3.1) Validacao DJ */
+SELECT dp.id_departamento, dp.nome, dp.id_diretoria
+FROM departamentos dp
+JOIN diretorias d ON d.id_diretoria = dp.id_diretoria
+WHERE d.sigla = 'DJ'
+ORDER BY dp.nome;
 
-/* 0) Snapshot rápido (antes) */
+-- =========================================================
+-- 4) STATUS
+-- =========================================================
+
+/* 4.0 Snapshot (antes) */
 SELECT id_status, descricao, ordem_exibicao, finaliza_processo
 FROM status
 ORDER BY id_status;
 
-SELECT COUNT(*) AS total_status FROM status;
-
-/* 1) Garantir consistência mínima (evitar NULL em flags) */
+/* 4.1) Garantir consistencia minima */
 UPDATE status
 SET finaliza_processo = 0
 WHERE finaliza_processo IS NULL;
 
-/* 2) Inserir NOVOS STATUS (somente se não existirem) */
+/* 4.2) Inserir novos status (sem duplicar) */
 START TRANSACTION;
 
--- 2.1) Improcedente – tramitação via SCTB
 INSERT INTO status (descricao, ordem_exibicao, finaliza_processo)
 SELECT 'Improcedente – tramitação via SCTB', 0, 0
 WHERE NOT EXISTS (
   SELECT 1 FROM status WHERE descricao = 'Improcedente – tramitação via SCTB'
 );
 
--- 2.2) Devolvido à RA de origem – parceria (fornecimento de recursos pela NOVACAP)
 INSERT INTO status (descricao, ordem_exibicao, finaliza_processo)
 SELECT 'Devolvido à RA de origem – parceria (fornecimento de recursos pela NOVACAP)', 0, 0
 WHERE NOT EXISTS (
@@ -275,7 +294,6 @@ WHERE NOT EXISTS (
   WHERE descricao = 'Devolvido à RA de origem – parceria (fornecimento de recursos pela NOVACAP)'
 );
 
--- 2.3) Devolvido à RA de origem – solicitação de fonte orçamentária
 INSERT INTO status (descricao, ordem_exibicao, finaliza_processo)
 SELECT 'Devolvido à RA de origem – solicitação de fonte orçamentária', 0, 0
 WHERE NOT EXISTS (
@@ -285,21 +303,16 @@ WHERE NOT EXISTS (
 
 COMMIT;
 
-/* 3) Checar duplicidades por descricao (precisa voltar vazio) */
+/* 4.3) Checar duplicidades (deve vir vazio) */
 SELECT descricao, COUNT(*) AS qtd
 FROM status
 GROUP BY descricao
 HAVING COUNT(*) > 1;
 
-/* 4) (OPCIONAL, RECOMENDADO) Blindar contra duplicidade futura
-      Só execute se o SELECT acima vier vazio.
-*/
--- ALTER TABLE status
--- ADD UNIQUE KEY uq_status_descricao (descricao);
+/* 4.4) (Opcional) Ver indices (NAO criar outro UNIQUE se ja existir) */
+SHOW INDEX FROM status;
 
-/* 5) Recalcular ordem_exibicao em ORDEM ALFABÉTICA (A-Z) pela descricao
-      Mantém IDs intactos; só define a ordem de exibição.
-*/
+/* 4.5) Recalcular ordem_exibicao em ordem alfabetica */
 WITH ranked AS (
   SELECT
     id_status,
@@ -310,7 +323,7 @@ UPDATE status s
 JOIN ranked r ON r.id_status = s.id_status
 SET s.ordem_exibicao = r.nova_ordem;
 
-/* 6) Resultado final (depois) */
+/* 4.6) Resultado final */
 SELECT ordem_exibicao, id_status, descricao, finaliza_processo
 FROM status
 ORDER BY ordem_exibicao;
