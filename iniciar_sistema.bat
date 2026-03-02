@@ -13,7 +13,7 @@ cls
 cd /d %~dp0
 
 echo =====================================================
-echo      INICIANDO O SISTEMA CR-NOVACAP
+echo      INICIANDO O SISTEMA CR DA NOVACAP
 echo =====================================================
 
 :: -------------------------------------------------------
@@ -24,13 +24,13 @@ for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /C:"IPv4"') do (
 )
 set IP_LOCAL=%IP_LOCAL: =%
 
-echo IP da máquina atual: %IP_LOCAL%
+echo IP da maquina atual: %IP_LOCAL%
 echo.
 
 :: -------------------------------------------------------
 :: 🔍 2. Testar conexão com o banco remoto (10.115.14.61)
 :: -------------------------------------------------------
-set DB_HOST=192.168.15.113
+set DB_HOST=10.115.14.61
 echo Verificando acesso ao banco de dados em %DB_HOST% ...
 ping -n 1 %DB_HOST% >nul
 
@@ -43,7 +43,7 @@ if errorlevel 1 (
     exit /b
 )
 
-echo Banco acessivel ✓
+echo Banco acessivel
 echo.
 
 :: -------------------------------------------------------
@@ -52,7 +52,7 @@ echo.
 echo Verificando dependencias Python...
 pip install --disable-pip-version-check -r requirements.txt >nul
 
-echo Dependencias OK ✓
+echo Dependencias OK
 echo.
 
 :: -------------------------------------------------------

@@ -31,26 +31,12 @@ from app.relatorios import relatorios_bp
 @relatorios_bp.route('/avancados')
 @login_required
 def relatorios_avancados():
-    """
-    Tela de Relatórios Avançados com:
-      - Filtros inteligentes (Diretoria → Departamento → Demanda)
-      - Tabela de resultados
-      - Cards numéricos
-      - Geração de dados estruturados para gráficos (session)
-    """
-
-    # ---------------------------------------------
-    # LISTAS PARA OS SELECTS
-    # ---------------------------------------------
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
     todas_demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
     todas_diretorias = Diretoria.query.order_by(Diretoria.descricao_exibicao).all()
     todos_departamentos = Departamento.query.order_by(Departamento.nome).all()
 
-    # ---------------------------------------------
-    # FILTROS RECEBIDOS DO HTML
-    # ---------------------------------------------
     status_sel = request.args.get("status")
     ra_sel = request.args.get("ra")
     diretoria_sel = request.args.get("diretoria")
@@ -59,9 +45,6 @@ def relatorios_avancados():
     inicio = request.args.get("inicio")
     fim = request.args.get("fim")
 
-    # ---------------------------------------------
-    # QUERY BASE COM JOINS CORRETOS
-    # ---------------------------------------------
     query = (
         db.session.query(
             Movimentacao,
@@ -72,39 +55,29 @@ def relatorios_avancados():
             Departamento,
             Diretoria
         )
-        .join(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
-        .join(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada)
-        .join(Processo, EntradaProcesso.id_processo == Processo.id_processo)
-        .join(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
-        .join(Departamento, Demanda.id_departamento == Departamento.id_departamento)
-        .join(Diretoria, Departamento.id_diretoria == Diretoria.id_diretoria)
+        .outerjoin(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
+        .outerjoin(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada)
+        .outerjoin(Processo, EntradaProcesso.id_processo == Processo.id_processo)
+        .outerjoin(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
+        .outerjoin(Departamento, Demanda.id_departamento == Departamento.id_departamento)
+        .outerjoin(Diretoria, Departamento.id_diretoria == Diretoria.id_diretoria)
     )
 
-    # ---------------------------------------------
-    # APLICAÇÃO INTELIGENTE DOS FILTROS
-    # ---------------------------------------------
-
-    # Diretoria
     if diretoria_sel:
-        query = query.filter(Diretoria.descricao_exibicao == diretoria_sel)
+        query = query.filter(Diretoria.descricao_exibicao.ilike(f"%{diretoria_sel}%"))  # ILIKE + PARCIAL
 
-    # Departamento
     if departamento_sel:
         query = query.filter(Departamento.nome == departamento_sel)
 
-    # Demanda / Serviço
     if demanda_sel:
         query = query.filter(Demanda.descricao == demanda_sel)
 
-    # Região Administrativa
     if ra_sel:
         query = query.filter(EntradaProcesso.ra_origem == ra_sel)
 
-    # Status
     if status_sel:
         query = query.filter(Movimentacao.novo_status == status_sel)
 
-    # Intervalo de Datas
     if inicio and fim:
         try:
             dt_inicio = datetime.strptime(inicio, "%Y-%m-%d")
@@ -113,48 +86,37 @@ def relatorios_avancados():
         except ValueError:
             flash("Formato de data inválido. Use AAAA-MM-DD.", "warning")
 
-    # ---------------------------------------------
-    # EXECUTA CONSULTA
-    # ---------------------------------------------
     resultados = query.order_by(Movimentacao.data.desc()).all()
 
-    # ---------------------------------------------
-    # MONTA DATAFRAME PARA GRÁFICOS E EXPORTAÇÃO
-    # ---------------------------------------------
     dados = []
     ras_distintas = set()
     demandas_distintas = set()
 
     for mov, user, entrada, processo, demanda, departamento, diretoria in resultados:
-
         dados.append({
-            "Data": mov.data.strftime("%d/%m/%Y %H:%M"),
-            "Número do Processo": processo.numero_processo,
-            "RA": entrada.ra_origem,
-            "Status": mov.novo_status,
-            "Diretoria": diretoria.descricao_exibicao,
-            "Departamento": departamento.nome,
-            "Serviço": demanda.descricao,
-            "Responsável": user.usuario,
-            "Observação": mov.observacao or ""
+            "Data": mov.data.strftime("%d/%m/%Y %H:%M") if mov.data else "—",
+            "Número do Processo": processo.numero_processo if processo else "—",
+            "RA": entrada.ra_origem if entrada else "—",
+            "Status": mov.novo_status if mov else "—",
+            "Diretoria": diretoria.descricao_exibicao if diretoria else "Não informado",
+            "Departamento": departamento.nome if departamento else "Não informado",
+            "Serviço": demanda.descricao if demanda else "—",
+            "Responsável": user.usuario if user else "—",
+            "Observação": mov.observacao if mov else ""
         })
 
-        if entrada.ra_origem:
+        if entrada and entrada.ra_origem:
             ras_distintas.add(entrada.ra_origem)
         if demanda and demanda.descricao:
             demandas_distintas.add(demanda.descricao)
 
     df = pd.DataFrame(dados)
-    session["dados_relatorio"] = df.to_dict(orient="records")
+    dados_relatorio = df.to_dict(orient="records")  # PASSA DIRETO PRO TEMPLATE
 
     total_resultados = len(df)
     total_ras = len(ras_distintas)
     total_demandas = len(demandas_distintas)
 
-    # ---------------------------------------------
-    # MAPA PARA FILTROS INTELIGENTES
-    # Diretoria → Departamento → Demanda
-    # ---------------------------------------------
     demandas_mapeadas = [
         {
             "descricao": d.descricao,
@@ -167,9 +129,22 @@ def relatorios_avancados():
         for d in todas_demandas
     ]
 
-    # ---------------------------------------------
-    # RENDERIZA TEMPLATE
-    # ---------------------------------------------
+    print("\n=== DEBUG RELATÓRIOS AVANÇADOS ===")
+    print(f"URL acessada: {request.url}")
+    print(f"Filtros recebidos: {dict(request.args)}")
+    print(f"Diretoria selecionada (raw): '{diretoria_sel}'")
+    if todas_diretorias:
+        print(f"Exemplo de diretoria no banco: '{todas_diretorias[0].descricao_exibicao}'")
+    print(f"Resultados encontrados na query: {len(resultados)}")
+    print(f"Total registros no DF: {total_resultados}")
+    print(f"Total RAs distintas: {total_ras}")
+    print(f"Total demandas distintas: {total_demandas}")
+    print(f"Itens para gráficos (dados_relatorio): {len(dados_relatorio)}")
+    print(f"Mapa demandas mapeadas: {len(demandas_mapeadas)} entradas")
+    if len(resultados) == 0:
+        print("QUERY RETORNOU 0 - VERIFIQUE JOINS E DADOS")
+    print("==================================\n")
+
     return render_template(
         "relatorios_avancados.html",
         todos_status=todos_status,
@@ -181,7 +156,8 @@ def relatorios_avancados():
         total_resultados=total_resultados,
         total_ras=total_ras,
         total_demandas=total_demandas,
-        demandas_mapeadas=demandas_mapeadas
+        demandas_mapeadas=demandas_mapeadas,
+        dados_relatorio=dados_relatorio
     )
 
 
@@ -191,13 +167,68 @@ def relatorios_avancados():
 @relatorios_bp.route('/exportar')
 @login_required
 def exportar_relatorios():
+    status_sel = request.args.get("status")
+    ra_sel = request.args.get("ra")
+    diretoria_sel = request.args.get("diretoria")
+    departamento_sel = request.args.get("departamento")
+    demanda_sel = request.args.get("servico")
+    inicio = request.args.get("inicio")
+    fim = request.args.get("fim")
 
-    dados = session.get("dados_relatorio", [])
-    if not dados:
-        flash("Nenhum dado disponível para exportação.", "warning")
-        return redirect(url_for("relatorios_bp.relatorios_avancados"))
+    query = (
+        db.session.query(
+            Movimentacao,
+            Usuario,
+            EntradaProcesso,
+            Processo,
+            Demanda,
+            Departamento,
+            Diretoria
+        )
+        .outerjoin(Usuario, Movimentacao.id_usuario == Usuario.id_usuario)
+        .outerjoin(EntradaProcesso, Movimentacao.id_entrada == EntradaProcesso.id_entrada)
+        .outerjoin(Processo, EntradaProcesso.id_processo == Processo.id_processo)
+        .outerjoin(Demanda, EntradaProcesso.id_demanda == Demanda.id_demanda)
+        .outerjoin(Departamento, Demanda.id_departamento == Departamento.id_departamento)
+        .outerjoin(Diretoria, Departamento.id_diretoria == Diretoria.id_diretoria)
+    )
+
+    if diretoria_sel:
+        query = query.filter(Diretoria.descricao_exibicao.ilike(f"%{diretoria_sel}%"))
+    if departamento_sel:
+        query = query.filter(Departamento.nome == departamento_sel)
+    if demanda_sel:
+        query = query.filter(Demanda.descricao == demanda_sel)
+    if ra_sel:
+        query = query.filter(EntradaProcesso.ra_origem == ra_sel)
+    if status_sel:
+        query = query.filter(Movimentacao.novo_status == status_sel)
+    if inicio and fim:
+        try:
+            dt_inicio = datetime.strptime(inicio, "%Y-%m-%d")
+            dt_fim = datetime.strptime(fim, "%Y-%m-%d")
+            query = query.filter(Movimentacao.data.between(dt_inicio, dt_fim))
+        except ValueError:
+            pass
+
+    resultados = query.all()
+
+    dados = []
+    for mov, user, entrada, processo, demanda, departamento, diretoria in resultados:
+        dados.append({
+            "Data": mov.data.strftime("%d/%m/%Y %H:%M") if mov.data else "—",
+            "Número do Processo": processo.numero_processo if processo else "—",
+            "RA": entrada.ra_origem if entrada else "—",
+            "Status": mov.novo_status if mov else "—",
+            "Diretoria": diretoria.descricao_exibicao if diretoria else "Não informado",
+            "Departamento": departamento.nome if departamento else "Não informado",
+            "Serviço": demanda.descricao if demanda else "—",
+            "Responsável": user.usuario if user else "—",
+            "Observação": mov.observacao or ""
+        })
 
     df = pd.DataFrame(dados)
+
     formato = request.args.get("formato", "csv").lower()
     nome = f"Relatorio_Avancado_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
@@ -206,12 +237,7 @@ def exportar_relatorios():
         with pd.ExcelWriter(output, engine="openpyxl") as writer:
             df.to_excel(writer, index=False, sheet_name="Relatório")
         output.seek(0)
-        return send_file(
-            output,
-            as_attachment=True,
-            download_name=f"{nome}.xlsx",
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
+        return send_file(output, as_attachment=True, download_name=f"{nome}.xlsx", mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
     csv = df.to_csv(index=False, sep=";", encoding="utf-8-sig")
     response = make_response(csv)

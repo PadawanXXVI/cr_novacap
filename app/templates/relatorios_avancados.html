@@ -164,12 +164,13 @@
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
   <script>
+  /* eslint-enable */
     (function () {
       // -----------------------------
       // DADOS VINDOS DA ROTA (Jinja → JS)
       // -----------------------------
-      const dados = JSON.parse('{{ session.get("dados_relatorio", []) | tojson | safe }}');
-      const mapaDemandas = JSON.parse('{{ demandas_mapeadas | tojson | safe }}');
+      const dados = {{ dados_relatorio | tojson | safe }} || [];
+      const mapaDemandas = {{ demandas_mapeadas | tojson | safe }} || [];
 
       // -----------------------------
       // FILTROS INTELIGENTES (UX)
@@ -356,6 +357,7 @@
       // Departamentos
       gerarGraficoBarra("grafico_departamento", "Distribuição por Departamento", "Departamento");
     })();
+    /* eslint-enable */
   </script>
 
   <!-- 📄 TABELA -->
