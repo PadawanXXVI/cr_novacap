@@ -22,7 +22,7 @@ from flask_login import login_required
 
 from app.ext import db, csrf
 from app.models.modelos import (
-    Processo, EntradaProcesso, Demanda, TipoDemanda, RegiaoAdministrativa,
+    Processo, EntradaProcesso, Demanda, RegiaoAdministrativa,
     Status, Usuario, Movimentacao, Diretoria
 )
 from app.processos import processos_bp
@@ -44,10 +44,6 @@ def dashboard_processos():
 
     # === Totais Gerais ===
     total_processos = Processo.query.count()
-
-    # === Origem (via EntradaProcesso) ===
-    processos_secre = EntradaProcesso.query.filter_by(tramite_inicial='SECRE').count()
-    processos_cr = EntradaProcesso.query.filter_by(tramite_inicial='CR').count()
 
     # === Diretoria de Destino ===
     processos_dc = Processo.query.filter(Processo.diretoria_destino.like('%Cidades%')).count()
@@ -86,8 +82,6 @@ def dashboard_processos():
         'dashboard_processos.html',
         total_processos=total_processos,
         total_em_atendimento=processos_em_atendimento,
-        processos_secre=processos_secre,
-        processos_cr=processos_cr,
         processos_dc=processos_dc,
         processos_do=processos_do,
         processos_dp=processos_dp,
@@ -142,9 +136,7 @@ def cadastro_processo():
                 data_criacao_ra=data_criacao_ra,
                 data_entrada_novacap=data_entrada_novacap,
                 data_documento=data_documento,
-                tramite_inicial=request.form.get('tramite_inicial'),
                 ra_origem=request.form.get('ra_origem'),
-                id_tipo=int(request.form.get('id_tipo')),
                 id_demanda=int(request.form.get('id_demanda')),
                 usuario_responsavel=int(request.form.get('usuario_responsavel')),
                 status_inicial=request.form.get('status_inicial')
@@ -171,7 +163,6 @@ def cadastro_processo():
             return redirect(url_for('processos_bp.cadastro_processo'))
 
     regioes = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra.asc()).all()
-    tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
     demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
     status = Status.query.order_by(Status.descricao.asc()).all()
     usuarios = Usuario.query.filter_by(aprovado=True, bloqueado=False).order_by(Usuario.usuario.asc()).all()
@@ -180,7 +171,6 @@ def cadastro_processo():
     return render_template(
         'cadastro_processo.html',
         regioes=regioes,
-        tipos=tipos,
         demandas=demandas,
         status=status,
         usuarios=usuarios,
@@ -246,7 +236,6 @@ def consultar_processos():
     status_filtro = request.args.get('status')
     ra = request.args.get('ra')
     diretoria = request.args.get('diretoria')
-    tipo = request.args.get('tipo')
     demanda = request.args.get('demanda')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
@@ -261,8 +250,6 @@ def consultar_processos():
         query = query.filter(EntradaProcesso.ra_origem == ra)
     if diretoria:
         query = query.filter(Processo.diretoria_destino == diretoria)
-    if tipo:
-        query = query.filter(EntradaProcesso.id_tipo == tipo)
     if demanda:
         query = query.filter(EntradaProcesso.id_demanda == demanda)
     if inicio and fim:
@@ -285,14 +272,12 @@ def consultar_processos():
         entrada = EntradaProcesso.query.filter_by(id_processo=p.id_processo).first()
         p.entrada = entrada
         if entrada:
-            entrada.tipo = TipoDemanda.query.get(entrada.id_tipo)
             entrada.demanda = Demanda.query.get(entrada.id_demanda)
             ultima_mov = Movimentacao.query.filter_by(id_entrada=entrada.id_entrada).order_by(Movimentacao.data.desc()).first()
             p.ultima_data = ultima_mov.data if ultima_mov else entrada.data_documento
 
     todas_ras = RegiaoAdministrativa.query.order_by(RegiaoAdministrativa.descricao_ra).all()
     todos_status = Status.query.order_by(Status.ordem_exibicao).all()
-    tipos = TipoDemanda.query.order_by(TipoDemanda.descricao.asc()).all()
     demandas = Demanda.query.order_by(Demanda.descricao.asc()).all()
     diretorias = [d.nome_completo for d in Diretoria.query.order_by(Diretoria.nome_completo.asc()).all()]
 
@@ -301,7 +286,6 @@ def consultar_processos():
         processos=processos,
         todas_ras=todas_ras,
         todos_status=todos_status,
-        tipos=tipos,
         demandas=demandas,
         diretorias=diretorias
     )
@@ -349,9 +333,7 @@ def exportar_processo_pdf(id_processo):
     if entrada:
         entrada_table = [
             ["RA de Origem", entrada.ra_origem or "---"],
-            ["Tramitação Inicial", entrada.tramite_inicial or "---"],
             ["Data de Entrada", entrada.data_entrada_novacap.strftime("%d/%m/%Y") if entrada.data_entrada_novacap else "---"],
-            ["Tipo de Demanda", entrada.tipo.descricao if entrada.tipo else "---"],
             ["Demanda", entrada.demanda.descricao if entrada.demanda else "---"],
         ]
         elements.append(Paragraph("<b>Informações da Entrada</b>", styles['Heading2']))
@@ -420,7 +402,6 @@ def exportar_tramitacoes():
     status = request.args.get('status')
     ra = request.args.get('ra')
     diretoria = request.args.get('diretoria')
-    tipo = request.args.get('tipo')
     demanda = request.args.get('demanda')
     inicio = request.args.get('inicio')
     fim = request.args.get('fim')
@@ -433,8 +414,6 @@ def exportar_tramitacoes():
         query = query.filter(EntradaProcesso.ra_origem == ra)
     if diretoria:
         query = query.filter(Processo.diretoria_destino == diretoria)
-    if tipo:
-        query = query.filter(EntradaProcesso.id_tipo == tipo)
     if demanda:
         query = query.filter(EntradaProcesso.id_demanda == demanda)
     if inicio and fim:

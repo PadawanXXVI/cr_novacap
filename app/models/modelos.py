@@ -177,11 +177,9 @@ class EntradaProcesso(db.Model):
     data_criacao_ra = db.Column(db.Date, nullable=False)
     data_entrada_novacap = db.Column(db.Date, nullable=False)
     data_documento = db.Column(db.Date, nullable=False)
-    tramite_inicial = db.Column(db.String(10), nullable=False)
     ra_origem = db.Column(db.String(100), nullable=False)
 
     id_demanda = db.Column(db.Integer, db.ForeignKey('demandas.id_demanda'), nullable=False)
-    id_tipo = db.Column(db.Integer, db.ForeignKey('tipos_demanda.id_tipo'), nullable=False)
     usuario_responsavel = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
     responsavel = db.relationship("Usuario", foreign_keys=[usuario_responsavel])
     status_inicial = db.Column(db.String(100), db.ForeignKey('status.descricao'), nullable=False)

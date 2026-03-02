@@ -60,18 +60,6 @@
         <input type="date" id="data_entrada_novacap" name="data_entrada_novacap" required>
       </div>
       <div class="form-col">
-        <label for="tramite_inicial"><i class="fas fa-random"></i> Tramitação Inicial</label>
-        <select id="tramite_inicial" name="tramite_inicial" required>
-          <option value="">Selecione</option>
-          <option value="SECRE">SECRE</option>
-          <option value="CR">CR</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Linha 3 -->
-    <div class="form-row">
-      <div class="form-col">
         <label for="id_demanda"><i class="fas fa-list-ul"></i> Demanda</label>
         <select id="id_demanda" name="id_demanda" required>
           <option value="">Selecione</option>
@@ -80,18 +68,9 @@
           {% endfor %}
         </select>
       </div>
-      <div class="form-col">
-        <label for="id_tipo"><i class="fas fa-tag"></i> Tipo de Demanda</label>
-        <select id="id_tipo" name="id_tipo" required>
-          <option value="">Selecione</option>
-          {% for tipo in tipos %}
-            <option value="{{ tipo.id_tipo }}">{{ tipo.descricao }}</option>
-          {% endfor %}
-        </select>
-      </div>
     </div>
 
-    <!-- Linha 4 -->
+    <!-- Linha 3 -->
     <div class="form-row">
       <div class="form-col">
         <label for="data_documento"><i class="fas fa-file-alt"></i> Data do Documento</label>
@@ -108,7 +87,7 @@
       </div>
     </div>
 
-    <!-- Linha 5 -->
+    <!-- Linha 4 -->
     <div class="form-row">
       <div class="form-col">
         <label for="status_inicial"><i class="fas fa-flag"></i> Status Inicial</label>
