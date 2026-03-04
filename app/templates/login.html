@@ -2,7 +2,7 @@
 {% block title %}Login – Central de Relacionamento NOVACAP{% endblock %}
 
 {% block content %}
-<section class="auth-container fade-in" 
+<section class="auth-container fade-in"
          style="display:flex;flex-direction:column;align-items:center;justify-content:center;
                 min-height:calc(100vh - 220px);padding:2rem 1rem;text-align:center;">
 
@@ -26,7 +26,7 @@
         max-width:420px;
         padding:2.5rem 2rem;
         text-align:left;">
-    
+
     <h3 style="color:#002d62;text-align:center;margin-bottom:1.5rem;">
       <i class="fas fa-lock"></i> Acesso ao Sistema
     </h3>
@@ -56,13 +56,13 @@
               padding:0.6rem 0.8rem;">
           <i class="fas fa-user" style="color:#005fa3;margin-right:0.5rem;"></i>
           <input type="text" id="username" name="username" placeholder="ex: nome.sobrenome"
-                 required autocomplete="username" 
+                 required autocomplete="username"
                  style="border:none;outline:none;width:100%;font-size:0.95rem;">
         </div>
       </div>
 
       <!-- Senha -->
-      <div class="form-group" style="margin-bottom:1rem;">
+      <div class="form-group" style="margin-bottom:1.5rem;">
         <label for="password" style="font-weight:600;color:#002d62;">Senha</label>
         <div class="input-with-icon" style="
               display:flex;align-items:center;
@@ -73,24 +73,6 @@
           <input type="password" id="password" name="password" placeholder="Digite sua senha"
                  required autocomplete="current-password"
                  style="border:none;outline:none;width:100%;font-size:0.95rem;">
-        </div>
-      </div>
-
-      <!-- Seleção de módulo -->
-      <div class="form-group" style="margin-bottom:1.5rem;">
-        <label for="sistema" style="font-weight:600;color:#002d62;">Selecione o Módulo</label>
-        <div class="input-with-icon" style="
-              display:flex;align-items:center;
-              border:1px solid #cfd8dc;
-              border-radius:8px;
-              padding:0.6rem 0.8rem;">
-          <i class="fas fa-layer-group" style="color:#005fa3;margin-right:0.5rem;"></i>
-          <select id="sistema" name="sistema" required 
-                  style="border:none;outline:none;width:100%;font-size:0.95rem;">
-            <option value="">-- Escolha o módulo --</option>
-            <option value="tramite">Tramitação de Processos</option>
-            <option value="protocolo">Protocolo de Atendimento</option>
-          </select>
         </div>
       </div>
 
@@ -113,11 +95,11 @@
 
       <!-- Links de suporte -->
       <div class="auth-links" style="text-align:center;margin-top:1.5rem;font-size:0.9rem;">
-        <a class="btn-link" href="{{ url_for('main_bp.cadastro') }}" 
+        <a class="btn-link" href="{{ url_for('main_bp.cadastro') }}"
            style="color:#005fa3;text-decoration:none;font-weight:500;">
            Solicitar Cadastro</a>
         <span class="sep" style="margin:0 0.5rem;color:#ccc;">•</span>
-        <a class="btn-link" href="{{ url_for('main_bp.trocar_senha') }}" 
+        <a class="btn-link" href="{{ url_for('main_bp.trocar_senha') }}"
            style="color:#005fa3;text-decoration:none;font-weight:500;">
            Redefinir Senha</a>
       </div>
@@ -126,6 +108,6 @@
 </section>
 
 <!-- Font Awesome -->
-<link rel="stylesheet" 
+<link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}

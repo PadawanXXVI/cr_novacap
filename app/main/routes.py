@@ -1,15 +1,12 @@
-# app/main/routes.py
 """
 Rotas principais do sistema CR-NOVACAP.
 Inclui: tela inicial, login, cadastro, redefinição de senha e logout.
 """
-
 from flask import (
     render_template, request, redirect, url_for, flash, session
 )
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from app.ext import db
 from app.models.modelos import Usuario
 from app.main import main_bp
@@ -30,13 +27,12 @@ def index():
 @main_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """
-    Realiza login e direciona para o sistema selecionado (Trâmite ou Protocolo).
+    Realiza login e direciona diretamente para o dashboard de tramitação de processos.
     Inclui verificações de credenciais, status de aprovação e bloqueio.
     """
     if request.method == 'POST':
         username = (request.form.get('username') or '').strip()
         senha = request.form.get('password')
-        sistema = (request.form.get('sistema') or '').lower()
 
         # 🔎 Busca case-insensitive
         usuario = Usuario.query.filter(
@@ -68,15 +64,8 @@ def login():
 
         flash(f"Bem-vindo, {usuario.nome}!", "success")
 
-        # 🎯 Direcionamento por sistema
-        if sistema == 'tramite':
-            return redirect(url_for('processos_bp.dashboard_processos'))
-        elif sistema == 'protocolo':
-            flash("⚙️ O módulo de Protocolo de Atendimentos será ativado na Fase 3.", "info")
-            return redirect(url_for('processos_bp.dashboard_processos'))
-        else:
-            flash("Selecione um sistema válido para acessar.", "warning")
-            return redirect(url_for('main_bp.login'))
+        # Sempre redireciona para tramitação de processos
+        return redirect(url_for('processos_bp.dashboard_processos'))
 
     return render_template('login.html')
 
@@ -175,9 +164,12 @@ def logout():
     flash("Sessão encerrada com sucesso.", "info")
     return redirect(url_for('main_bp.login'))
 
+
+# ==========================================================
+# Teste de conexão com banco
+# ==========================================================
 from flask import Blueprint, jsonify
 from sqlalchemy import text
-from app.ext import db
 
 main_bp = Blueprint('main_bp', __name__)
 

@@ -24,7 +24,6 @@ from app.models.modelos import Usuario
 # ==========================================================
 from app.main import main_bp
 from app.processos import processos_bp
-from app.protocolo import protocolo_bp
 from app.relatorios import relatorios_bp
 from app.admin import admin_bp
 
@@ -71,7 +70,6 @@ def create_app():
     # ------------------------------------------------------
     app.register_blueprint(main_bp)
     app.register_blueprint(processos_bp, url_prefix='/processos')
-    app.register_blueprint(protocolo_bp, url_prefix='/protocolo')
     app.register_blueprint(relatorios_bp, url_prefix='/relatorios')
     app.register_blueprint(admin_bp, url_prefix='/admin')
 
