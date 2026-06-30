@@ -23,7 +23,7 @@ from flask_login import login_required
 from app.ext import db, csrf
 from app.models.modelos import (
     Processo, EntradaProcesso, Demanda, RegiaoAdministrativa,
-    Status, Usuario, Movimentacao, Diretoria
+    Status, Usuario, Movimentacao, Diretoria, Alerta
 )
 from app.processos import processos_bp
 
@@ -226,7 +226,37 @@ def alterar_processo(id_processo):
 
 
 # ==========================================================
-# 4️⃣ CONSULTA UNIFICADA
+# 4️⃣ EXCLUIR PROCESSO
+# ==========================================================
+@processos_bp.route('/excluir/<int:id_processo>', methods=['POST'])
+@login_required
+def excluir_processo(id_processo):
+    """Exclui um processo e seus registros vinculados"""
+    processo = Processo.query.get_or_404(id_processo)
+
+    try:
+        entradas = EntradaProcesso.query.filter_by(id_processo=id_processo).all()
+
+        for entrada in entradas:
+            Alerta.query.filter_by(id_entrada=entrada.id_entrada).delete()
+            Movimentacao.query.filter_by(id_entrada=entrada.id_entrada).delete()
+            db.session.delete(entrada)
+
+        numero_processo = processo.numero_processo
+        db.session.delete(processo)
+        db.session.commit()
+
+        flash(f"✅ Processo {numero_processo} excluído com sucesso!", "success")
+        return redirect(url_for('processos_bp.consultar_processos'))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"❌ Erro ao excluir processo: {str(e)}", "danger")
+        return redirect(url_for('processos_bp.alterar_processo', id_processo=id_processo))
+
+
+# ==========================================================
+# 5️⃣ CONSULTA UNIFICADA
 # ==========================================================
 @processos_bp.route('/consultar', methods=['GET'])
 @login_required
@@ -292,7 +322,7 @@ def consultar_processos():
 
 
 # ==========================================================
-# 5️⃣ EXPORTAR PROCESSO PDF
+# 6️⃣ EXPORTAR PROCESSO PDF
 # ==========================================================
 @processos_bp.route('/exportar-processo/<int:id_processo>')
 @login_required
@@ -370,7 +400,7 @@ def exportar_processo_pdf(id_processo):
 
 
 # ==========================================================
-# 6️⃣ VERIFICAR PROCESSO VIA AJAX
+# 7️⃣ VERIFICAR PROCESSO VIA AJAX
 # ==========================================================
 @csrf.exempt
 @processos_bp.route("/verificar-processo", methods=["POST"])
@@ -392,7 +422,7 @@ def verificar_processo():
 
 
 # ==========================================================
-# 7️⃣ EXPORTAR TRAMITAÇÕES (CSV / XLSX / PDF)
+# 8️⃣ EXPORTAR TRAMITAÇÕES (CSV / XLSX / PDF)
 # ==========================================================
 @processos_bp.route('/exportar-tramitacoes', methods=['GET'])
 @login_required
@@ -446,7 +476,12 @@ def exportar_tramitacoes():
         output = BytesIO()
         df.to_excel(output, index=False)
         output.seek(0)
-        return send_file(output, as_attachment=True, download_name='processos.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name='processos.xlsx',
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
 
     if formato == 'pdf':
         output = BytesIO()
@@ -464,9 +499,19 @@ def exportar_tramitacoes():
         elements.append(tabela)
         doc.build(elements)
         output.seek(0)
-        return send_file(output, as_attachment=True, download_name='processos.pdf', mimetype='application/pdf')
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name='processos.pdf',
+            mimetype='application/pdf'
+        )
 
     output = BytesIO()
     df.to_csv(output, index=False, sep=';', encoding='utf-8-sig')
     output.seek(0)
-    return send_file(output, as_attachment=True, download_name='processos.csv', mimetype='text/csv')
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name='processos.csv',
+        mimetype='text/csv'
+    )

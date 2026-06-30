@@ -94,6 +94,19 @@
       </a>
     </div>
   </form>
+
+  <!-- Formulário de exclusão -->
+  <form method="POST"
+        action="{{ url_for('processos_bp.excluir_processo', id_processo=processo.id_processo) }}"
+        class="delete-form"
+        onsubmit="return confirm('Tem certeza que deseja excluir este processo? Esta ação não poderá ser desfeita.');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <button type="submit" class="btn btn-danger btn-delete-process">
+      <i class="fas fa-trash-alt"></i> Excluir Processo
+    </button>
+  </form>
+
 </section>
 
 <!-- Fade automático de alertas -->
@@ -174,6 +187,7 @@ setTimeout(() => {
     align-items: center;
     gap: 0.5rem;
     transition: all 0.25s ease;
+    cursor: pointer;
   }
 
   .btn-primary {
@@ -182,6 +196,7 @@ setTimeout(() => {
     border: none;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   }
+
   .btn-primary:hover {
     background: linear-gradient(90deg, #003d7a, #0066e4);
     transform: translateY(-2px);
@@ -192,6 +207,7 @@ setTimeout(() => {
     color: #6c757d;
     background: transparent;
   }
+
   .btn-outline-gray:hover {
     background: #6c757d;
     color: white;
@@ -202,8 +218,24 @@ setTimeout(() => {
     color: white;
     border: none;
   }
+
   .btn-danger:hover {
     background-color: #c82333;
+  }
+
+  .delete-form {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+
+  .btn-delete-process {
+    background-color: #b02a37;
+  }
+
+  .btn-delete-process:hover {
+    background-color: #842029;
+    transform: translateY(-2px);
   }
 </style>
 

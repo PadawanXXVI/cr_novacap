@@ -41,7 +41,12 @@ class Diretoria(db.Model):
     descricao_exibicao = db.Column(db.String(120))
 
     # 🔁 Relação 1:N com Departamentos
-    departamentos = db.relationship('Departamento', backref='diretoria', lazy=True, cascade="all, delete")
+    departamentos = db.relationship(
+        'Departamento',
+        backref='diretoria',
+        lazy=True,
+        cascade="all, delete"
+    )
 
     def __repr__(self):
         return f"<Diretoria {self.sigla or ''} - {self.nome_completo}>"
@@ -55,10 +60,19 @@ class Departamento(db.Model):
 
     id_departamento = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(150), nullable=False)
-    id_diretoria = db.Column(db.Integer, db.ForeignKey('diretorias.id_diretoria'), nullable=False)
+    id_diretoria = db.Column(
+        db.Integer,
+        db.ForeignKey('diretorias.id_diretoria'),
+        nullable=False
+    )
 
-    # 🔁 Relação 1:N com Demandas — corrigido para evitar conflito
-    demandas = db.relationship('Demanda', back_populates='departamento', cascade="all, delete-orphan", lazy=True)
+    # 🔁 Relação 1:N com Demandas
+    demandas = db.relationship(
+        'Demanda',
+        back_populates='departamento',
+        cascade="all, delete-orphan",
+        lazy=True
+    )
 
     def __repr__(self):
         return f"<Departamento {self.nome}>"
@@ -74,8 +88,16 @@ class Demanda(db.Model):
     descricao = db.Column(db.String(100), nullable=False)
 
     # 🔗 Vinculações hierárquicas
-    id_diretoria = db.Column(db.Integer, db.ForeignKey('diretorias.id_diretoria'), nullable=True)
-    id_departamento = db.Column(db.Integer, db.ForeignKey('departamentos.id_departamento'), nullable=True)
+    id_diretoria = db.Column(
+        db.Integer,
+        db.ForeignKey('diretorias.id_diretoria'),
+        nullable=True
+    )
+    id_departamento = db.Column(
+        db.Integer,
+        db.ForeignKey('departamentos.id_departamento'),
+        nullable=True
+    )
 
     diretoria = db.relationship("Diretoria", backref="demandas", lazy=True)
     departamento = db.relationship("Departamento", back_populates="demandas", lazy=True)
@@ -106,7 +128,12 @@ class Processo(db.Model):
     observacoes = db.Column(db.Text)
     diretoria_destino = db.Column(db.String(100), nullable=False)
 
-    entradas = db.relationship('EntradaProcesso', backref='processo', cascade="all, delete-orphan")
+    entradas = db.relationship(
+        'EntradaProcesso',
+        backref='processo',
+        cascade="all, delete-orphan",
+        lazy=True
+    )
 
 
 # ==========================================================
@@ -116,18 +143,47 @@ class EntradaProcesso(db.Model):
     __tablename__ = 'entradas_processo'
 
     id_entrada = db.Column(db.Integer, primary_key=True)
-    id_processo = db.Column(db.Integer, db.ForeignKey('processos.id_processo'), nullable=False)
+    id_processo = db.Column(
+        db.Integer,
+        db.ForeignKey('processos.id_processo'),
+        nullable=False
+    )
     data_criacao_ra = db.Column(db.Date, nullable=False)
     data_entrada_novacap = db.Column(db.Date, nullable=False)
     data_documento = db.Column(db.Date, nullable=False)
     ra_origem = db.Column(db.String(100), nullable=False)
 
-    id_demanda = db.Column(db.Integer, db.ForeignKey('demandas.id_demanda'), nullable=False)
-    usuario_responsavel = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+    id_demanda = db.Column(
+        db.Integer,
+        db.ForeignKey('demandas.id_demanda'),
+        nullable=False
+    )
+    usuario_responsavel = db.Column(
+        db.Integer,
+        db.ForeignKey('usuarios.id_usuario'),
+        nullable=False
+    )
     responsavel = db.relationship("Usuario", foreign_keys=[usuario_responsavel])
-    status_inicial = db.Column(db.String(100), db.ForeignKey('status.descricao'), nullable=False)
 
-    movimentacoes = db.relationship('Movimentacao', backref='entrada', cascade="all, delete-orphan")
+    status_inicial = db.Column(
+        db.String(100),
+        db.ForeignKey('status.descricao'),
+        nullable=False
+    )
+
+    movimentacoes = db.relationship(
+        'Movimentacao',
+        backref='entrada',
+        cascade="all, delete-orphan",
+        lazy=True
+    )
+
+    alertas = db.relationship(
+        'Alerta',
+        backref='entrada',
+        cascade="all, delete-orphan",
+        lazy=True
+    )
 
 
 # ==========================================================
@@ -137,9 +193,21 @@ class Movimentacao(db.Model):
     __tablename__ = 'movimentacoes'
 
     id_movimentacao = db.Column(db.Integer, primary_key=True)
-    id_entrada = db.Column(db.Integer, db.ForeignKey('entradas_processo.id_entrada'), nullable=False)
-    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
-    novo_status = db.Column(db.String(100), db.ForeignKey('status.descricao'), nullable=False)
+    id_entrada = db.Column(
+        db.Integer,
+        db.ForeignKey('entradas_processo.id_entrada'),
+        nullable=False
+    )
+    id_usuario = db.Column(
+        db.Integer,
+        db.ForeignKey('usuarios.id_usuario'),
+        nullable=False
+    )
+    novo_status = db.Column(
+        db.String(100),
+        db.ForeignKey('status.descricao'),
+        nullable=False
+    )
     data = db.Column(db.DateTime, default=datetime.utcnow)
     observacao = db.Column(db.Text)
 
@@ -177,7 +245,11 @@ class LogUsuario(db.Model):
     __tablename__ = 'logs_usuarios'
 
     id_log = db.Column(db.Integer, primary_key=True)
-    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+    id_usuario = db.Column(
+        db.Integer,
+        db.ForeignKey('usuarios.id_usuario'),
+        nullable=False
+    )
     acao = db.Column(db.String(100), nullable=False)
     tabela_afetada = db.Column(db.String(100))
     id_referencia = db.Column(db.Integer)
@@ -193,10 +265,18 @@ class Alerta(db.Model):
     __tablename__ = 'alertas'
 
     id_alerta = db.Column(db.Integer, primary_key=True)
-    id_usuario = db.Column(db.Integer, db.ForeignKey('usuarios.id_usuario'), nullable=False)
+    id_usuario = db.Column(
+        db.Integer,
+        db.ForeignKey('usuarios.id_usuario'),
+        nullable=False
+    )
     tipo_alerta = db.Column(db.String(100), nullable=False)
     numero_processo = db.Column(db.String(25), nullable=False)
-    id_entrada = db.Column(db.Integer, db.ForeignKey('entradas_processo.id_entrada'), nullable=False)
+    id_entrada = db.Column(
+        db.Integer,
+        db.ForeignKey('entradas_processo.id_entrada'),
+        nullable=False
+    )
     mensagem = db.Column(db.Text, nullable=False)
     data_alerta = db.Column(db.DateTime, default=datetime.utcnow)
     respondido = db.Column(db.Boolean, default=False)
