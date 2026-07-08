@@ -18,3 +18,10 @@ instance/
 *~
 
 .ipynb_checkpoints/
+
+# dump de banco de dados
+*.sql
+
+# Arquivos de análise
+analise.ipynb
+analise_processos_pandas.xlsx
