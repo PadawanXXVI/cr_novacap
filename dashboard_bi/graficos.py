@@ -1,6 +1,5 @@
 # dashboard_bi/graficos.py
 
-import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -13,6 +12,7 @@ def figura_vazia(titulo="Sem dados disponíveis"):
     fig.update_layout(
         title=titulo,
         template=TEMPLATE,
+        height=420,
         xaxis={"visible": False},
         yaxis={"visible": False},
         annotations=[
@@ -24,6 +24,17 @@ def figura_vazia(titulo="Sem dados disponíveis"):
                 "font": {"size": 16},
             }
         ],
+    )
+    return fig
+
+
+def aplicar_layout_padrao(fig, altura=430):
+    fig.update_layout(
+        template=TEMPLATE,
+        height=altura,
+        margin=dict(l=20, r=20, t=70, b=40),
+        title_font=dict(size=18),
+        font=dict(size=12),
     )
     return fig
 
@@ -53,7 +64,7 @@ def grafico_evolucao_mensal(df):
         yaxis_title="Total de processos",
     )
 
-    return fig
+    return aplicar_layout_padrao(fig, altura=430)
 
 
 def grafico_rosca_status(df):
@@ -81,7 +92,7 @@ def grafico_rosca_status(df):
         textinfo="percent+label",
     )
 
-    return fig
+    return aplicar_layout_padrao(fig, altura=430)
 
 
 def grafico_status_detalhado(df):
@@ -109,7 +120,7 @@ def grafico_status_detalhado(df):
         yaxis_title="Status atual",
     )
 
-    return fig
+    return aplicar_layout_padrao(fig, altura=520)
 
 
 def grafico_processos_por_diretoria(df):
@@ -137,36 +148,7 @@ def grafico_processos_por_diretoria(df):
         yaxis_title="Diretoria",
     )
 
-    return fig
-
-
-def grafico_processos_por_departamento(df, top_n=15):
-    if df.empty:
-        return figura_vazia("Processos por departamento")
-
-    dados = (
-        df.groupby("departamento")["id_processo"]
-        .nunique()
-        .reset_index(name="total")
-        .sort_values("total", ascending=True)
-        .tail(top_n)
-    )
-
-    fig = px.bar(
-        dados,
-        x="total",
-        y="departamento",
-        orientation="h",
-        title=f"Top {top_n} departamentos por processos",
-        template=TEMPLATE,
-    )
-
-    fig.update_layout(
-        xaxis_title="Total de processos",
-        yaxis_title="Departamento",
-    )
-
-    return fig
+    return aplicar_layout_padrao(fig, altura=430)
 
 
 def grafico_top_ras(df, top_n=15):
@@ -195,7 +177,7 @@ def grafico_top_ras(df, top_n=15):
         yaxis_title="Região Administrativa",
     )
 
-    return fig
+    return aplicar_layout_padrao(fig, altura=520)
 
 
 def grafico_grupos_demanda(df, top_n=15):
@@ -224,7 +206,7 @@ def grafico_grupos_demanda(df, top_n=15):
         yaxis_title="Grupo da demanda",
     )
 
-    return fig
+    return aplicar_layout_padrao(fig, altura=520)
 
 
 def grafico_demandas_detalhadas(df, top_n=20):
@@ -253,37 +235,34 @@ def grafico_demandas_detalhadas(df, top_n=20):
         yaxis_title="Demanda detalhada",
     )
 
-    return fig
+    return aplicar_layout_padrao(fig, altura=650)
 
 
 def grafico_treemap_hierarquia(df):
     if df.empty:
-        return figura_vazia("Hierarquia Diretoria → Departamento → Demanda")
+        return figura_vazia("Hierarquia Diretoria → Grupo → Demanda")
 
     dados = df.copy()
 
     dados["diretoria"] = dados["diretoria"].fillna("Não informada")
-    dados["departamento"] = dados["departamento"].fillna("Não informado")
     dados["grupo_demanda"] = dados["grupo_demanda"].fillna("Não informado")
     dados["demanda"] = dados["demanda"].fillna("Não informada")
 
     agrupado = (
-        dados.groupby(
-            ["diretoria", "departamento", "grupo_demanda", "demanda"]
-        )["id_processo"]
+        dados.groupby(["diretoria", "grupo_demanda", "demanda"])["id_processo"]
         .nunique()
         .reset_index(name="total")
     )
 
     fig = px.treemap(
         agrupado,
-        path=["diretoria", "departamento", "grupo_demanda", "demanda"],
+        path=["diretoria", "grupo_demanda", "demanda"],
         values="total",
-        title="Hierarquia: Diretoria → Departamento → Grupo → Demanda",
+        title="Hierarquia: Diretoria → Grupo → Demanda",
         template=TEMPLATE,
     )
 
-    return fig
+    return aplicar_layout_padrao(fig, altura=650)
 
 
 def grafico_tempo_medio_por_diretoria(df):
@@ -311,4 +290,4 @@ def grafico_tempo_medio_por_diretoria(df):
         yaxis_title="Diretoria",
     )
 
-    return fig
+    return aplicar_layout_padrao(fig, altura=430)

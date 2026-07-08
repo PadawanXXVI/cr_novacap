@@ -1,0 +1,265 @@
+/* dashboard_bi/style.css */
+
+/* ============================================================
+   Dashboard BI CR-NOVACAP
+   Padrão institucional GDF / NOVACAP
+   ============================================================ */
+
+:root {
+    --azul-gdf-escuro: #002d62;
+    --azul-gdf: #004a8f;
+    --azul-novacap: #005ca9;
+    --azul-claro: #eef5ff;
+    --amarelo-gdf: #ffc107;
+
+    --fundo-app: #f7f9fb;
+    --fundo-card: #ffffff;
+    --fundo-sidebar: #eef2f7;
+
+    --texto-principal: #1f2937;
+    --texto-secundario: #6b7280;
+
+    --borda-suave: #dce3e9;
+    --sombra-card: 0 3px 10px rgba(0, 0, 0, 0.06);
+    --radius-card: 12px;
+}
+
+/* Fundo geral */
+.stApp {
+    background-color: var(--fundo-app);
+    color: var(--texto-principal);
+}
+
+/* Área principal */
+.block-container {
+    padding-top: 1.4rem;
+    padding-bottom: 3rem;
+    max-width: 1320px;
+}
+
+/* Sidebar compacta */
+section[data-testid="stSidebar"] {
+    background-color: var(--fundo-sidebar);
+    border-right: 1px solid var(--borda-suave);
+}
+
+section[data-testid="stSidebar"] > div {
+    padding-top: 1.4rem;
+}
+
+section[data-testid="stSidebar"] h1 {
+    color: var(--azul-gdf-escuro);
+    font-size: 1.45rem;
+    margin-bottom: 0.4rem;
+}
+
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: var(--azul-gdf-escuro);
+    font-size: 1rem;
+    margin-top: 0.8rem;
+    margin-bottom: 0.4rem;
+}
+
+section[data-testid="stSidebar"] label {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--texto-principal);
+}
+
+section[data-testid="stSidebar"] p {
+    font-size: 0.82rem;
+    color: var(--texto-secundario);
+}
+
+section[data-testid="stSidebar"] hr {
+    margin: 1.1rem 0;
+}
+
+/* Inputs e selects */
+div[data-baseweb="select"] > div,
+input {
+    border-radius: 8px !important;
+    min-height: 38px !important;
+}
+
+section[data-testid="stSidebar"] div[data-baseweb="select"] > div,
+section[data-testid="stSidebar"] input {
+    min-height: 36px !important;
+    font-size: 0.86rem !important;
+}
+
+/* Botão limpar filtros */
+.stButton > button {
+    border-radius: 8px;
+    border: 1px solid var(--borda-suave);
+    font-weight: 600;
+    transition: 0.2s ease;
+    min-height: 38px;
+}
+
+.stButton > button:hover {
+    border-color: var(--azul-novacap);
+    color: var(--azul-novacap);
+}
+
+/* Cabeçalho institucional */
+.cr-header {
+    background: linear-gradient(90deg, var(--azul-gdf-escuro), var(--azul-gdf));
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 0.9rem 1.3rem;
+    margin-bottom: 1.6rem;
+    box-shadow: var(--sombra-card);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.cr-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.cr-header-logo {
+    height: 50px;
+    width: auto;
+}
+
+.cr-header-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.cr-header-subtitle {
+    margin: 0;
+    font-size: 0.88rem;
+    opacity: 0.92;
+}
+
+/* Bloco de título */
+.cr-title-card {
+    background: var(--fundo-card);
+    border: 1px solid var(--borda-suave);
+    border-radius: var(--radius-card);
+    box-shadow: var(--sombra-card);
+    padding: 1.6rem 2rem;
+    margin-bottom: 1.6rem;
+}
+
+.cr-title-card h1 {
+    color: var(--azul-gdf-escuro);
+    font-size: clamp(1.8rem, 3vw, 2.45rem);
+    margin: 0 0 0.9rem 0;
+    font-weight: 800;
+}
+
+.cr-title-card p {
+    color: var(--texto-secundario);
+    margin: 0.25rem 0;
+}
+
+/* Títulos das seções */
+h2, h3 {
+    color: var(--azul-gdf-escuro);
+    font-weight: 700;
+}
+
+/* Cards métricos */
+[data-testid="stMetric"] {
+    background: var(--fundo-card);
+    border: 1px solid var(--borda-suave);
+    border-radius: var(--radius-card);
+    padding: 1.15rem 1.25rem;
+    box-shadow: var(--sombra-card);
+}
+
+[data-testid="stMetricLabel"] {
+    color: var(--azul-gdf-escuro);
+    font-weight: 600;
+}
+
+[data-testid="stMetricValue"] {
+    color: var(--azul-novacap);
+    font-weight: 800;
+}
+
+/* Cards de gráficos */
+[data-testid="stPlotlyChart"] {
+    background: var(--fundo-card);
+    border: 1px solid var(--borda-suave);
+    border-radius: var(--radius-card);
+    padding: 0.8rem;
+    box-shadow: var(--sombra-card);
+}
+
+/* Alertas/info */
+[data-testid="stAlert"] {
+    border-radius: var(--radius-card);
+}
+
+/* Dataframe */
+[data-testid="stDataFrame"] {
+    background: var(--fundo-card);
+    border: 1px solid var(--borda-suave);
+    border-radius: var(--radius-card);
+    box-shadow: var(--sombra-card);
+    padding: 0.5rem;
+}
+
+/* Separadores */
+hr {
+    margin: 1.8rem 0;
+    border-color: var(--borda-suave);
+}
+
+/* Rodapé institucional */
+.cr-footer {
+    margin-top: 3rem;
+    background: linear-gradient(90deg, var(--azul-gdf-escuro), var(--azul-gdf));
+    color: #ffffff;
+    text-align: center;
+    padding: 1.2rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+}
+
+.cr-footer p {
+    margin: 0.2rem 0;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .cr-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cr-title-card {
+        padding: 1.3rem;
+    }
+
+    .cr-title-card h1 {
+        font-size: 1.7rem;
+    }
+}
+
+.cr-header-weather {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 0.55rem 0.9rem;
+    border-radius: 10px;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+.cr-header-weather span {
+    font-size: 0.95rem;
+}

@@ -10,18 +10,34 @@ from graficos import (
     grafico_rosca_status,
     grafico_status_detalhado,
     grafico_processos_por_diretoria,
-    grafico_processos_por_departamento,
     grafico_top_ras,
     grafico_grupos_demanda,
     grafico_demandas_detalhadas,
-    grafico_treemap_hierarquia,
     grafico_tempo_medio_por_diretoria,
+)
+from mapas import grafico_mapa_ras
+from componentes import (
+    carregar_css,
+    renderizar_cabecalho,
+    renderizar_titulo_painel,
+    renderizar_rodape,
 )
 
 
 st.set_page_config(
     page_title="Dashboard CR/NOVACAP",
     layout="wide"
+)
+
+carregar_css()
+
+st.markdown(
+    """
+    <script>
+        document.documentElement.lang = "pt-BR";
+    </script>
+    """,
+    unsafe_allow_html=True
 )
 
 
@@ -31,10 +47,12 @@ dados, filtros = aplicar_filtros_sidebar(df)
 dados = adicionar_categoria_status(dados)
 
 
-st.title("Companhia Urbanizadora da Nova Capital - NOVACAP")
-st.subheader("Central de Relacionamento - CR")
-st.caption("Análise Gerencial — 1º Semestre de 2026")
-st.caption("Período analisado: 01/01/2026 a 30/06/2026")
+renderizar_cabecalho()
+
+renderizar_titulo_painel(
+    rotulo_periodo=filtros["rotulo_periodo"],
+    periodo_formatado=filtros["periodo_formatado"],
+)
 
 
 st.subheader("Indicadores gerais")
@@ -46,16 +64,15 @@ st.divider()
 
 st.subheader("Distribuição territorial")
 
-col_mapa, col_ra = st.columns([1, 1])
+st.plotly_chart(
+    grafico_mapa_ras(dados),
+    use_container_width=True
+)
 
-with col_mapa:
-    st.info("Mapa das Regiões Administrativas do DF será implementado na próxima etapa.")
-
-with col_ra:
-    st.plotly_chart(
-        grafico_top_ras(dados, top_n=15),
-        use_container_width=True
-    )
+st.plotly_chart(
+    grafico_top_ras(dados, top_n=15),
+    use_container_width=True
+)
 
 
 st.divider()
@@ -94,19 +111,10 @@ st.divider()
 
 st.subheader("Estrutura institucional")
 
-col_dir, col_dep = st.columns(2)
-
-with col_dir:
-    st.plotly_chart(
-        grafico_processos_por_diretoria(dados),
-        use_container_width=True
-    )
-
-with col_dep:
-    st.plotly_chart(
-        grafico_processos_por_departamento(dados, top_n=15),
-        use_container_width=True
-    )
+st.plotly_chart(
+    grafico_processos_por_diretoria(dados),
+    use_container_width=True
+)
 
 
 st.divider()
@@ -132,17 +140,6 @@ with col_demanda:
 st.divider()
 
 
-st.subheader("Hierarquia analítica")
-
-st.plotly_chart(
-    grafico_treemap_hierarquia(dados),
-    use_container_width=True
-)
-
-
-st.divider()
-
-
 st.subheader("Eficiência e tempo")
 
 st.plotly_chart(
@@ -161,11 +158,11 @@ colunas_base = [
     "data_entrada_novacap",
     "ra_origem",
     "diretoria",
-    "departamento",
     "grupo_demanda",
     "demanda",
     "status_atual",
     "categoria_status",
+    "dias_ra_ate_novacap",
     "dias_tramitacao",
 ]
 
@@ -174,3 +171,6 @@ st.dataframe(
     use_container_width=True,
     hide_index=True
 )
+
+
+renderizar_rodape()
